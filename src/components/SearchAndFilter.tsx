@@ -1,11 +1,12 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search, Filter, MapPin, X } from "lucide-react";
+import { Search, Filter, MapPin, X, Heart } from "lucide-react";
+import { useMessageStore } from "@/stores/messageStore";
+import { useToast } from "@/components/ui/use-toast";
 
 interface SearchAndFilterProps {
   onSearch: (keyword: string) => void;
@@ -24,6 +25,8 @@ export const SearchAndFilter = ({ onSearch, onFilterChange, onBack }: SearchAndF
   const [selectedCondition, setSelectedCondition] = useState("all");
   const [selectedLocation, setSelectedLocation] = useState("");
   const [selectedRadius, setSelectedRadius] = useState(5);
+  const { createConversationFromSwipe } = useMessageStore();
+  const { toast } = useToast();
 
   const categories = [
     { value: "all", label: "All Categories" },
@@ -161,6 +164,15 @@ export const SearchAndFilter = ({ onSearch, onFilterChange, onBack }: SearchAndF
     });
   };
 
+  const handleItemLike = (item: any) => {
+    const conversationId = createConversationFromSwipe(item.title, item.user);
+    toast({
+      title: "Interest Sent!",
+      description: `You've expressed interest in ${item.title}. A conversation has been started with ${item.user}.`,
+    });
+    console.log(`Started conversation ${conversationId} for ${item.title} with ${item.user}`);
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50">
       {/* Header */}
@@ -291,7 +303,7 @@ export const SearchAndFilter = ({ onSearch, onFilterChange, onBack }: SearchAndF
         {/* Items Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredItems.map((item) => (
-            <Card key={item.id} className="hover:shadow-lg transition-shadow cursor-pointer">
+            <Card key={item.id} className="hover:shadow-lg transition-shadow">
               <div className="relative">
                 <img
                   src={item.image}
@@ -301,6 +313,13 @@ export const SearchAndFilter = ({ onSearch, onFilterChange, onBack }: SearchAndF
                 <Badge className="absolute top-2 right-2 bg-white/90 text-gray-900">
                   {item.category}
                 </Badge>
+                <Button
+                  className="absolute top-2 left-2 w-10 h-10 rounded-full bg-white/90 hover:bg-white text-red-500 hover:text-red-600 p-0"
+                  variant="ghost"
+                  onClick={() => handleItemLike(item)}
+                >
+                  <Heart className="w-5 h-5" />
+                </Button>
               </div>
               <CardContent className="p-4">
                 <div className="flex items-start justify-between mb-2">
@@ -331,11 +350,21 @@ export const SearchAndFilter = ({ onSearch, onFilterChange, onBack }: SearchAndF
                     )}
                   </div>
                 </div>
-                <div className="flex items-center">
-                  <div className="w-6 h-6 bg-gradient-to-br from-green-400 to-blue-400 rounded-full flex items-center justify-center text-white font-semibold text-xs mr-2">
-                    {item.user.charAt(0)}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center">
+                    <div className="w-6 h-6 bg-gradient-to-br from-green-400 to-blue-400 rounded-full flex items-center justify-center text-white font-semibold text-xs mr-2">
+                      {item.user.charAt(0)}
+                    </div>
+                    <div className="text-sm text-gray-900">{item.user}</div>
                   </div>
-                  <div className="text-sm text-gray-900">{item.user}</div>
+                  <Button
+                    size="sm"
+                    className="bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600"
+                    onClick={() => handleItemLike(item)}
+                  >
+                    <Heart className="w-4 h-4 mr-1" />
+                    Swap
+                  </Button>
                 </div>
               </CardContent>
             </Card>

@@ -1,4 +1,3 @@
-
 import { create } from 'zustand';
 
 export interface Message {
@@ -33,6 +32,7 @@ interface MessageStore {
   markAsRead: (conversationId: number) => void;
   setTyping: (conversationId: number, isTyping: boolean) => void;
   addConversation: (conversation: Conversation) => void;
+  createConversationFromSwipe: (itemTitle: string, partnerName: string) => number;
 }
 
 export const useMessageStore = create<MessageStore>((set, get) => ({
@@ -200,5 +200,38 @@ export const useMessageStore = create<MessageStore>((set, get) => ({
     set((state) => ({
       conversations: [conversation, ...state.conversations]
     }));
+  },
+
+  createConversationFromSwipe: (itemTitle, partnerName) => {
+    const newId = Math.max(...get().conversations.map(c => c.id)) + 1;
+    const newConversation: Conversation = {
+      id: newId,
+      partner: partnerName,
+      avatar: partnerName.charAt(0),
+      lastMessage: `Hi! I'm interested in your ${itemTitle}.`,
+      time: "now",
+      unread: 0,
+      item: `Your Item → ${itemTitle}`,
+      status: "matched"
+    };
+
+    const initialMessage: Message = {
+      id: Date.now().toString(),
+      conversationId: newId,
+      sender: 'me',
+      text: `Hi! I'm interested in your ${itemTitle}.`,
+      timestamp: new Date(),
+      read: true
+    };
+
+    set((state) => ({
+      conversations: [newConversation, ...state.conversations],
+      messages: {
+        ...state.messages,
+        [newId]: [initialMessage]
+      }
+    }));
+
+    return newId;
   }
 }));

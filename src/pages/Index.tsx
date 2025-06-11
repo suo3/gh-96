@@ -8,11 +8,15 @@ import { PostItemDialog } from "@/components/PostItemDialog";
 import { UserProfile } from "@/components/UserProfile";
 import { MessagesPanel } from "@/components/MessagesPanel";
 import { SearchAndFilter } from "@/components/SearchAndFilter";
+import { useMessageStore } from "@/stores/messageStore";
+import { useToast } from "@/components/ui/use-toast";
 
 const Index = () => {
   const [currentView, setCurrentView] = useState("discover");
   const [showPostDialog, setShowPostDialog] = useState(false);
   const [userLocation, setUserLocation] = useState("Seattle, WA");
+  const { createConversationFromSwipe } = useMessageStore();
+  const { toast } = useToast();
 
   // Mock data for demonstration
   const mockItems = [
@@ -56,8 +60,15 @@ const Index = () => {
 
   const handleSwipe = (direction: 'left' | 'right') => {
     if (direction === 'right') {
-      console.log(`Interested in: ${items[currentItemIndex]?.title}`);
-      // Here you would handle the "like" logic
+      const currentItem = items[currentItemIndex];
+      const conversationId = createConversationFromSwipe(currentItem.title, currentItem.user);
+      
+      toast({
+        title: "Match Created!",
+        description: `You've shown interest in ${currentItem.title}! A conversation has been started with ${currentItem.user}.`,
+      });
+      
+      console.log(`Interested in: ${currentItem?.title}`);
     }
     
     if (currentItemIndex < items.length - 1) {
