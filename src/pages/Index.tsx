@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -8,6 +7,7 @@ import { SwipeCard } from "@/components/SwipeCard";
 import { PostItemDialog } from "@/components/PostItemDialog";
 import { UserProfile } from "@/components/UserProfile";
 import { MessagesPanel } from "@/components/MessagesPanel";
+import { SearchAndFilter } from "@/components/SearchAndFilter";
 
 const Index = () => {
   const [currentView, setCurrentView] = useState("discover");
@@ -71,6 +71,24 @@ const Index = () => {
     setCurrentItemIndex(0);
   };
 
+  const handleSearchResults = (keyword: string) => {
+    console.log("Searching for:", keyword);
+  };
+
+  const handleFilterChange = (filters: any) => {
+    console.log("Filters applied:", filters);
+  };
+
+  if (currentView === "search") {
+    return (
+      <SearchAndFilter
+        onSearch={handleSearchResults}
+        onFilterChange={handleFilterChange}
+        onBack={() => setCurrentView("discover")}
+      />
+    );
+  }
+
   if (currentView === "discover") {
     return (
       <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50">
@@ -91,6 +109,13 @@ const Index = () => {
                 </div>
               </div>
               <div className="flex items-center space-x-2">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setCurrentView("search")}
+                >
+                  <Search className="w-5 h-5" />
+                </Button>
                 <Button
                   variant="ghost"
                   size="icon"
