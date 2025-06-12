@@ -12,16 +12,21 @@ import { ItemList } from "@/components/ItemList";
 import { PostItemDialog } from "@/components/PostItemDialog";
 import { UserProfile } from "@/components/UserProfile";
 import { MessagesPanel } from "@/components/MessagesPanel";
+import { AuthButton } from "@/components/AuthButton";
+import { LoginDialog } from "@/components/LoginDialog";
 import { useMessageStore } from "@/stores/messageStore";
+import { useAuthStore } from "@/stores/authStore";
 import { useToast } from "@/components/ui/use-toast";
 
 const Index = () => {
   const [currentView, setCurrentView] = useState("discover");
   const [displayMode, setDisplayMode] = useState<"swipe" | "grid" | "list">("swipe");
   const [showPostDialog, setShowPostDialog] = useState(false);
+  const [showLoginDialog, setShowLoginDialog] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
   const [userLocation, setUserLocation] = useState("Seattle, WA");
   const { createConversationFromSwipe } = useMessageStore();
+  const { isAuthenticated, canCreateListing, canMakeSwap } = useAuthStore();
   const { toast } = useToast();
 
   // Mock data for demonstration
@@ -77,6 +82,20 @@ const Index = () => {
   const [filteredItems, setFilteredItems] = useState(mockItems);
 
   const handleSwipe = (direction: 'left' | 'right') => {
+    if (!isAuthenticated) {
+      setShowLoginDialog(true);
+      return;
+    }
+
+    if (!canMakeSwap()) {
+      toast({
+        title: "Swap Limit Reached",
+        description: "You've reached your monthly swap limit. Upgrade to Premium for unlimited swaps!",
+        variant: "destructive"
+      });
+      return;
+    }
+
     if (direction === 'right') {
       const currentItem = items[currentItemIndex];
       const conversationId = createConversationFromSwipe(currentItem.title, currentItem.user);
@@ -95,11 +114,43 @@ const Index = () => {
   };
 
   const handleItemLike = (item: any) => {
+    if (!isAuthenticated) {
+      setShowLoginDialog(true);
+      return;
+    }
+
+    if (!canMakeSwap()) {
+      toast({
+        title: "Swap Limit Reached",
+        description: "You've reached your monthly swap limit. Upgrade to Premium for unlimited swaps!",
+        variant: "destructive"
+      });
+      return;
+    }
+
     const conversationId = createConversationFromSwipe(item.title, item.user);
     toast({
       title: "Interest Sent!",
       description: `You've expressed interest in ${item.title}. A conversation has been started with ${item.user}.`,
     });
+  };
+
+  const handlePostItem = () => {
+    if (!isAuthenticated) {
+      setShowLoginDialog(true);
+      return;
+    }
+
+    if (!canCreateListing()) {
+      toast({
+        title: "Listing Limit Reached",
+        description: "You've reached your monthly listing limit. Upgrade to Premium for unlimited listings!",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setShowPostDialog(true);
   };
 
   const handleFilterChange = (filters: any) => {
@@ -121,10 +172,20 @@ const Index = () => {
   };
 
   if (currentView === "messages") {
+    if (!isAuthenticated) {
+      setShowLoginDialog(true);
+      setCurrentView("discover");
+      return null;
+    }
     return <MessagesPanel onBack={() => setCurrentView("discover")} />;
   }
 
   if (currentView === "profile") {
+    if (!isAuthenticated) {
+      setShowLoginDialog(true);
+      setCurrentView("discover");
+      return null;
+    }
     return <UserProfile onBack={() => setCurrentView("discover")} />;
   }
 
@@ -163,25 +224,24 @@ const Index = () => {
                 <Button
                   variant="ghost"
                   size="icon"
-                  onClick={() => setCurrentView("messages")}
+                  onClick={() => isAuthenticated ? setCurrentView("messages") : setShowLoginDialog(true)}
                   className="relative"
                 >
                   <MessageCircle className="w-5 h-5" />
-                  <Badge className="absolute -top-1 -right-1 w-5 h-5 p-0 flex items-center justify-center bg-red-500 text-xs">
-                    3
-                  </Badge>
+                  {isAuthenticated && (
+                    <Badge className="absolute -top-1 -right-1 w-5 h-5 p-0 flex items-center justify-center bg-red-500 text-xs">
+                      3
+                    </Badge>
+                  )}
                 </Button>
                 
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => setCurrentView("profile")}
-                >
-                  <User className="w-5 h-5" />
-                </Button>
+                <AuthButton
+                  onLogin={() => setShowLoginDialog(true)}
+                  onProfile={() => setCurrentView("profile")}
+                />
                 
                 <Button
-                  onClick={() => setShowPostDialog(true)}
+                  onClick={handlePostItem}
                   className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 shadow-lg"
                 >
                   <Plus className="w-4 h-4 mr-2" />
@@ -306,6 +366,11 @@ const Index = () => {
         <PostItemDialog 
           open={showPostDialog} 
           onOpenChange={setShowPostDialog} 
+        />
+
+        <LoginDialog
+          open={showLoginDialog}
+          onOpenChange={setShowLoginDialog}
         />
       </div>
     );

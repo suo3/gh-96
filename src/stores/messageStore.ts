@@ -33,6 +33,7 @@ interface MessageStore {
   setTyping: (conversationId: number, isTyping: boolean) => void;
   addConversation: (conversation: Conversation) => void;
   createConversationFromSwipe: (itemTitle: string, partnerName: string) => number;
+  markConversationComplete: (conversationId: number) => void;
 }
 
 export const useMessageStore = create<MessageStore>((set, get) => ({
@@ -233,5 +234,15 @@ export const useMessageStore = create<MessageStore>((set, get) => ({
     }));
 
     return newId;
+  },
+
+  markConversationComplete: (conversationId) => {
+    set((state) => ({
+      conversations: state.conversations.map(conv =>
+        conv.id === conversationId
+          ? { ...conv, status: 'completed', lastMessage: 'Swap completed successfully!' }
+          : conv
+      )
+    }));
   }
 }));
