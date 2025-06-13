@@ -113,7 +113,7 @@ export const useListingStore = create<ListingState>((set, get) => ({
         .from('listings')
         .select(`
           *,
-          profiles!listings_user_id_fkey (
+          profiles (
             username,
             first_name,
             last_name,
@@ -159,7 +159,7 @@ export const useListingStore = create<ListingState>((set, get) => ({
         .from('listings')
         .select(`
           *,
-          profiles!listings_user_id_fkey (
+          profiles (
             username,
             first_name,
             last_name,
