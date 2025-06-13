@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -20,9 +19,12 @@ export const UserProfile = ({ onBack }: UserProfileProps) => {
 
   if (!user) return null;
 
+  // Ensure joinedDate is a Date object
+  const joinedDate = user.joinedDate instanceof Date ? user.joinedDate : new Date(user.joinedDate);
+
   const userStats = {
     name: `${user.firstName} ${user.lastName}`,
-    joinDate: user.joinedDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
+    joinDate: joinedDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
     location: user.location,
     successfulSwaps: user.totalSwaps,
     rating: user.rating,
