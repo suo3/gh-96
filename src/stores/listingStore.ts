@@ -67,9 +67,9 @@ export const useListingStore = create<ListingStore>((set, get) => ({
   loading: false,
   error: null,
   searchTerm: '',
-  selectedCategory: '',
-  selectedCondition: '',
-  sortBy: 'newest',
+  selectedCategory: 'all',
+  selectedCondition: 'all',
+  sortBy: 'distance', // Default to distance sorting
   swapFilter: 'all',
   maxDistance: 25, // Default to 25 miles
   userLocation: null,
@@ -80,7 +80,14 @@ export const useListingStore = create<ListingStore>((set, get) => ({
   setSortBy: (sort) => set({ sortBy: sort }),
   setSwapFilter: (filter) => set({ swapFilter: filter }),
   setMaxDistance: (distance) => set({ maxDistance: distance }),
-  setUserLocation: (location) => set({ userLocation: location }),
+  setUserLocation: (location) => {
+    set({ userLocation: location });
+    // If user location is set and we don't have a specific sort preference, default to distance
+    const { sortBy } = get();
+    if (location && sortBy === 'newest') {
+      set({ sortBy: 'distance' });
+    }
+  },
 
   geocodeLocation: async (location: string) => {
     try {
@@ -387,11 +394,19 @@ export const useListingStore = create<ListingStore>((set, get) => ({
         filtered.sort((a, b) => a.title.localeCompare(b.title));
         break;
       case 'distance':
+        // Sort by distance, putting items with distance first (closest first), then items without distance
         filtered.sort((a, b) => {
-          if (!a.distance && !b.distance) return 0;
-          if (!a.distance) return 1;
-          if (!b.distance) return -1;
-          return a.distance - b.distance;
+          if (a.distance !== undefined && b.distance !== undefined) {
+            return a.distance - b.distance;
+          }
+          if (a.distance !== undefined && b.distance === undefined) {
+            return -1; // a comes first (has distance)
+          }
+          if (a.distance === undefined && b.distance !== undefined) {
+            return 1; // b comes first (has distance)
+          }
+          // Both don't have distance, sort by newest
+          return new Date(b.created_at || '').getTime() - new Date(a.created_at || '').getTime();
         });
         break;
       case 'views':
@@ -401,6 +416,23 @@ export const useListingStore = create<ListingStore>((set, get) => ({
         filtered.sort((a, b) => (b.likes || 0) - (a.likes || 0));
         break;
       default:
+        // Default to distance if user location is available, otherwise newest
+        if (userLocation) {
+          filtered.sort((a, b) => {
+            if (a.distance !== undefined && b.distance !== undefined) {
+              return a.distance - b.distance;
+            }
+            if (a.distance !== undefined && b.distance === undefined) {
+              return -1;
+            }
+            if (a.distance === undefined && b.distance !== undefined) {
+              return 1;
+            }
+            return new Date(b.created_at || '').getTime() - new Date(a.created_at || '').getTime();
+          });
+        } else {
+          filtered.sort((a, b) => new Date(b.created_at || '').getTime() - new Date(a.created_at || '').getTime());
+        }
         break;
     }
 
