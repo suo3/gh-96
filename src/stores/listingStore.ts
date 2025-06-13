@@ -1,4 +1,3 @@
-
 import { create } from 'zustand';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -9,7 +8,7 @@ export interface Listing {
   category: string;
   condition: string;
   images?: string[];
-  user_id: string;
+  user_id?: string;
   location?: string;
   wanted_items?: string[];
   status?: string;
@@ -74,12 +73,24 @@ export const useListingStore = create<ListingStore>((set, get) => ({
     try {
       const { data, error } = await supabase
         .from('listings')
-        .select('*')
+        .select(`
+          *,
+          profiles:user_id (
+            username,
+            first_name,
+            last_name,
+            avatar
+          )
+        `)
         .eq('status', 'active')
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase error:', error);
+        throw error;
+      }
 
+      console.log('Fetched listings:', data);
       set({ listings: data || [], loading: false });
     } catch (error) {
       console.error('Error fetching listings:', error);
@@ -93,7 +104,15 @@ export const useListingStore = create<ListingStore>((set, get) => ({
     try {
       const { data, error } = await supabase
         .from('listings')
-        .select('*')
+        .select(`
+          *,
+          profiles:user_id (
+            username,
+            first_name,
+            last_name,
+            avatar
+          )
+        `)
         .eq('user_id', userId)
         .order('created_at', { ascending: false });
 
@@ -110,7 +129,15 @@ export const useListingStore = create<ListingStore>((set, get) => ({
     try {
       const { data, error } = await supabase
         .from('listings')
-        .select('*')
+        .select(`
+          *,
+          profiles:user_id (
+            username,
+            first_name,
+            last_name,
+            avatar
+          )
+        `)
         .eq('user_id', userId)
         .order('created_at', { ascending: false });
 
