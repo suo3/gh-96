@@ -1,4 +1,3 @@
-
 import { create } from 'zustand';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -23,7 +22,12 @@ export interface Listing {
     first_name?: string;
     last_name?: string;
   };
-  hasActiveMessage?: boolean; // Track if user has initiated a message for this item
+  hasActiveMessage?: boolean;
+  coordinates?: {
+    lat: number;
+    lng: number;
+  };
+  distance?: number; // Distance from user in miles
 }
 
 interface ListingStore {
@@ -35,12 +39,16 @@ interface ListingStore {
   selectedCondition: string;
   sortBy: string;
   swapFilter: 'all' | 'swapped' | 'unswapped';
+  maxDistance: number;
+  userLocation: { lat: number; lng: number } | null;
   
   setSearchTerm: (term: string) => void;
   setSelectedCategory: (category: string) => void;
   setSelectedCondition: (condition: string) => void;
   setSortBy: (sort: string) => void;
   setSwapFilter: (filter: 'all' | 'swapped' | 'unswapped') => void;
+  setMaxDistance: (distance: number) => void;
+  setUserLocation: (location: { lat: number; lng: number } | null) => void;
   fetchListings: () => Promise<void>;
   fetchUserListings: (userId: string) => Promise<void>;
   getUserListings: (userId: string) => Promise<Listing[]>;
@@ -50,6 +58,8 @@ interface ListingStore {
   markAsCompleted: (id: string) => Promise<void>;
   markItemAsMessaged: (itemId: string) => void;
   filteredListings: () => Listing[];
+  geocodeLocation: (location: string) => Promise<{ lat: number; lng: number } | null>;
+  calculateDistance: (lat1: number, lng1: number, lat2: number, lng2: number) => number;
 }
 
 export const useListingStore = create<ListingStore>((set, get) => ({
@@ -61,18 +71,58 @@ export const useListingStore = create<ListingStore>((set, get) => ({
   selectedCondition: '',
   sortBy: 'newest',
   swapFilter: 'all',
+  maxDistance: 25, // Default to 25 miles
+  userLocation: null,
 
   setSearchTerm: (term) => set({ searchTerm: term }),
   setSelectedCategory: (category) => set({ selectedCategory: category }),
   setSelectedCondition: (condition) => set({ selectedCondition: condition }),
   setSortBy: (sort) => set({ sortBy: sort }),
   setSwapFilter: (filter) => set({ swapFilter: filter }),
+  setMaxDistance: (distance) => set({ maxDistance: distance }),
+  setUserLocation: (location) => set({ userLocation: location }),
+
+  geocodeLocation: async (location: string) => {
+    try {
+      // Using a simple geocoding approach - in production, you'd want to use a proper geocoding service
+      // For now, we'll use some mock coordinates for common cities
+      const cityCoords: { [key: string]: { lat: number; lng: number } } = {
+        'seattle, wa': { lat: 47.6062, lng: -122.3321 },
+        'new york, ny': { lat: 40.7128, lng: -74.0060 },
+        'los angeles, ca': { lat: 34.0522, lng: -118.2437 },
+        'chicago, il': { lat: 41.8781, lng: -87.6298 },
+        'houston, tx': { lat: 29.7604, lng: -95.3698 },
+        'phoenix, az': { lat: 33.4484, lng: -112.0740 },
+        'philadelphia, pa': { lat: 39.9526, lng: -75.1652 },
+        'san antonio, tx': { lat: 29.4241, lng: -98.4936 },
+        'san diego, ca': { lat: 32.7157, lng: -117.1611 },
+        'dallas, tx': { lat: 32.7767, lng: -96.7970 }
+      };
+
+      const normalizedLocation = location.toLowerCase().trim();
+      return cityCoords[normalizedLocation] || null;
+    } catch (error) {
+      console.error('Error geocoding location:', error);
+      return null;
+    }
+  },
+
+  calculateDistance: (lat1: number, lng1: number, lat2: number, lng2: number) => {
+    const R = 3959; // Radius of the Earth in miles
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLng = (lng2 - lng1) * Math.PI / 180;
+    const a = 
+      Math.sin(dLat/2) * Math.sin(dLat/2) +
+      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+      Math.sin(dLng/2) * Math.sin(dLng/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    return R * c; // Distance in miles
+  },
 
   fetchListings: async () => {
     set({ loading: true, error: null });
     
     try {
-      // Fetch listings without trying to join with profiles since we removed the foreign key
       const { data, error } = await supabase
         .from('listings')
         .select('*')
@@ -86,15 +136,33 @@ export const useListingStore = create<ListingStore>((set, get) => ({
 
       console.log('Fetched listings:', data);
       
-      // Transform the data to include mock profile data for display
-      const transformedListings = (data || []).map(listing => ({
-        ...listing,
-        profiles: {
-          username: 'Anonymous User',
-          first_name: 'Anonymous',
-          last_name: 'User',
-          avatar: 'A'
+      const { geocodeLocation, calculateDistance, userLocation } = get();
+      
+      // Transform the data and add coordinates/distance
+      const transformedListings = await Promise.all((data || []).map(async (listing) => {
+        const coordinates = listing.location ? await geocodeLocation(listing.location) : null;
+        let distance = undefined;
+        
+        if (coordinates && userLocation) {
+          distance = calculateDistance(
+            userLocation.lat, 
+            userLocation.lng, 
+            coordinates.lat, 
+            coordinates.lng
+          );
         }
+
+        return {
+          ...listing,
+          profiles: {
+            username: 'Anonymous User',
+            first_name: 'Anonymous',
+            last_name: 'User',
+            avatar: 'A'
+          },
+          coordinates,
+          distance
+        };
       }));
 
       set({ listings: transformedListings, loading: false });
@@ -258,7 +326,16 @@ export const useListingStore = create<ListingStore>((set, get) => ({
   },
 
   filteredListings: () => {
-    const { listings, searchTerm, selectedCategory, selectedCondition, sortBy, swapFilter } = get();
+    const { 
+      listings, 
+      searchTerm, 
+      selectedCategory, 
+      selectedCondition, 
+      sortBy, 
+      swapFilter,
+      maxDistance,
+      userLocation
+    } = get();
     
     let filtered = [...listings];
 
@@ -274,12 +351,12 @@ export const useListingStore = create<ListingStore>((set, get) => ({
     }
 
     // Apply category filter
-    if (selectedCategory) {
+    if (selectedCategory && selectedCategory !== 'all') {
       filtered = filtered.filter((listing) => listing.category === selectedCategory);
     }
 
     // Apply condition filter
-    if (selectedCondition) {
+    if (selectedCondition && selectedCondition !== 'all') {
       filtered = filtered.filter((listing) => listing.condition === selectedCondition);
     }
 
@@ -288,6 +365,14 @@ export const useListingStore = create<ListingStore>((set, get) => ({
       filtered = filtered.filter((listing) => listing.hasActiveMessage === true);
     } else if (swapFilter === 'unswapped') {
       filtered = filtered.filter((listing) => !listing.hasActiveMessage);
+    }
+
+    // Apply distance filter if user location is available
+    if (userLocation && maxDistance > 0) {
+      filtered = filtered.filter((listing) => {
+        if (!listing.distance) return true; // Include items without location data
+        return listing.distance <= maxDistance;
+      });
     }
 
     // Apply sorting
@@ -300,6 +385,14 @@ export const useListingStore = create<ListingStore>((set, get) => ({
         break;
       case 'title':
         filtered.sort((a, b) => a.title.localeCompare(b.title));
+        break;
+      case 'distance':
+        filtered.sort((a, b) => {
+          if (!a.distance && !b.distance) return 0;
+          if (!a.distance) return 1;
+          if (!b.distance) return -1;
+          return a.distance - b.distance;
+        });
         break;
       case 'views':
         filtered.sort((a, b) => (b.views || 0) - (a.views || 0));

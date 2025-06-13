@@ -28,14 +28,39 @@ const Index = () => {
   const [showFilters, setShowFilters] = useState(!isMobile); // Show filters by default on desktop
   const [userLocation, setUserLocation] = useState("Seattle, WA");
   const { createConversationFromSwipe } = useMessageStore();
-  const { isAuthenticated, canCreateListing, canMakeSwap } = useAuthStore();
-  const { filteredListings, markItemAsMessaged, fetchListings } = useListingStore();
+  const { isAuthenticated, canCreateListing, canMakeSwap, user } = useAuthStore();
+  const { 
+    filteredListings, 
+    markItemAsMessaged, 
+    fetchListings,
+    setUserLocation: setStoreUserLocation,
+    geocodeLocation
+  } = useListingStore();
   const { toast } = useToast();
 
-  // Load listings on component mount
+  // Load listings on component mount and when user location changes
   useEffect(() => {
     fetchListings();
   }, [fetchListings]);
+
+  // Initialize user location from profile
+  useEffect(() => {
+    const initializeLocation = async () => {
+      if (user?.location) {
+        setUserLocation(user.location);
+        const coords = await geocodeLocation(user.location);
+        if (coords) {
+          setStoreUserLocation(coords);
+          // Refetch listings to calculate distances
+          fetchListings();
+        }
+      }
+    };
+    
+    if (isAuthenticated && user) {
+      initializeLocation();
+    }
+  }, [user?.location, isAuthenticated, geocodeLocation, setStoreUserLocation, fetchListings]);
 
   // Update display mode when mobile state changes
   useEffect(() => {
@@ -79,7 +104,7 @@ const Index = () => {
     }
 
     if (direction === 'right') {
-      const conversationId = createConversationFromSwipe(currentItem.title, currentItem.profiles?.username || 'User');
+      const conversationId = createConversationFromSwipe(currentItem.title, currentItem.profiles?.username ||    'User');
       markItemAsMessaged(currentItem.id);
       
       toast({
@@ -167,7 +192,8 @@ const Index = () => {
       location: listing.location || 'Location not specified',
       category: listing.category,
       condition: listing.condition,
-      wantedItems: listing.wanted_items || []
+      wantedItems: listing.wanted_items || [],
+      distance: listing.distance
     };
   };
 
