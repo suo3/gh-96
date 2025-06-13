@@ -1,7 +1,10 @@
+
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { supabase } from '@/integrations/supabase/client';
+import { User, Session } from '@supabase/supabase-js';
 
-export interface User {
+export interface UserProfile {
   id: string;
   email: string;
   username: string;
@@ -18,116 +21,208 @@ export interface User {
 }
 
 interface AuthState {
-  user: User | null;
+  user: UserProfile | null;
+  session: Session | null;
   isAuthenticated: boolean;
+  isLoading: boolean;
   login: (email: string, password: string) => Promise<boolean>;
-  signup: (email: string, password: string, userData: Partial<User>) => Promise<boolean>;
-  logout: () => void;
-  updateProfile: (updates: Partial<User>) => void;
+  signup: (email: string, password: string, userData: Partial<UserProfile>) => Promise<boolean>;
+  logout: () => Promise<void>;
+  updateProfile: (updates: Partial<UserProfile>) => Promise<void>;
   changePassword: (currentPassword: string, newPassword: string) => Promise<boolean>;
   canCreateListing: () => boolean;
   canMakeSwap: () => boolean;
-  upgradeToPremium: () => void;
+  upgradeToPremium: () => Promise<void>;
   processSubscriptionPayment: (planType: 'monthly' | 'yearly') => Promise<boolean>;
+  initialize: () => Promise<void>;
 }
-
-// Dummy users data
-const dummyUsers: User[] = [
-  {
-    id: '1',
-    email: 'john@example.com',
-    username: 'john_doe',
-    firstName: 'John',
-    lastName: 'Doe',
-    location: 'Seattle, WA',
-    membershipType: 'free',
-    joinedDate: new Date('2024-01-15'),
-    rating: 4.5,
-    totalSwaps: 12,
-    monthlyListings: 3,
-    monthlySwaps: 5,
-    avatar: 'J'
-  },
-  {
-    id: '2',
-    email: 'sarah@example.com',
-    username: 'sarah_m',
-    firstName: 'Sarah',
-    lastName: 'Miller',
-    location: 'Portland, OR',
-    membershipType: 'premium',
-    joinedDate: new Date('2023-11-20'),
-    rating: 4.8,
-    totalSwaps: 28,
-    monthlyListings: 15,
-    monthlySwaps: 12,
-    avatar: 'S'
-  }
-];
 
 export const useAuthStore = create<AuthState>()(
   persist(
     (set, get) => ({
       user: null,
+      session: null,
       isAuthenticated: false,
+      isLoading: true,
+
+      initialize: async () => {
+        try {
+          // Get initial session
+          const { data: { session } } = await supabase.auth.getSession();
+          
+          if (session?.user) {
+            // Fetch user profile
+            const { data: profile } = await supabase
+              .from('profiles')
+              .select('*')
+              .eq('id', session.user.id)
+              .single();
+
+            if (profile) {
+              const userProfile: UserProfile = {
+                id: profile.id,
+                email: session.user.email || '',
+                username: profile.username || '',
+                firstName: profile.first_name || '',
+                lastName: profile.last_name || '',
+                location: profile.location || '',
+                membershipType: profile.membership_type as 'free' | 'premium',
+                joinedDate: new Date(profile.joined_date),
+                rating: parseFloat(profile.rating) || 0,
+                totalSwaps: profile.total_swaps || 0,
+                monthlyListings: profile.monthly_listings || 0,
+                monthlySwaps: profile.monthly_swaps || 0,
+                avatar: profile.avatar || ''
+              };
+
+              set({ 
+                user: userProfile, 
+                session, 
+                isAuthenticated: true, 
+                isLoading: false 
+              });
+            }
+          } else {
+            set({ isLoading: false });
+          }
+
+          // Listen for auth changes
+          supabase.auth.onAuthStateChange(async (event, session) => {
+            if (event === 'SIGNED_IN' && session?.user) {
+              const { data: profile } = await supabase
+                .from('profiles')
+                .select('*')
+                .eq('id', session.user.id)
+                .single();
+
+              if (profile) {
+                const userProfile: UserProfile = {
+                  id: profile.id,
+                  email: session.user.email || '',
+                  username: profile.username || '',
+                  firstName: profile.first_name || '',
+                  lastName: profile.last_name || '',
+                  location: profile.location || '',
+                  membershipType: profile.membership_type as 'free' | 'premium',
+                  joinedDate: new Date(profile.joined_date),
+                  rating: parseFloat(profile.rating) || 0,
+                  totalSwaps: profile.total_swaps || 0,
+                  monthlyListings: profile.monthly_listings || 0,
+                  monthlySwaps: profile.monthly_swaps || 0,
+                  avatar: profile.avatar || ''
+                };
+
+                set({ 
+                  user: userProfile, 
+                  session, 
+                  isAuthenticated: true 
+                });
+              }
+            } else if (event === 'SIGNED_OUT') {
+              set({ 
+                user: null, 
+                session: null, 
+                isAuthenticated: false 
+              });
+            }
+          });
+        } catch (error) {
+          console.error('Auth initialization error:', error);
+          set({ isLoading: false });
+        }
+      },
 
       login: async (email: string, password: string) => {
-        // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
-        const user = dummyUsers.find(u => u.email === email);
-        if (user && password === 'password123') {
-          set({ user, isAuthenticated: true });
+        try {
+          const { data, error } = await supabase.auth.signInWithPassword({
+            email,
+            password,
+          });
+
+          if (error) {
+            console.error('Login error:', error);
+            return false;
+          }
+
           return true;
+        } catch (error) {
+          console.error('Login error:', error);
+          return false;
         }
-        return false;
       },
 
-      signup: async (email: string, password: string, userData: Partial<User>) => {
-        // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
-        const newUser: User = {
-          id: Math.random().toString(36).substr(2, 9),
-          email,
-          username: userData.username || email.split('@')[0],
-          firstName: userData.firstName || '',
-          lastName: userData.lastName || '',
-          location: userData.location || '',
-          membershipType: 'free',
-          joinedDate: new Date(),
-          rating: 0,
-          totalSwaps: 0,
-          monthlyListings: 0,
-          monthlySwaps: 0,
-          avatar: userData.firstName?.charAt(0) || email.charAt(0).toUpperCase()
-        };
-        
-        set({ user: newUser, isAuthenticated: true });
-        return true;
+      signup: async (email: string, password: string, userData: Partial<UserProfile>) => {
+        try {
+          const redirectUrl = `${window.location.origin}/`;
+          
+          const { data, error } = await supabase.auth.signUp({
+            email,
+            password,
+            options: {
+              emailRedirectTo: redirectUrl,
+              data: {
+                username: userData.username,
+                first_name: userData.firstName,
+                last_name: userData.lastName,
+                location: userData.location,
+              }
+            }
+          });
+
+          if (error) {
+            console.error('Signup error:', error);
+            return false;
+          }
+
+          return true;
+        } catch (error) {
+          console.error('Signup error:', error);
+          return false;
+        }
       },
 
-      logout: () => {
-        set({ user: null, isAuthenticated: false });
+      logout: async () => {
+        try {
+          await supabase.auth.signOut();
+        } catch (error) {
+          console.error('Logout error:', error);
+        }
       },
 
-      updateProfile: (updates: Partial<User>) => {
+      updateProfile: async (updates: Partial<UserProfile>) => {
         const { user } = get();
-        if (user) {
-          set({ user: { ...user, ...updates } });
+        if (!user) return;
+
+        try {
+          const { error } = await supabase
+            .from('profiles')
+            .update({
+              username: updates.username,
+              first_name: updates.firstName,
+              last_name: updates.lastName,
+              location: updates.location,
+            })
+            .eq('id', user.id);
+
+          if (!error) {
+            set({ user: { ...user, ...updates } });
+          }
+        } catch (error) {
+          console.error('Profile update error:', error);
         }
       },
 
       changePassword: async (currentPassword: string, newPassword: string) => {
-        // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
-        // In a real implementation, you would verify the current password
-        // For demo purposes, we'll just simulate success
-        if (currentPassword === 'password123') {
-          return true;
+        try {
+          const { error } = await supabase.auth.updateUser({
+            password: newPassword
+          });
+
+          return !error;
+        } catch (error) {
+          console.error('Password change error:', error);
+          return false;
         }
-        return false;
       },
 
       canCreateListing: () => {
@@ -144,10 +239,21 @@ export const useAuthStore = create<AuthState>()(
         return user.monthlySwaps < 20;
       },
 
-      upgradeToPremium: () => {
+      upgradeToPremium: async () => {
         const { user } = get();
-        if (user) {
-          set({ user: { ...user, membershipType: 'premium' } });
+        if (!user) return;
+
+        try {
+          const { error } = await supabase
+            .from('profiles')
+            .update({ membership_type: 'premium' })
+            .eq('id', user.id);
+
+          if (!error) {
+            set({ user: { ...user, membershipType: 'premium' } });
+          }
+        } catch (error) {
+          console.error('Upgrade error:', error);
         }
       },
 
@@ -157,7 +263,7 @@ export const useAuthStore = create<AuthState>()(
         
         const { user } = get();
         if (user) {
-          set({ user: { ...user, membershipType: 'premium' } });
+          await get().upgradeToPremium();
           return true;
         }
         return false;
@@ -165,6 +271,10 @@ export const useAuthStore = create<AuthState>()(
     }),
     {
       name: 'auth-storage',
+      partialize: (state) => ({ 
+        user: state.user,
+        isAuthenticated: state.isAuthenticated 
+      }),
     }
   )
 );

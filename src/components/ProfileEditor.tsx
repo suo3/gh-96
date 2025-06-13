@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -16,14 +16,25 @@ export const ProfileEditor = () => {
   const { toast } = useToast();
   
   const [formData, setFormData] = useState({
-    firstName: user?.firstName || '',
-    lastName: user?.lastName || '',
-    username: user?.username || '',
-    location: user?.location || ''
+    firstName: '',
+    lastName: '',
+    username: '',
+    location: ''
   });
 
-  const handleSave = () => {
-    updateProfile(formData);
+  useEffect(() => {
+    if (user) {
+      setFormData({
+        firstName: user.firstName || '',
+        lastName: user.lastName || '',
+        username: user.username || '',
+        location: user.location || ''
+      });
+    }
+  }, [user]);
+
+  const handleSave = async () => {
+    await updateProfile(formData);
     toast({
       title: "Profile Updated",
       description: "Your profile has been successfully updated.",

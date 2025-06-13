@@ -46,7 +46,7 @@ export const LoginDialog = ({ open, onOpenChange }: LoginDialogProps) => {
       } else {
         toast({
           title: "Login failed",
-          description: "Invalid email or password. Try: john@example.com / password123",
+          description: "Invalid email or password.",
           variant: "destructive"
         });
       }
@@ -73,6 +73,15 @@ export const LoginDialog = ({ open, onOpenChange }: LoginDialogProps) => {
       return;
     }
 
+    if (signupForm.password.length < 6) {
+      toast({
+        title: "Password too short",
+        description: "Password must be at least 6 characters long.",
+        variant: "destructive"
+      });
+      return;
+    }
+
     setIsLoading(true);
 
     try {
@@ -86,7 +95,7 @@ export const LoginDialog = ({ open, onOpenChange }: LoginDialogProps) => {
       if (success) {
         toast({
           title: "Account created!",
-          description: "Welcome to SwapBoard!",
+          description: "Please check your email to verify your account.",
         });
         onOpenChange(false);
         setSignupForm({
@@ -97,6 +106,12 @@ export const LoginDialog = ({ open, onOpenChange }: LoginDialogProps) => {
           lastName: '',
           username: '',
           location: ''
+        });
+      } else {
+        toast({
+          title: "Signup failed",
+          description: "Please try again or check if the email is already in use.",
+          variant: "destructive"
         });
       }
     } catch (error) {
@@ -130,7 +145,7 @@ export const LoginDialog = ({ open, onOpenChange }: LoginDialogProps) => {
                 <Input
                   id="email"
                   type="email"
-                  placeholder="john@example.com"
+                  placeholder="your@email.com"
                   value={loginForm.email}
                   onChange={(e) => setLoginForm(prev => ({ ...prev, email: e.target.value }))}
                   required
@@ -141,7 +156,7 @@ export const LoginDialog = ({ open, onOpenChange }: LoginDialogProps) => {
                 <Input
                   id="password"
                   type="password"
-                  placeholder="password123"
+                  placeholder="Your password"
                   value={loginForm.password}
                   onChange={(e) => setLoginForm(prev => ({ ...prev, password: e.target.value }))}
                   required
@@ -161,7 +176,7 @@ export const LoginDialog = ({ open, onOpenChange }: LoginDialogProps) => {
                   <Label htmlFor="firstName">First Name</Label>
                   <Input
                     id="firstName"
-                    value={signupForm.firstName}
+                    value={signup Form.firstName}
                     onChange={(e) => setSignupForm(prev => ({ ...prev, firstName: e.target.value }))}
                     required
                   />

@@ -9,7 +9,197 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      conversations: {
+        Row: {
+          created_at: string | null
+          id: string
+          item_title: string | null
+          updated_at: string | null
+          user1_id: string
+          user2_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          item_title?: string | null
+          updated_at?: string | null
+          user1_id: string
+          user2_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          item_title?: string | null
+          updated_at?: string | null
+          user1_id?: string
+          user2_id?: string
+        }
+        Relationships: []
+      }
+      listings: {
+        Row: {
+          category: string
+          condition: string
+          created_at: string | null
+          description: string | null
+          id: string
+          images: string[] | null
+          likes: number | null
+          location: string | null
+          status: string | null
+          title: string
+          updated_at: string | null
+          user_id: string
+          views: number | null
+          wanted_items: string[] | null
+        }
+        Insert: {
+          category: string
+          condition: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          images?: string[] | null
+          likes?: number | null
+          location?: string | null
+          status?: string | null
+          title: string
+          updated_at?: string | null
+          user_id: string
+          views?: number | null
+          wanted_items?: string[] | null
+        }
+        Update: {
+          category?: string
+          condition?: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          images?: string[] | null
+          likes?: number | null
+          location?: string | null
+          status?: string | null
+          title?: string
+          updated_at?: string | null
+          user_id?: string
+          views?: number | null
+          wanted_items?: string[] | null
+        }
+        Relationships: []
+      }
+      messages: {
+        Row: {
+          content: string
+          conversation_id: string
+          created_at: string | null
+          id: string
+          sender_id: string
+        }
+        Insert: {
+          content: string
+          conversation_id: string
+          created_at?: string | null
+          id?: string
+          sender_id: string
+        }
+        Update: {
+          content?: string
+          conversation_id?: string
+          created_at?: string | null
+          id?: string
+          sender_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          avatar: string | null
+          created_at: string | null
+          first_name: string | null
+          id: string
+          joined_date: string | null
+          last_name: string | null
+          location: string | null
+          membership_type: string | null
+          monthly_listings: number | null
+          monthly_swaps: number | null
+          rating: number | null
+          total_swaps: number | null
+          updated_at: string | null
+          username: string | null
+        }
+        Insert: {
+          avatar?: string | null
+          created_at?: string | null
+          first_name?: string | null
+          id: string
+          joined_date?: string | null
+          last_name?: string | null
+          location?: string | null
+          membership_type?: string | null
+          monthly_listings?: number | null
+          monthly_swaps?: number | null
+          rating?: number | null
+          total_swaps?: number | null
+          updated_at?: string | null
+          username?: string | null
+        }
+        Update: {
+          avatar?: string | null
+          created_at?: string | null
+          first_name?: string | null
+          id?: string
+          joined_date?: string | null
+          last_name?: string | null
+          location?: string | null
+          membership_type?: string | null
+          monthly_listings?: number | null
+          monthly_swaps?: number | null
+          rating?: number | null
+          total_swaps?: number | null
+          updated_at?: string | null
+          username?: string | null
+        }
+        Relationships: []
+      }
+      ratings: {
+        Row: {
+          comment: string | null
+          created_at: string | null
+          id: string
+          item_title: string | null
+          rated_user_id: string
+          rater_user_id: string
+          rating: number
+        }
+        Insert: {
+          comment?: string | null
+          created_at?: string | null
+          id?: string
+          item_title?: string | null
+          rated_user_id: string
+          rater_user_id: string
+          rating: number
+        }
+        Update: {
+          comment?: string | null
+          created_at?: string | null
+          id?: string
+          item_title?: string | null
+          rated_user_id?: string
+          rater_user_id?: string
+          rating?: number
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

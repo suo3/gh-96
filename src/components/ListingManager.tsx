@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -12,33 +12,55 @@ export const ListingManager = () => {
   const { user } = useAuthStore();
   const { getUserListings, markAsCompleted, deleteListing, updateListing } = useListingStore();
   const { toast } = useToast();
-  
-  const userListings = user ? getUserListings(user.id) : [];
+  const [userListings, setUserListings] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const handleMarkComplete = (id: string, title: string) => {
-    markAsCompleted(id);
+  useEffect(() => {
+    if (user) {
+      loadUserListings();
+    }
+  }, [user]);
+
+  const loadUserListings = async () => {
+    if (!user) return;
+    
+    setIsLoading(true);
+    const listings = await getUserListings(user.id);
+    setUserListings(listings);
+    setIsLoading(false);
+  };
+
+  const handleMarkComplete = async (id: string, title: string) => {
+    await markAsCompleted(id);
+    await loadUserListings();
     toast({
       title: "Listing Completed",
       description: `${title} has been marked as completed.`,
     });
   };
 
-  const handleDelete = (id: string, title: string) => {
-    deleteListing(id);
+  const handleDelete = async (id: string, title: string) => {
+    await deleteListing(id);
+    await loadUserListings();
     toast({
       title: "Listing Deleted",
       description: `${title} has been deleted.`,
     });
   };
 
-  const handleToggleStatus = (id: string, currentStatus: string, title: string) => {
+  const handleToggleStatus = async (id: string, currentStatus: string, title: string) => {
     const newStatus = currentStatus === 'active' ? 'paused' : 'active';
-    updateListing(id, { status: newStatus as 'active' | 'paused' });
+    await updateListing(id, { status: newStatus as 'active' | 'paused' });
+    await loadUserListings();
     toast({
       title: `Listing ${newStatus === 'active' ? 'Resumed' : 'Paused'}`,
       description: `${title} is now ${newStatus}.`,
     });
   };
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <div className="space-y-6">
@@ -96,7 +118,7 @@ export const ListingManager = () => {
                   <div className="space-y-2">
                     <p className="text-sm font-medium">Looking for:</p>
                     <div className="flex flex-wrap gap-2">
-                      {listing.wantedItems.map((item, index) => (
+                      {listing.wantedItems.map((item: string, index: number) => (
                         <Badge key={index} variant="outline" className="text-xs">
                           {item}
                         </Badge>
