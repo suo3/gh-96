@@ -10,60 +10,103 @@ export interface Listing {
   condition: string;
   images: string[];
   userId: string;
-  userName: string;
-  userAvatar: string;
   location: string;
   wantedItems: string[];
   status: 'active' | 'completed' | 'paused';
-  createdAt: Date;
-  updatedAt: Date;
   views: number;
   likes: number;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 interface ListingState {
   listings: Listing[];
   isLoading: boolean;
-  createListing: (listing: Omit<Listing, 'id' | 'createdAt' | 'updatedAt' | 'views' | 'likes' | 'userName' | 'userAvatar'>) => Promise<string | null>;
+  searchQuery: string;
+  selectedCategory: string;
+  fetchListings: () => Promise<void>;
+  createListing: (listing: Omit<Listing, 'id' | 'createdAt' | 'updatedAt' | 'views' | 'likes'>) => Promise<void>;
   updateListing: (id: string, updates: Partial<Listing>) => Promise<void>;
   deleteListing: (id: string) => Promise<void>;
-  markAsCompleted: (id: string) => Promise<void>;
   getUserListings: (userId: string) => Promise<Listing[]>;
-  getAllListings: () => Promise<void>;
+  markAsCompleted: (id: string) => Promise<void>;
+  setSearchQuery: (query: string) => void;
+  setSelectedCategory: (category: string) => void;
 }
 
 export const useListingStore = create<ListingState>((set, get) => ({
   listings: [],
   isLoading: false,
+  searchQuery: '',
+  selectedCategory: '',
 
-  createListing: async (listingData) => {
+  fetchListings: async () => {
+    set({ isLoading: true });
     try {
       const { data, error } = await supabase
         .from('listings')
-        .insert({
-          title: listingData.title,
-          description: listingData.description,
-          category: listingData.category,
-          condition: listingData.condition,
-          images: listingData.images,
-          user_id: listingData.userId,
-          location: listingData.location,
-          wanted_items: listingData.wantedItems,
-        })
+        .select(`
+          *,
+          profiles:user_id (
+            username,
+            first_name,
+            last_name,
+            avatar
+          )
+        `)
+        .eq('status', 'active')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      const listings: Listing[] = data.map((item: any) => ({
+        id: item.id,
+        title: item.title,
+        description: item.description,
+        category: item.category,
+        condition: item.condition,
+        images: item.images || [],
+        userId: item.user_id,
+        location: item.location,
+        wantedItems: item.wanted_items || [],
+        status: item.status,
+        views: item.views,
+        likes: item.likes,
+        createdAt: new Date(item.created_at),
+        updatedAt: new Date(item.updated_at)
+      }));
+
+      set({ listings, isLoading: false });
+    } catch (error) {
+      console.error('Error fetching listings:', error);
+      set({ isLoading: false });
+    }
+  },
+
+  createListing: async (listing) => {
+    try {
+      const { data, error } = await supabase
+        .from('listings')
+        .insert([{
+          title: listing.title,
+          description: listing.description,
+          category: listing.category,
+          condition: listing.condition,
+          images: listing.images,
+          user_id: listing.userId,
+          location: listing.location,
+          wanted_items: listing.wantedItems,
+          status: listing.status
+        }])
         .select()
         .single();
 
-      if (error) {
-        console.error('Create listing error:', error);
-        return null;
-      }
+      if (error) throw error;
 
-      // Refresh listings
-      await get().getAllListings();
-      return data.id;
+      await get().fetchListings();
     } catch (error) {
-      console.error('Create listing error:', error);
-      return null;
+      console.error('Error creating listing:', error);
+      throw error;
     }
   },
 
@@ -74,15 +117,21 @@ export const useListingStore = create<ListingState>((set, get) => ({
         .update({
           title: updates.title,
           description: updates.description,
-          status: updates.status,
+          category: updates.category,
+          condition: updates.condition,
+          images: updates.images,
+          location: updates.location,
+          wanted_items: updates.wantedItems,
+          status: updates.status
         })
         .eq('id', id);
 
-      if (!error) {
-        await get().getAllListings();
-      }
+      if (error) throw error;
+
+      await get().fetchListings();
     } catch (error) {
-      console.error('Update listing error:', error);
+      console.error('Error updating listing:', error);
+      throw error;
     }
   },
 
@@ -93,13 +142,44 @@ export const useListingStore = create<ListingState>((set, get) => ({
         .delete()
         .eq('id', id);
 
-      if (!error) {
-        set(state => ({
-          listings: state.listings.filter(listing => listing.id !== id)
-        }));
-      }
+      if (error) throw error;
+
+      await get().fetchListings();
     } catch (error) {
-      console.error('Delete listing error:', error);
+      console.error('Error deleting listing:', error);
+      throw error;
+    }
+  },
+
+  getUserListings: async (userId) => {
+    try {
+      const { data, error } = await supabase
+        .from('listings')
+        .select('*')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      return data.map((item: any) => ({
+        id: item.id,
+        title: item.title,
+        description: item.description,
+        category: item.category,
+        condition: item.condition,
+        images: item.images || [],
+        userId: item.user_id,
+        location: item.location,
+        wantedItems: item.wanted_items || [],
+        status: item.status,
+        views: item.views,
+        likes: item.likes,
+        createdAt: new Date(item.created_at),
+        updatedAt: new Date(item.updated_at)
+      }));
+    } catch (error) {
+      console.error('Error fetching user listings:', error);
+      return [];
     }
   },
 
@@ -107,97 +187,6 @@ export const useListingStore = create<ListingState>((set, get) => ({
     await get().updateListing(id, { status: 'completed' });
   },
 
-  getUserListings: async (userId) => {
-    try {
-      const { data, error } = await supabase
-        .from('listings')
-        .select(`
-          *,
-          profiles!listings_user_id_fkey (
-            username,
-            first_name,
-            last_name,
-            avatar
-          )
-        `)
-        .eq('user_id', userId)
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        console.error('Get user listings error:', error);
-        return [];
-      }
-
-      return data.map(item => ({
-        id: item.id,
-        title: item.title,
-        description: item.description || '',
-        category: item.category,
-        condition: item.condition,
-        images: item.images || [],
-        userId: item.user_id,
-        userName: item.profiles?.username || 'Anonymous',
-        userAvatar: item.profiles?.avatar || 'U',
-        location: item.location || '',
-        wantedItems: item.wanted_items || [],
-        status: item.status as 'active' | 'completed' | 'paused',
-        createdAt: new Date(item.created_at),
-        updatedAt: new Date(item.updated_at),
-        views: item.views || 0,
-        likes: item.likes || 0,
-      }));
-    } catch (error) {
-      console.error('Get user listings error:', error);
-      return [];
-    }
-  },
-
-  getAllListings: async () => {
-    set({ isLoading: true });
-    try {
-      const { data, error } = await supabase
-        .from('listings')
-        .select(`
-          *,
-          profiles!listings_user_id_fkey (
-            username,
-            first_name,
-            last_name,
-            avatar
-          )
-        `)
-        .eq('status', 'active')
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        console.error('Get all listings error:', error);
-        return;
-      }
-
-      const listings = data.map(item => ({
-        id: item.id,
-        title: item.title,
-        description: item.description || '',
-        category: item.category,
-        condition: item.condition,
-        images: item.images || [],
-        userId: item.user_id,
-        userName: item.profiles?.username || 'Anonymous',
-        userAvatar: item.profiles?.avatar || 'U',
-        location: item.location || '',
-        wantedItems: item.wanted_items || [],
-        status: item.status as 'active' | 'completed' | 'paused',
-        createdAt: new Date(item.created_at),
-        updatedAt: new Date(item.updated_at),
-        views: item.views || 0,
-        likes: item.likes || 0,
-      }));
-
-      set({ listings });
-    } catch (error) {
-      console.error('Get all listings error:', error);
-    } finally {
-      set({ isLoading: false });
-    }
-  },
+  setSearchQuery: (query) => set({ searchQuery: query }),
+  setSelectedCategory: (category) => set({ selectedCategory: category })
 }));

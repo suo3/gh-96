@@ -47,11 +47,9 @@ export const useAuthStore = create<AuthState>()(
 
       initialize: async () => {
         try {
-          // Get initial session
           const { data: { session } } = await supabase.auth.getSession();
           
           if (session?.user) {
-            // Fetch user profile
             const { data: profile } = await supabase
               .from('profiles')
               .select('*')
@@ -86,7 +84,6 @@ export const useAuthStore = create<AuthState>()(
             set({ isLoading: false });
           }
 
-          // Listen for auth changes
           supabase.auth.onAuthStateChange(async (event, session) => {
             if (event === 'SIGNED_IN' && session?.user) {
               const { data: profile } = await supabase
@@ -258,15 +255,20 @@ export const useAuthStore = create<AuthState>()(
       },
 
       processSubscriptionPayment: async (planType: 'monthly' | 'yearly') => {
-        // Simulate payment processing
-        await new Promise(resolve => setTimeout(resolve, 2000));
-        
-        const { user } = get();
-        if (user) {
-          await get().upgradeToPremium();
-          return true;
+        try {
+          const { data, error } = await supabase.functions.invoke('create-checkout');
+          
+          if (error) throw error;
+          
+          if (data.url) {
+            window.open(data.url, '_blank');
+            return true;
+          }
+          return false;
+        } catch (error) {
+          console.error('Payment processing error:', error);
+          return false;
         }
-        return false;
       }
     }),
     {

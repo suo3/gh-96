@@ -1,382 +1,253 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, MessageCircle, Heart, X, RotateCcw, Plus, User, Filter } from "lucide-react";
-import { SwipeCard } from "@/components/SwipeCard";
-import { ViewToggle } from "@/components/ViewToggle";
-import { FilterPanel } from "@/components/FilterPanel";
-import { ItemGrid } from "@/components/ItemGrid";
-import { ItemList } from "@/components/ItemList";
-import { PostItemDialog } from "@/components/PostItemDialog";
-import { UserProfile } from "@/components/UserProfile";
-import { MessagesPanel } from "@/components/MessagesPanel";
-import { AuthButton } from "@/components/AuthButton";
 import { LoginDialog } from "@/components/LoginDialog";
-import { useMessageStore } from "@/stores/messageStore";
+import { UserProfile } from "@/components/UserProfile";
 import { useAuthStore } from "@/stores/authStore";
+import { useListingStore } from "@/stores/listingStore";
+import { Search, Plus, User, LogOut, Filter, Grid, List } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 
 const Index = () => {
-  const [currentView, setCurrentView] = useState("discover");
-  const [displayMode, setDisplayMode] = useState<"swipe" | "grid" | "list">("swipe");
-  const [showPostDialog, setShowPostDialog] = useState(false);
-  const [showLoginDialog, setShowLoginDialog] = useState(false);
-  const [showFilters, setShowFilters] = useState(false);
-  const [userLocation, setUserLocation] = useState("Seattle, WA");
-  const { createConversationFromSwipe } = useMessageStore();
-  const { isAuthenticated, canCreateListing, canMakeSwap } = useAuthStore();
+  const { user, isAuthenticated, logout, isLoading } = useAuthStore();
+  const { listings, fetchListings, searchQuery, setSearchQuery, selectedCategory, setSelectedCategory } = useListingStore();
   const { toast } = useToast();
+  
+  const [showLoginDialog, setShowLoginDialog] = useState(false);
+  const [showProfile, setShowProfile] = useState(false);
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
-  // Mock data for demonstration
-  const mockItems = [
-    {
-      id: 1,
-      title: "Vintage Coffee Maker",
-      description: "Great condition, just upgraded to a newer model",
-      image: "https://images.unsplash.com/photo-1649972904349-6e44c42644a7?w=400&h=300&fit=crop",
-      user: "Sarah M.",
-      location: "0.8 miles away",
-      category: "Kitchen",
-      condition: "Like New",
-      wantedItems: ["Books", "Plants", "Open to offers"]
-    },
-    {
-      id: 2,
-      title: "Programming Books Collection",
-      description: "React, JavaScript, and Python books - perfect for learning",
-      image: "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?w=400&h=300&fit=crop",
-      user: "Mike K.",
-      location: "1.2 miles away",
-      category: "Books",
-      condition: "Good",
-      wantedItems: ["Electronics", "Kitchen items"]
-    },
-    {
-      id: 3,
-      title: "Yoga Mat & Blocks",
-      description: "Barely used yoga set, perfect for home workouts",
-      image: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=400&h=300&fit=crop",
-      user: "Emma L.",
-      location: "0.5 miles away",
-      category: "Fitness",
-      condition: "Like New",
-      wantedItems: ["Home decor", "Books"]
-    },
-    {
-      id: 4,
-      title: "Acoustic Guitar",
-      description: "Beautiful sound, includes case and picks",
-      image: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=300&fit=crop",
-      user: "Jake R.",
-      location: "2.1 miles away",
-      category: "Electronics",
-      condition: "Good",
-      wantedItems: ["Books", "Kitchen items"]
-    }
-  ];
+  const categories = ['All', 'Electronics', 'Books', 'Kitchen', 'Sports', 'Clothing', 'Garden', 'Music', 'Art'];
 
-  const [items, setItems] = useState(mockItems);
-  const [currentItemIndex, setCurrentItemIndex] = useState(0);
-  const [filteredItems, setFilteredItems] = useState(mockItems);
+  useEffect(() => {
+    fetchListings();
+  }, []);
 
-  const handleSwipe = (direction: 'left' | 'right') => {
-    if (!isAuthenticated) {
-      setShowLoginDialog(true);
-      return;
-    }
-
-    if (!canMakeSwap()) {
-      toast({
-        title: "Swap Limit Reached",
-        description: "You've reached your monthly swap limit. Upgrade to Premium for unlimited swaps!",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    if (direction === 'right') {
-      const currentItem = items[currentItemIndex];
-      const conversationId = createConversationFromSwipe(currentItem.title, currentItem.user);
-      
-      toast({
-        title: "Match Created!",
-        description: `You've shown interest in ${currentItem.title}! A conversation has been started with ${currentItem.user}.`,
-      });
-    }
+  const filteredListings = listings.filter(listing => {
+    const matchesSearch = !searchQuery || 
+      listing.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      listing.description.toLowerCase().includes(searchQuery.toLowerCase());
     
-    if (currentItemIndex < items.length - 1) {
-      setCurrentItemIndex(currentItemIndex + 1);
-    } else {
-      setCurrentItemIndex(0);
-    }
-  };
+    const matchesCategory = !selectedCategory || selectedCategory === 'All' || 
+      listing.category === selectedCategory;
+    
+    return matchesSearch && matchesCategory;
+  });
 
-  const handleItemLike = (item: any) => {
-    if (!isAuthenticated) {
-      setShowLoginDialog(true);
-      return;
-    }
-
-    if (!canMakeSwap()) {
-      toast({
-        title: "Swap Limit Reached",
-        description: "You've reached your monthly swap limit. Upgrade to Premium for unlimited swaps!",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    const conversationId = createConversationFromSwipe(item.title, item.user);
+  const handleLogout = async () => {
+    await logout();
     toast({
-      title: "Interest Sent!",
-      description: `You've expressed interest in ${item.title}. A conversation has been started with ${item.user}.`,
+      title: "Logged out",
+      description: "You've been successfully logged out.",
     });
   };
 
-  const handlePostItem = () => {
-    if (!isAuthenticated) {
-      setShowLoginDialog(true);
-      return;
-    }
-
-    if (!canCreateListing()) {
-      toast({
-        title: "Listing Limit Reached",
-        description: "You've reached your monthly listing limit. Upgrade to Premium for unlimited listings!",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    setShowPostDialog(true);
-  };
-
-  const handleFilterChange = (filters: any) => {
-    let filtered = mockItems;
-
-    if (filters.category !== "all") {
-      filtered = filtered.filter(item => item.category === filters.category);
-    }
-
-    if (filters.condition !== "all") {
-      filtered = filtered.filter(item => item.condition === filters.condition);
-    }
-
-    setFilteredItems(filtered);
-  };
-
-  const resetStack = () => {
-    setCurrentItemIndex(0);
-  };
-
-  if (currentView === "messages") {
-    if (!isAuthenticated) {
-      setShowLoginDialog(true);
-      setCurrentView("discover");
-      return null;
-    }
-    return <MessagesPanel onBack={() => setCurrentView("discover")} />;
-  }
-
-  if (currentView === "profile") {
-    if (!isAuthenticated) {
-      setShowLoginDialog(true);
-      setCurrentView("discover");
-      return null;
-    }
-    return <UserProfile onBack={() => setCurrentView("discover")} />;
-  }
-
-  if (currentView === "discover") {
+  if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50">
-        {/* Header */}
-        <header className="bg-white/90 backdrop-blur-sm border-b border-emerald-100 sticky top-0 z-50 shadow-sm">
-          <div className="container mx-auto px-4 py-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-500 rounded-xl flex items-center justify-center shadow-lg">
-                  <RotateCcw className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <h1 className="text-xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">SwapBoard</h1>
-                  <div className="flex items-center text-sm text-gray-600">
-                    <MapPin className="w-4 h-4 mr-1" />
-                    {userLocation}
-                  </div>
-                </div>
-              </div>
-              <div className="flex items-center space-x-3">
-                {/* View Toggle */}
-                <ViewToggle currentView={displayMode} onViewChange={setDisplayMode} />
-                
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => setShowFilters(!showFilters)}
-                  className={`${showFilters ? 'bg-emerald-100 text-emerald-600' : ''}`}
-                >
-                  <Filter className="w-5 h-5" />
-                </Button>
-                
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => isAuthenticated ? setCurrentView("messages") : setShowLoginDialog(true)}
-                  className="relative"
-                >
-                  <MessageCircle className="w-5 h-5" />
-                  {isAuthenticated && (
-                    <Badge className="absolute -top-1 -right-1 w-5 h-5 p-0 flex items-center justify-center bg-red-500 text-xs">
-                      3
-                    </Badge>
-                  )}
-                </Button>
-                
-                <AuthButton
-                  onLogin={() => setShowLoginDialog(true)}
-                  onProfile={() => setCurrentView("profile")}
-                />
-                
-                <Button
-                  onClick={handlePostItem}
-                  className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 shadow-lg"
-                >
-                  <Plus className="w-4 h-4 mr-2" />
-                  Post Item
-                </Button>
-              </div>
-            </div>
-          </div>
-        </header>
-
-        {/* Main Content */}
-        <main className="container mx-auto px-4 py-8">
-          {/* Filters */}
-          <FilterPanel 
-            onFilterChange={handleFilterChange}
-            isVisible={showFilters && displayMode !== "swipe"}
-          />
-
-          {displayMode === "swipe" && (
-            <>
-              <div className="text-center mb-8">
-                <h2 className="text-3xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent mb-2">
-                  Discover Amazing Items Nearby
-                </h2>
-                <p className="text-gray-600 max-w-2xl mx-auto">
-                  Swipe right on items you'd love to swap for, left to pass. 
-                  When both users like each other's items, you'll be matched to chat!
-                </p>
-              </div>
-
-              {/* Swipe Cards Area */}
-              <div className="max-w-md mx-auto">
-                <div className="relative h-[600px] flex items-center justify-center">
-                  {items.length > 0 && currentItemIndex < items.length ? (
-                    <SwipeCard
-                      item={items[currentItemIndex]}
-                      nextItem={currentItemIndex + 1 < items.length ? items[currentItemIndex + 1] : undefined}
-                      onSwipe={handleSwipe}
-                      key={`${items[currentItemIndex].id}-${currentItemIndex}`}
-                    />
-                  ) : (
-                    <Card className="w-full h-96 flex items-center justify-center border-2 border-dashed border-emerald-300">
-                      <CardContent className="text-center">
-                        <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                          <RotateCcw className="w-8 h-8 text-emerald-500" />
-                        </div>
-                        <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                          That's all for now!
-                        </h3>
-                        <p className="text-gray-600 mb-4">
-                          You've seen all available items in your area.
-                        </p>
-                        <Button onClick={resetStack} variant="outline" className="border-emerald-200">
-                          <RotateCcw className="w-4 h-4 mr-2" />
-                          Start Over
-                        </Button>
-                      </CardContent>
-                    </Card>
-                  )}
-                </div>
-
-                {/* Action Buttons */}
-                {items.length > 0 && currentItemIndex < items.length && (
-                  <div className="flex justify-center space-x-6 mt-6">
-                    <Button
-                      variant="outline"
-                      size="lg"
-                      className="w-16 h-16 rounded-full border-red-200 hover:bg-red-50 hover:border-red-300 shadow-lg"
-                      onClick={() => handleSwipe('left')}
-                    >
-                      <X className="w-8 h-8 text-red-500" />
-                    </Button>
-                    <Button
-                      size="lg"
-                      className="w-16 h-16 rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 shadow-lg"
-                      onClick={() => handleSwipe('right')}
-                    >
-                      <Heart className="w-8 h-8 text-white" />
-                    </Button>
-                  </div>
-                )}
-
-                {/* Swipe Counter */}
-                <div className="text-center mt-4">
-                  <Badge variant="secondary" className="text-sm bg-emerald-100 text-emerald-800">
-                    {Math.max(0, items.length - currentItemIndex)} items remaining today
-                  </Badge>
-                </div>
-              </div>
-            </>
-          )}
-
-          {displayMode === "grid" && (
-            <>
-              <div className="text-center mb-8">
-                <h2 className="text-2xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent mb-2">
-                  Browse Items
-                </h2>
-                <p className="text-gray-600">
-                  {filteredItems.length} item{filteredItems.length !== 1 ? 's' : ''} found
-                </p>
-              </div>
-              <ItemGrid items={filteredItems} onItemLike={handleItemLike} />
-            </>
-          )}
-
-          {displayMode === "list" && (
-            <>
-              <div className="text-center mb-8">
-                <h2 className="text-2xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent mb-2">
-                  Browse Items
-                </h2>
-                <p className="text-gray-600">
-                  {filteredItems.length} item{filteredItems.length !== 1 ? 's' : ''} found
-                </p>
-              </div>
-              <ItemList items={filteredItems} onItemLike={handleItemLike} />
-            </>
-          )}
-        </main>
-
-        <PostItemDialog 
-          open={showPostDialog} 
-          onOpenChange={setShowPostDialog} 
-        />
-
-        <LoginDialog
-          open={showLoginDialog}
-          onOpenChange={setShowLoginDialog}
-        />
+      <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-emerald-500 mx-auto mb-4"></div>
+          <h2 className="text-xl font-semibold text-gray-900">Loading SwapBoard...</h2>
+        </div>
       </div>
     );
   }
 
-  return null;
+  if (showProfile && isAuthenticated) {
+    return <UserProfile onBack={() => setShowProfile(false)} />;
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50">
+      {/* Header */}
+      <header className="bg-white/90 backdrop-blur-sm border-b border-emerald-100 sticky top-0 z-50 shadow-sm">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-500 rounded-lg flex items-center justify-center">
+                <span className="text-white font-bold text-lg">S</span>
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold text-gray-900">SwapBoard</h1>
+                <p className="text-sm text-gray-600">Trade, Share, Connect</p>
+              </div>
+            </div>
+
+            <div className="flex items-center space-x-4">
+              {isAuthenticated ? (
+                <>
+                  <Button variant="outline" size="sm">
+                    <Plus className="w-4 h-4 mr-2" />
+                    Post Item
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowProfile(true)}
+                  >
+                    <User className="w-4 h-4 mr-2" />
+                    {user?.firstName || 'Profile'}
+                  </Button>
+                  <Button variant="ghost" size="sm" onClick={handleLogout}>
+                    <LogOut className="w-4 h-4" />
+                  </Button>
+                </>
+              ) : (
+                <Button onClick={() => setShowLoginDialog(true)}>
+                  Sign In
+                </Button>
+              )}
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <main className="container mx-auto px-4 py-8">
+        {/* Hero Section */}
+        <div className="text-center mb-12">
+          <h2 className="text-4xl font-bold text-gray-900 mb-4">
+            Discover Amazing Items to Swap
+          </h2>
+          <p className="text-lg text-gray-600 mb-8 max-w-2xl mx-auto">
+            Join our community of traders and find exactly what you're looking for. Trade items you don't need for things you love.
+          </p>
+          
+          {!isAuthenticated && (
+            <Button
+              size="lg"
+              onClick={() => setShowLoginDialog(true)}
+              className="bg-emerald-500 hover:bg-emerald-600 text-white px-8 py-3"
+            >
+              Get Started Today
+            </Button>
+          )}
+        </div>
+
+        {/* Search and Filters */}
+        <div className="mb-8 space-y-4">
+          <div className="flex flex-col md:flex-row gap-4">
+            <div className="flex-1 relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+              <Input
+                placeholder="Search for items..."
+                className="pl-10"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
+            <div className="flex items-center space-x-2">
+              <Button
+                variant={viewMode === 'grid' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setViewMode('grid')}
+              >
+                <Grid className="w-4 h-4" />
+              </Button>
+              <Button
+                variant={viewMode === 'list' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setViewMode('list')}
+              >
+                <List className="w-4 h-4" />
+              </Button>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap gap-2">
+            {categories.map((category) => (
+              <Button
+                key={category}
+                variant={selectedCategory === category || (!selectedCategory && category === 'All') ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setSelectedCategory(category === 'All' ? '' : category)}
+              >
+                {category}
+              </Button>
+            ))}
+          </div>
+        </div>
+
+        {/* Listings Grid */}
+        <div className={`grid gap-6 ${viewMode === 'grid' ? 'md:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1'}`}>
+          {filteredListings.map((listing) => (
+            <Card key={listing.id} className="hover:shadow-lg transition-shadow cursor-pointer">
+              <CardHeader className="p-0">
+                <div className="h-48 bg-gradient-to-br from-gray-100 to-gray-200 rounded-t-lg flex items-center justify-center">
+                  {listing.images.length > 0 ? (
+                    <img
+                      src={listing.images[0]}
+                      alt={listing.title}
+                      className="w-full h-full object-cover rounded-t-lg"
+                    />
+                  ) : (
+                    <div className="text-gray-400 text-center">
+                      <div className="w-16 h-16 bg-gray-300 rounded-lg mx-auto mb-2 flex items-center justify-center">
+                        <span className="text-2xl">📦</span>
+                      </div>
+                      <p className="text-sm">No image available</p>
+                    </div>
+                  )}
+                </div>
+              </CardHeader>
+              <CardContent className="p-4">
+                <div className="flex items-start justify-between mb-2">
+                  <h3 className="font-semibold text-lg text-gray-900 truncate flex-1 mr-2">
+                    {listing.title}
+                  </h3>
+                  <Badge variant="secondary">{listing.category}</Badge>
+                </div>
+                
+                <p className="text-gray-600 text-sm mb-3 line-clamp-2">
+                  {listing.description}
+                </p>
+                
+                <div className="flex items-center justify-between text-sm text-gray-500 mb-3">
+                  <span>📍 {listing.location}</span>
+                  <span>👁 {listing.views} views</span>
+                </div>
+
+                <div className="space-y-2">
+                  <p className="text-xs font-medium text-gray-700">Looking for:</p>
+                  <div className="flex flex-wrap gap-1">
+                    {listing.wantedItems.slice(0, 3).map((item, index) => (
+                      <Badge key={index} variant="outline" className="text-xs">
+                        {item}
+                      </Badge>
+                    ))}
+                    {listing.wantedItems.length > 3 && (
+                      <Badge variant="outline" className="text-xs">
+                        +{listing.wantedItems.length - 3} more
+                      </Badge>
+                    )}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+
+        {filteredListings.length === 0 && (
+          <div className="text-center py-12">
+            <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Search className="w-8 h-8 text-gray-400" />
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">No items found</h3>
+            <p className="text-gray-600">
+              {searchQuery || selectedCategory 
+                ? "Try adjusting your search or filters"
+                : "Be the first to post an item for trade!"
+              }
+            </p>
+          </div>
+        )}
+      </main>
+
+      <LoginDialog open={showLoginDialog} onOpenChange={setShowLoginDialog} />
+    </div>
+  );
 };
 
 export default Index;
