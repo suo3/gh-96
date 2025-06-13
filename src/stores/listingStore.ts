@@ -5,199 +5,230 @@ import { supabase } from '@/integrations/supabase/client';
 export interface Listing {
   id: string;
   title: string;
-  description: string;
+  description?: string;
   category: string;
   condition: string;
-  images: string[];
-  userId: string;
-  userName: string;
-  userAvatar: string;
-  location: string;
-  wantedItems: string[];
-  status: 'active' | 'completed' | 'paused';
-  createdAt: Date;
-  updatedAt: Date;
-  views: number;
-  likes: number;
+  images?: string[];
+  user_id: string;
+  location?: string;
+  wanted_items?: string[];
+  status?: string;
+  views?: number;
+  likes?: number;
+  created_at?: string;
+  updated_at?: string;
+  profiles?: {
+    username?: string;
+    avatar?: string;
+    first_name?: string;
+    last_name?: string;
+  };
 }
 
-interface ListingState {
+interface ListingStore {
   listings: Listing[];
-  isLoading: boolean;
-  createListing: (listing: Omit<Listing, 'id' | 'createdAt' | 'updatedAt' | 'views' | 'likes' | 'userName' | 'userAvatar'>) => Promise<string | null>;
+  loading: boolean;
+  error: string | null;
+  searchTerm: string;
+  selectedCategory: string;
+  selectedCondition: string;
+  sortBy: string;
+  
+  setSearchTerm: (term: string) => void;
+  setSelectedCategory: (category: string) => void;
+  setSelectedCondition: (condition: string) => void;
+  setSortBy: (sort: string) => void;
+  fetchListings: () => Promise<void>;
+  fetchUserListings: (userId: string) => Promise<void>;
+  createListing: (listing: Omit<Listing, 'id' | 'created_at' | 'updated_at'>) => Promise<void>;
   updateListing: (id: string, updates: Partial<Listing>) => Promise<void>;
   deleteListing: (id: string) => Promise<void>;
-  markAsCompleted: (id: string) => Promise<void>;
-  getUserListings: (userId: string) => Promise<Listing[]>;
-  getAllListings: () => Promise<void>;
+  filteredListings: () => Listing[];
 }
 
-export const useListingStore = create<ListingState>((set, get) => ({
+export const useListingStore = create<ListingStore>((set, get) => ({
   listings: [],
-  isLoading: false,
+  loading: false,
+  error: null,
+  searchTerm: '',
+  selectedCategory: '',
+  selectedCondition: '',
+  sortBy: 'newest',
 
-  createListing: async (listingData) => {
+  setSearchTerm: (term) => set({ searchTerm: term }),
+  setSelectedCategory: (category) => set({ selectedCategory: category }),
+  setSelectedCondition: (condition) => set({ selectedCondition: condition }),
+  setSortBy: (sort) => set({ sortBy: sort }),
+
+  fetchListings: async () => {
+    set({ loading: true, error: null });
+    
     try {
       const { data, error } = await supabase
         .from('listings')
-        .insert({
-          title: listingData.title,
-          description: listingData.description,
-          category: listingData.category,
-          condition: listingData.condition,
-          images: listingData.images,
-          user_id: listingData.userId,
-          location: listingData.location,
-          wanted_items: listingData.wantedItems,
-        })
+        .select(`
+          *,
+          profiles (
+            username,
+            avatar,
+            first_name,
+            last_name
+          )
+        `)
+        .eq('status', 'active')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      set({ listings: data || [], loading: false });
+    } catch (error) {
+      console.error('Error fetching listings:', error);
+      set({ error: 'Failed to fetch listings', loading: false });
+    }
+  },
+
+  fetchUserListings: async (userId: string) => {
+    set({ loading: true, error: null });
+    
+    try {
+      const { data, error } = await supabase
+        .from('listings')
+        .select(`
+          *,
+          profiles (
+            username,
+            avatar,
+            first_name,
+            last_name
+          )
+        `)
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      set({ listings: data || [], loading: false });
+    } catch (error) {
+      console.error('Error fetching user listings:', error);
+      set({ error: 'Failed to fetch user listings', loading: false });
+    }
+  },
+
+  createListing: async (listing) => {
+    set({ loading: true, error: null });
+    
+    try {
+      const { data, error } = await supabase
+        .from('listings')
+        .insert([listing])
         .select()
         .single();
 
-      if (error) {
-        console.error('Create listing error:', error);
-        return null;
-      }
+      if (error) throw error;
 
-      // Refresh listings
-      await get().getAllListings();
-      return data.id;
+      set((state) => ({
+        listings: [data, ...state.listings],
+        loading: false
+      }));
     } catch (error) {
-      console.error('Create listing error:', error);
-      return null;
+      console.error('Error creating listing:', error);
+      set({ error: 'Failed to create listing', loading: false });
     }
   },
 
   updateListing: async (id, updates) => {
+    set({ loading: true, error: null });
+    
     try {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('listings')
-        .update({
-          title: updates.title,
-          description: updates.description,
-          status: updates.status,
-        })
-        .eq('id', id);
+        .update(updates)
+        .eq('id', id)
+        .select()
+        .single();
 
-      if (!error) {
-        await get().getAllListings();
-      }
+      if (error) throw error;
+
+      set((state) => ({
+        listings: state.listings.map((listing) =>
+          listing.id === id ? { ...listing, ...data } : listing
+        ),
+        loading: false
+      }));
     } catch (error) {
-      console.error('Update listing error:', error);
+      console.error('Error updating listing:', error);
+      set({ error: 'Failed to update listing', loading: false });
     }
   },
 
   deleteListing: async (id) => {
+    set({ loading: true, error: null });
+    
     try {
       const { error } = await supabase
         .from('listings')
         .delete()
         .eq('id', id);
 
-      if (!error) {
-        set(state => ({
-          listings: state.listings.filter(listing => listing.id !== id)
-        }));
-      }
-    } catch (error) {
-      console.error('Delete listing error:', error);
-    }
-  },
+      if (error) throw error;
 
-  markAsCompleted: async (id) => {
-    await get().updateListing(id, { status: 'completed' });
-  },
-
-  getUserListings: async (userId) => {
-    try {
-      const { data, error } = await supabase
-        .from('listings')
-        .select(`
-          *,
-          profiles!inner (
-            username,
-            first_name,
-            last_name,
-            avatar
-          )
-        `)
-        .eq('user_id', userId)
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        console.error('Get user listings error:', error);
-        return [];
-      }
-
-      return data.map(item => ({
-        id: item.id,
-        title: item.title,
-        description: item.description || '',
-        category: item.category,
-        condition: item.condition,
-        images: item.images || [],
-        userId: item.user_id,
-        userName: Array.isArray(item.profiles) ? item.profiles[0]?.username || 'Anonymous' : item.profiles?.username || 'Anonymous',
-        userAvatar: Array.isArray(item.profiles) ? item.profiles[0]?.avatar || 'U' : item.profiles?.avatar || 'U',
-        location: item.location || '',
-        wantedItems: item.wanted_items || [],
-        status: item.status as 'active' | 'completed' | 'paused',
-        createdAt: new Date(item.created_at),
-        updatedAt: new Date(item.updated_at),
-        views: item.views || 0,
-        likes: item.likes || 0,
+      set((state) => ({
+        listings: state.listings.filter((listing) => listing.id !== id),
+        loading: false
       }));
     } catch (error) {
-      console.error('Get user listings error:', error);
-      return [];
+      console.error('Error deleting listing:', error);
+      set({ error: 'Failed to delete listing', loading: false });
     }
   },
 
-  getAllListings: async () => {
-    set({ isLoading: true });
-    try {
-      const { data, error } = await supabase
-        .from('listings')
-        .select(`
-          *,
-          profiles!inner (
-            username,
-            first_name,
-            last_name,
-            avatar
-          )
-        `)
-        .eq('status', 'active')
-        .order('created_at', { ascending: false });
+  filteredListings: () => {
+    const { listings, searchTerm, selectedCategory, selectedCondition, sortBy } = get();
+    
+    let filtered = [...listings];
 
-      if (error) {
-        console.error('Get all listings error:', error);
-        return;
-      }
-
-      const listings = data.map(item => ({
-        id: item.id,
-        title: item.title,
-        description: item.description || '',
-        category: item.category,
-        condition: item.condition,
-        images: item.images || [],
-        userId: item.user_id,
-        userName: Array.isArray(item.profiles) ? item.profiles[0]?.username || 'Anonymous' : item.profiles?.username || 'Anonymous',
-        userAvatar: Array.isArray(item.profiles) ? item.profiles[0]?.avatar || 'U' : item.profiles?.avatar || 'U',
-        location: item.location || '',
-        wantedItems: item.wanted_items || [],
-        status: item.status as 'active' | 'completed' | 'paused',
-        createdAt: new Date(item.created_at),
-        updatedAt: new Date(item.updated_at),
-        views: item.views || 0,
-        likes: item.likes || 0,
-      }));
-
-      set({ listings });
-    } catch (error) {
-      console.error('Get all listings error:', error);
-    } finally {
-      set({ isLoading: false });
+    // Apply search filter
+    if (searchTerm) {
+      filtered = filtered.filter((listing) =>
+        listing.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        listing.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        listing.wanted_items?.some(item => 
+          item.toLowerCase().includes(searchTerm.toLowerCase())
+        )
+      );
     }
+
+    // Apply category filter
+    if (selectedCategory) {
+      filtered = filtered.filter((listing) => listing.category === selectedCategory);
+    }
+
+    // Apply condition filter
+    if (selectedCondition) {
+      filtered = filtered.filter((listing) => listing.condition === selectedCondition);
+    }
+
+    // Apply sorting
+    switch (sortBy) {
+      case 'newest':
+        filtered.sort((a, b) => new Date(b.created_at || '').getTime() - new Date(a.created_at || '').getTime());
+        break;
+      case 'oldest':
+        filtered.sort((a, b) => new Date(a.created_at || '').getTime() - new Date(b.created_at || '').getTime());
+        break;
+      case 'title':
+        filtered.sort((a, b) => a.title.localeCompare(b.title));
+        break;
+      case 'views':
+        filtered.sort((a, b) => (b.views || 0) - (a.views || 0));
+        break;
+      case 'likes':
+        filtered.sort((a, b) => (b.likes || 0) - (a.likes || 0));
+        break;
+      default:
+        break;
+    }
+
+    return filtered;
   },
 }));
