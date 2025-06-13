@@ -109,30 +109,26 @@ export const useListingStore = create<ListingState>((set, get) => ({
 
   getUserListings: async (userId) => {
     try {
-      // First get the listings
-      const { data: listingsData, error: listingsError } = await supabase
+      const { data, error } = await supabase
         .from('listings')
-        .select('*')
+        .select(`
+          *,
+          profiles!listings_user_id_fkey (
+            username,
+            first_name,
+            last_name,
+            avatar
+          )
+        `)
         .eq('user_id', userId)
         .order('created_at', { ascending: false });
 
-      if (listingsError) {
-        console.error('Get user listings error:', listingsError);
+      if (error) {
+        console.error('Get user listings error:', error);
         return [];
       }
 
-      // Then get the profile for this user
-      const { data: profileData, error: profileError } = await supabase
-        .from('profiles')
-        .select('username, first_name, last_name, avatar')
-        .eq('id', userId)
-        .single();
-
-      if (profileError) {
-        console.error('Get profile error:', profileError);
-      }
-
-      return listingsData.map(item => ({
+      return data.map(item => ({
         id: item.id,
         title: item.title,
         description: item.description || '',
@@ -140,8 +136,8 @@ export const useListingStore = create<ListingState>((set, get) => ({
         condition: item.condition,
         images: item.images || [],
         userId: item.user_id,
-        userName: profileData?.username || 'Anonymous',
-        userAvatar: profileData?.avatar || 'U',
+        userName: item.profiles?.username || 'Anonymous',
+        userAvatar: item.profiles?.avatar || 'U',
         location: item.location || '',
         wantedItems: item.wanted_items || [],
         status: item.status as 'active' | 'completed' | 'paused',
@@ -159,58 +155,43 @@ export const useListingStore = create<ListingState>((set, get) => ({
   getAllListings: async () => {
     set({ isLoading: true });
     try {
-      // First get all active listings
-      const { data: listingsData, error: listingsError } = await supabase
+      const { data, error } = await supabase
         .from('listings')
-        .select('*')
+        .select(`
+          *,
+          profiles!listings_user_id_fkey (
+            username,
+            first_name,
+            last_name,
+            avatar
+          )
+        `)
         .eq('status', 'active')
         .order('created_at', { ascending: false });
 
-      if (listingsError) {
-        console.error('Get all listings error:', listingsError);
+      if (error) {
+        console.error('Get all listings error:', error);
         return;
       }
 
-      // Get unique user IDs
-      const userIds = [...new Set(listingsData.map(listing => listing.user_id))];
-
-      // Get profiles for all users
-      const { data: profilesData, error: profilesError } = await supabase
-        .from('profiles')
-        .select('id, username, first_name, last_name, avatar')
-        .in('id', userIds);
-
-      if (profilesError) {
-        console.error('Get profiles error:', profilesError);
-      }
-
-      // Create a map of user profiles for quick lookup
-      const profilesMap = new Map();
-      profilesData?.forEach(profile => {
-        profilesMap.set(profile.id, profile);
-      });
-
-      const listings = listingsData.map(item => {
-        const profile = profilesMap.get(item.user_id);
-        return {
-          id: item.id,
-          title: item.title,
-          description: item.description || '',
-          category: item.category,
-          condition: item.condition,
-          images: item.images || [],
-          userId: item.user_id,
-          userName: profile?.username || 'Anonymous',
-          userAvatar: profile?.avatar || 'U',
-          location: item.location || '',
-          wantedItems: item.wanted_items || [],
-          status: item.status as 'active' | 'completed' | 'paused',
-          createdAt: new Date(item.created_at),
-          updatedAt: new Date(item.updated_at),
-          views: item.views || 0,
-          likes: item.likes || 0,
-        };
-      });
+      const listings = data.map(item => ({
+        id: item.id,
+        title: item.title,
+        description: item.description || '',
+        category: item.category,
+        condition: item.condition,
+        images: item.images || [],
+        userId: item.user_id,
+        userName: item.profiles?.username || 'Anonymous',
+        userAvatar: item.profiles?.avatar || 'U',
+        location: item.location || '',
+        wantedItems: item.wanted_items || [],
+        status: item.status as 'active' | 'completed' | 'paused',
+        createdAt: new Date(item.created_at),
+        updatedAt: new Date(item.updated_at),
+        views: item.views || 0,
+        likes: item.likes || 0,
+      }));
 
       set({ listings });
     } catch (error) {

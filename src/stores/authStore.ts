@@ -1,3 +1,4 @@
+
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { supabase } from '@/integrations/supabase/client';
@@ -67,7 +68,7 @@ export const useAuthStore = create<AuthState>()(
                 location: profile.location || '',
                 membershipType: profile.membership_type as 'free' | 'premium',
                 joinedDate: new Date(profile.joined_date),
-                rating: profile.rating || 0,
+                rating: parseFloat(profile.rating) || 0,
                 totalSwaps: profile.total_swaps || 0,
                 monthlyListings: profile.monthly_listings || 0,
                 monthlySwaps: profile.monthly_swaps || 0,
@@ -104,7 +105,7 @@ export const useAuthStore = create<AuthState>()(
                   location: profile.location || '',
                   membershipType: profile.membership_type as 'free' | 'premium',
                   joinedDate: new Date(profile.joined_date),
-                  rating: profile.rating || 0,
+                  rating: parseFloat(profile.rating) || 0,
                   totalSwaps: profile.total_swaps || 0,
                   monthlyListings: profile.monthly_listings || 0,
                   monthlySwaps: profile.monthly_swaps || 0,

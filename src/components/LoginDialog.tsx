@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuthStore } from "@/stores/authStore";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/components/ui/use-toast";
 import { Loader2 } from "lucide-react";
 
 interface LoginDialogProps {
@@ -176,7 +176,7 @@ export const LoginDialog = ({ open, onOpenChange }: LoginDialogProps) => {
                   <Label htmlFor="firstName">First Name</Label>
                   <Input
                     id="firstName"
-                    value={signupForm.firstName}
+                    value={signup Form.firstName}
                     onChange={(e) => setSignupForm(prev => ({ ...prev, firstName: e.target.value }))}
                     required
                   />
