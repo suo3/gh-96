@@ -55,7 +55,7 @@ export const FilterPanel = ({ onFilterChange, isVisible }: FilterPanelProps) => 
   }, [user?.location, userLocation, geocodeLocation, setUserLocation]);
 
   const categories = [
-    { value: "", label: "All Categories" },
+    { value: "all", label: "All Categories" },
     { value: "Electronics", label: "Electronics" },
     { value: "Books", label: "Books" },
     { value: "Kitchen", label: "Kitchen" },
@@ -67,7 +67,7 @@ export const FilterPanel = ({ onFilterChange, isVisible }: FilterPanelProps) => 
   ];
 
   const conditions = [
-    { value: "", label: "All Conditions" },
+    { value: "all", label: "All Conditions" },
     { value: "Like New", label: "Like New" },
     { value: "Good", label: "Good" },
     { value: "Fair", label: "Fair" },
@@ -91,8 +91,8 @@ export const FilterPanel = ({ onFilterChange, isVisible }: FilterPanelProps) => 
 
   const applyFilters = () => {
     onFilterChange({
-      category: selectedCategory,
-      condition: selectedCondition,
+      category: selectedCategory === "all" ? "" : selectedCategory,
+      condition: selectedCondition === "all" ? "" : selectedCondition,
       location: selectedLocation,
       radius: selectedRadius[0],
       minRating: minRating[0]
@@ -100,8 +100,8 @@ export const FilterPanel = ({ onFilterChange, isVisible }: FilterPanelProps) => 
   };
 
   const clearFilters = () => {
-    setSelectedCategory("");
-    setSelectedCondition("");
+    setSelectedCategory("all");
+    setSelectedCondition("all");
     setSwapFilter("all");
     setSearchTerm("");
     setSortBy("newest");
@@ -258,12 +258,12 @@ export const FilterPanel = ({ onFilterChange, isVisible }: FilterPanelProps) => 
                 Search: "{searchTerm}"
               </Badge>
             )}
-            {selectedCategory && selectedCategory !== "" && (
+            {selectedCategory && selectedCategory !== "all" && (
               <Badge variant="secondary" className="bg-emerald-100 text-emerald-800">
                 {categories.find(c => c.value === selectedCategory)?.label}
               </Badge>
             )}
-            {selectedCondition && selectedCondition !== "" && (
+            {selectedCondition && selectedCondition !== "all" && (
               <Badge variant="secondary" className="bg-emerald-100 text-emerald-800">
                 {conditions.find(c => c.value === selectedCondition)?.label}
               </Badge>
@@ -292,7 +292,7 @@ export const FilterPanel = ({ onFilterChange, isVisible }: FilterPanelProps) => 
               </Badge>
             )}
           </div>
-          {(selectedCategory !== "" || selectedCondition !== "" || swapFilter !== "all" || selectedLocation || minRating[0] > 0 || searchTerm || sortBy !== "newest") && (
+          {(selectedCategory !== "all" || selectedCondition !== "all" || swapFilter !== "all" || selectedLocation || minRating[0] > 0 || searchTerm || sortBy !== "newest") && (
             <Button variant="outline" size="sm" onClick={clearFilters} className="border-emerald-200">
               <X className="w-4 h-4 mr-2" />
               Clear All
