@@ -26,7 +26,12 @@ export const ListingManager = () => {
     
     setIsLoading(true);
     const listings = await getUserListings(user.id);
-    setUserListings(listings);
+    // Transform the data to match the expected format
+    const transformedListings = listings.map(listing => ({
+      ...listing,
+      createdAt: new Date(listing.created_at || ''),
+    }));
+    setUserListings(transformedListings);
     setIsLoading(false);
   };
 
@@ -50,7 +55,7 @@ export const ListingManager = () => {
 
   const handleToggleStatus = async (id: string, currentStatus: string, title: string) => {
     const newStatus = currentStatus === 'active' ? 'paused' : 'active';
-    await updateListing(id, { status: newStatus as 'active' | 'paused' });
+    await updateListing(id, { status: newStatus });
     await loadUserListings();
     toast({
       title: `Listing ${newStatus === 'active' ? 'Resumed' : 'Paused'}`,
@@ -104,11 +109,11 @@ export const ListingManager = () => {
                   <div className="flex items-center space-x-4 text-sm text-gray-500">
                     <div className="flex items-center">
                       <Eye className="w-4 h-4 mr-1" />
-                      {listing.views} views
+                      {listing.views || 0} views
                     </div>
                     <div className="flex items-center">
                       <Heart className="w-4 h-4 mr-1" />
-                      {listing.likes} likes
+                      {listing.likes || 0} likes
                     </div>
                     <div>
                       Created: {listing.createdAt.toLocaleDateString()}
@@ -118,7 +123,7 @@ export const ListingManager = () => {
                   <div className="space-y-2">
                     <p className="text-sm font-medium">Looking for:</p>
                     <div className="flex flex-wrap gap-2">
-                      {listing.wantedItems.map((item: string, index: number) => (
+                      {(listing.wanted_items || []).map((item: string, index: number) => (
                         <Badge key={index} variant="outline" className="text-xs">
                           {item}
                         </Badge>

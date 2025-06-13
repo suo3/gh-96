@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -17,10 +17,12 @@ import { LoginDialog } from "@/components/LoginDialog";
 import { useMessageStore } from "@/stores/messageStore";
 import { useAuthStore } from "@/stores/authStore";
 import { useToast } from "@/components/ui/use-toast";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const Index = () => {
   const [currentView, setCurrentView] = useState("discover");
-  const [displayMode, setDisplayMode] = useState<"swipe" | "grid" | "list">("swipe");
+  const isMobile = useIsMobile();
+  const [displayMode, setDisplayMode] = useState<"swipe" | "grid" | "list">(isMobile ? "swipe" : "grid");
   const [showPostDialog, setShowPostDialog] = useState(false);
   const [showLoginDialog, setShowLoginDialog] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
@@ -28,6 +30,13 @@ const Index = () => {
   const { createConversationFromSwipe } = useMessageStore();
   const { isAuthenticated, canCreateListing, canMakeSwap } = useAuthStore();
   const { toast } = useToast();
+
+  // Update display mode when mobile state changes
+  useEffect(() => {
+    if (!isMobile && displayMode === "swipe") {
+      setDisplayMode("grid");
+    }
+  }, [isMobile, displayMode]);
 
   // Mock data for demonstration
   const mockItems = [
@@ -80,6 +89,7 @@ const Index = () => {
   const [items, setItems] = useState(mockItems);
   const [currentItemIndex, setCurrentItemIndex] = useState(0);
   const [filteredItems, setFilteredItems] = useState(mockItems);
+  const [interestedItems, setInterestedItems] = useState<Set<number>>(new Set());
 
   const handleSwipe = (direction: 'left' | 'right') => {
     if (!isAuthenticated) {
@@ -96,9 +106,21 @@ const Index = () => {
       return;
     }
 
+    const currentItem = items[currentItemIndex];
+
+    // Prevent multiple messages for the same item
+    if (direction === 'right' && interestedItems.has(currentItem.id)) {
+      toast({
+        title: "Already Interested",
+        description: `You've already shown interest in ${currentItem.title}.`,
+        variant: "destructive"
+      });
+      return;
+    }
+
     if (direction === 'right') {
-      const currentItem = items[currentItemIndex];
       const conversationId = createConversationFromSwipe(currentItem.title, currentItem.user);
+      setInterestedItems(prev => new Set([...prev, currentItem.id]));
       
       toast({
         title: "Match Created!",
@@ -128,7 +150,19 @@ const Index = () => {
       return;
     }
 
+    // Prevent multiple messages for the same item
+    if (interestedItems.has(item.id)) {
+      toast({
+        title: "Already Interested",
+        description: `You've already shown interest in ${item.title}.`,
+        variant: "destructive"
+      });
+      return;
+    }
+
     const conversationId = createConversationFromSwipe(item.title, item.user);
+    setInterestedItems(prev => new Set([...prev, item.id]));
+    
     toast({
       title: "Interest Sent!",
       description: `You've expressed interest in ${item.title}. A conversation has been started with ${item.user}.`,
@@ -260,7 +294,7 @@ const Index = () => {
             isVisible={showFilters && displayMode !== "swipe"}
           />
 
-          {displayMode === "swipe" && (
+          {displayMode === "swipe" && isMobile && (
             <>
               <div className="text-center mb-8">
                 <h2 className="text-3xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent mb-2">

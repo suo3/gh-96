@@ -40,9 +40,11 @@ interface ListingStore {
   setSortBy: (sort: string) => void;
   fetchListings: () => Promise<void>;
   fetchUserListings: (userId: string) => Promise<void>;
+  getUserListings: (userId: string) => Promise<Listing[]>;
   createListing: (listing: Omit<Listing, 'id' | 'created_at' | 'updated_at'>) => Promise<void>;
   updateListing: (id: string, updates: Partial<Listing>) => Promise<void>;
   deleteListing: (id: string) => Promise<void>;
+  markAsCompleted: (id: string) => Promise<void>;
   filteredListings: () => Listing[];
 }
 
@@ -68,7 +70,7 @@ export const useListingStore = create<ListingStore>((set, get) => ({
         .from('listings')
         .select(`
           *,
-          profiles (
+          profiles!inner (
             username,
             avatar,
             first_name,
@@ -95,7 +97,7 @@ export const useListingStore = create<ListingStore>((set, get) => ({
         .from('listings')
         .select(`
           *,
-          profiles (
+          profiles!inner (
             username,
             avatar,
             first_name,
@@ -111,6 +113,30 @@ export const useListingStore = create<ListingStore>((set, get) => ({
     } catch (error) {
       console.error('Error fetching user listings:', error);
       set({ error: 'Failed to fetch user listings', loading: false });
+    }
+  },
+
+  getUserListings: async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('listings')
+        .select(`
+          *,
+          profiles!inner (
+            username,
+            avatar,
+            first_name,
+            last_name
+          )
+        `)
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      return data || [];
+    } catch (error) {
+      console.error('Error getting user listings:', error);
+      return [];
     }
   },
 
@@ -179,6 +205,29 @@ export const useListingStore = create<ListingStore>((set, get) => ({
     } catch (error) {
       console.error('Error deleting listing:', error);
       set({ error: 'Failed to delete listing', loading: false });
+    }
+  },
+
+  markAsCompleted: async (id) => {
+    set({ loading: true, error: null });
+    
+    try {
+      const { error } = await supabase
+        .from('listings')
+        .update({ status: 'completed' })
+        .eq('id', id);
+
+      if (error) throw error;
+
+      set((state) => ({
+        listings: state.listings.map((listing) =>
+          listing.id === id ? { ...listing, status: 'completed' } : listing
+        ),
+        loading: false
+      }));
+    } catch (error) {
+      console.error('Error marking listing as completed:', error);
+      set({ error: 'Failed to mark listing as completed', loading: false });
     }
   },
 
