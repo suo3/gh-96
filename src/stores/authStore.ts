@@ -1,4 +1,3 @@
-
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { supabase } from '@/integrations/supabase/client';
@@ -68,7 +67,7 @@ export const useAuthStore = create<AuthState>()(
                 location: profile.location || '',
                 membershipType: profile.membership_type as 'free' | 'premium',
                 joinedDate: new Date(profile.joined_date),
-                rating: parseFloat(profile.rating) || 0,
+                rating: parseFloat(profile.rating?.toString() || '0'),
                 totalSwaps: profile.total_swaps || 0,
                 monthlyListings: profile.monthly_listings || 0,
                 monthlySwaps: profile.monthly_swaps || 0,
@@ -105,7 +104,7 @@ export const useAuthStore = create<AuthState>()(
                   location: profile.location || '',
                   membershipType: profile.membership_type as 'free' | 'premium',
                   joinedDate: new Date(profile.joined_date),
-                  rating: parseFloat(profile.rating) || 0,
+                  rating: parseFloat(profile.rating?.toString() || '0'),
                   totalSwaps: profile.total_swaps || 0,
                   monthlyListings: profile.monthly_listings || 0,
                   monthlySwaps: profile.monthly_swaps || 0,
@@ -258,15 +257,35 @@ export const useAuthStore = create<AuthState>()(
       },
 
       processSubscriptionPayment: async (planType: 'monthly' | 'yearly') => {
-        // Simulate payment processing
-        await new Promise(resolve => setTimeout(resolve, 2000));
-        
         const { user } = get();
-        if (user) {
-          await get().upgradeToPremium();
-          return true;
+        if (!user) return false;
+
+        try {
+          // Call the Stripe checkout edge function
+          const { data, error } = await supabase.functions.invoke('create-stripe-checkout', {
+            body: {
+              planType,
+              email: user.email,
+              userId: user.id
+            }
+          });
+
+          if (error) {
+            console.error('Stripe checkout error:', error);
+            return false;
+          }
+
+          if (data?.url) {
+            // Open Stripe checkout in a new tab
+            window.open(data.url, '_blank');
+            return true;
+          }
+
+          return false;
+        } catch (error) {
+          console.error('Payment processing error:', error);
+          return false;
         }
-        return false;
       }
     }),
     {

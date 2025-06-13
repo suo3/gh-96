@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useAuthStore } from "@/stores/authStore";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { Crown, Check, Loader2 } from "lucide-react";
 
 export const SubscriptionPayment = () => {
@@ -13,6 +13,15 @@ export const SubscriptionPayment = () => {
   const [isProcessing, setIsProcessing] = useState(false);
 
   const handleSubscription = async (planType: 'monthly' | 'yearly') => {
+    if (!user) {
+      toast({
+        title: "Authentication Required",
+        description: "Please log in to subscribe to premium.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsProcessing(true);
     
     try {
@@ -20,13 +29,13 @@ export const SubscriptionPayment = () => {
       
       if (success) {
         toast({
-          title: "Subscription Activated!",
-          description: `You now have unlimited listings and swaps with the ${planType} plan!`,
+          title: "Redirecting to Payment",
+          description: "You'll be redirected to Stripe to complete your payment.",
         });
       } else {
         toast({
-          title: "Payment Failed",
-          description: "There was an issue processing your payment. Please try again.",
+          title: "Payment Setup Failed",
+          description: "There was an issue setting up the payment. Please try again.",
           variant: "destructive",
         });
       }
@@ -41,7 +50,20 @@ export const SubscriptionPayment = () => {
     }
   };
 
-  if (!user) return null;
+  if (!user) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Premium Membership</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-center text-gray-600">
+            Please log in to view subscription options.
+          </p>
+        </CardContent>
+      </Card>
+    );
+  }
 
   if (user.membershipType === 'premium') {
     return (

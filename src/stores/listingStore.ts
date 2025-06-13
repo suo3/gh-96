@@ -113,7 +113,7 @@ export const useListingStore = create<ListingState>((set, get) => ({
         .from('listings')
         .select(`
           *,
-          profiles!listings_user_id_fkey (
+          profiles!inner (
             username,
             first_name,
             last_name,
@@ -136,8 +136,8 @@ export const useListingStore = create<ListingState>((set, get) => ({
         condition: item.condition,
         images: item.images || [],
         userId: item.user_id,
-        userName: item.profiles?.username || 'Anonymous',
-        userAvatar: item.profiles?.avatar || 'U',
+        userName: Array.isArray(item.profiles) ? item.profiles[0]?.username || 'Anonymous' : item.profiles?.username || 'Anonymous',
+        userAvatar: Array.isArray(item.profiles) ? item.profiles[0]?.avatar || 'U' : item.profiles?.avatar || 'U',
         location: item.location || '',
         wantedItems: item.wanted_items || [],
         status: item.status as 'active' | 'completed' | 'paused',
@@ -159,7 +159,7 @@ export const useListingStore = create<ListingState>((set, get) => ({
         .from('listings')
         .select(`
           *,
-          profiles!listings_user_id_fkey (
+          profiles!inner (
             username,
             first_name,
             last_name,
@@ -182,8 +182,8 @@ export const useListingStore = create<ListingState>((set, get) => ({
         condition: item.condition,
         images: item.images || [],
         userId: item.user_id,
-        userName: item.profiles?.username || 'Anonymous',
-        userAvatar: item.profiles?.avatar || 'U',
+        userName: Array.isArray(item.profiles) ? item.profiles[0]?.username || 'Anonymous' : item.profiles?.username || 'Anonymous',
+        userAvatar: Array.isArray(item.profiles) ? item.profiles[0]?.avatar || 'U' : item.profiles?.avatar || 'U',
         location: item.location || '',
         wantedItems: item.wanted_items || [],
         status: item.status as 'active' | 'completed' | 'paused',
