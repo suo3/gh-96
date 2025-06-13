@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -154,6 +155,21 @@ const Index = () => {
     setCurrentItemIndex(0);
   };
 
+  // Convert Listing to SwipeCard compatible format
+  const convertToSwipeFormat = (listing: any) => {
+    return {
+      id: listing.id,
+      title: listing.title,
+      description: listing.description || '',
+      image: listing.images?.[0] || "https://images.unsplash.com/photo-1649972904349-6e44c42644a7?w=400&h=300&fit=crop",
+      user: listing.profiles?.first_name || listing.profiles?.username || 'User',
+      location: listing.location || 'Location not specified',
+      category: listing.category,
+      condition: listing.condition,
+      wantedItems: listing.wanted_items || []
+    };
+  };
+
   if (currentView === "messages") {
     if (!isAuthenticated) {
       setShowLoginDialog(true);
@@ -260,8 +276,8 @@ const Index = () => {
                 <div className="relative h-[600px] flex items-center justify-center">
                   {items.length > 0 && currentItemIndex < items.length ? (
                     <SwipeCard
-                      item={items[currentItemIndex]}
-                      nextItem={currentItemIndex + 1 < items.length ? items[currentItemIndex + 1] : undefined}
+                      item={convertToSwipeFormat(items[currentItemIndex])}
+                      nextItem={currentItemIndex + 1 < items.length ? convertToSwipeFormat(items[currentItemIndex + 1]) : undefined}
                       onSwipe={handleSwipe}
                       key={`${items[currentItemIndex].id}-${currentItemIndex}`}
                     />
