@@ -7,10 +7,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useAuthStore } from "@/stores/authStore";
 import { useToast } from "@/components/ui/use-toast";
+import { PasswordChange } from "./PasswordChange";
+import { SubscriptionPayment } from "./SubscriptionPayment";
 import { Save, Crown } from "lucide-react";
 
 export const ProfileEditor = () => {
-  const { user, updateProfile, upgradeToPremium } = useAuthStore();
+  const { user, updateProfile } = useAuthStore();
   const { toast } = useToast();
   
   const [formData, setFormData] = useState({
@@ -25,14 +27,6 @@ export const ProfileEditor = () => {
     toast({
       title: "Profile Updated",
       description: "Your profile has been successfully updated.",
-    });
-  };
-
-  const handleUpgrade = () => {
-    upgradeToPremium();
-    toast({
-      title: "Upgraded to Premium!",
-      description: "You now have unlimited listings and swaps!",
     });
   };
 
@@ -91,35 +85,9 @@ export const ProfileEditor = () => {
         </CardContent>
       </Card>
 
-      {user.membershipType === 'free' && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <Crown className="w-5 h-5 mr-2 text-yellow-500" />
-              Upgrade to Premium
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="text-sm text-gray-600">
-                <p>Current usage:</p>
-                <p>• Listings: {user.monthlyListings}/10</p>
-                <p>• Swaps: {user.monthlySwaps}/20</p>
-              </div>
-              <div className="text-sm text-green-600">
-                <p>Premium benefits:</p>
-                <p>• Unlimited listings</p>
-                <p>• Unlimited swaps</p>
-                <p>• Priority support</p>
-              </div>
-              <Button onClick={handleUpgrade} className="w-full bg-gradient-to-r from-emerald-500 to-teal-500">
-                <Crown className="w-4 h-4 mr-2" />
-                Upgrade to Premium
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      )}
+      <PasswordChange />
+
+      <SubscriptionPayment />
     </div>
   );
 };

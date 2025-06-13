@@ -1,4 +1,3 @@
-
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
@@ -25,9 +24,11 @@ interface AuthState {
   signup: (email: string, password: string, userData: Partial<User>) => Promise<boolean>;
   logout: () => void;
   updateProfile: (updates: Partial<User>) => void;
+  changePassword: (currentPassword: string, newPassword: string) => Promise<boolean>;
   canCreateListing: () => boolean;
   canMakeSwap: () => boolean;
   upgradeToPremium: () => void;
+  processSubscriptionPayment: (planType: 'monthly' | 'yearly') => Promise<boolean>;
 }
 
 // Dummy users data
@@ -117,6 +118,18 @@ export const useAuthStore = create<AuthState>()(
         }
       },
 
+      changePassword: async (currentPassword: string, newPassword: string) => {
+        // Simulate API call
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        // In a real implementation, you would verify the current password
+        // For demo purposes, we'll just simulate success
+        if (currentPassword === 'password123') {
+          return true;
+        }
+        return false;
+      },
+
       canCreateListing: () => {
         const { user } = get();
         if (!user) return false;
@@ -136,6 +149,18 @@ export const useAuthStore = create<AuthState>()(
         if (user) {
           set({ user: { ...user, membershipType: 'premium' } });
         }
+      },
+
+      processSubscriptionPayment: async (planType: 'monthly' | 'yearly') => {
+        // Simulate payment processing
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        
+        const { user } = get();
+        if (user) {
+          set({ user: { ...user, membershipType: 'premium' } });
+          return true;
+        }
+        return false;
       }
     }),
     {
