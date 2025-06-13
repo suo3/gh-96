@@ -35,7 +35,6 @@ export const FilterPanel = ({ onFilterChange, isVisible }: FilterPanelProps) => 
   
   const { user } = useAuthStore();
   
-  const [selectedLocation, setSelectedLocation] = useState("");
   const [selectedRadius, setSelectedRadius] = useState([maxDistance]);
   const [minRating, setMinRating] = useState([0]);
 
@@ -46,7 +45,6 @@ export const FilterPanel = ({ onFilterChange, isVisible }: FilterPanelProps) => 
         const coords = await geocodeLocation(user.location);
         if (coords) {
           setUserLocation(coords);
-          setSelectedLocation(user.location);
         }
       }
     };
@@ -93,7 +91,7 @@ export const FilterPanel = ({ onFilterChange, isVisible }: FilterPanelProps) => 
     onFilterChange({
       category: selectedCategory === "all" ? "" : selectedCategory,
       condition: selectedCondition === "all" ? "" : selectedCondition,
-      location: selectedLocation,
+      location: user?.location || "",
       radius: selectedRadius[0],
       minRating: minRating[0]
     });
@@ -105,7 +103,6 @@ export const FilterPanel = ({ onFilterChange, isVisible }: FilterPanelProps) => 
     setSwapFilter("all");
     setSearchTerm("");
     setSortBy("newest");
-    setSelectedLocation(user?.location || "");
     setSelectedRadius([25]);
     setMaxDistance(25);
     setMinRating([0]);
@@ -116,17 +113,6 @@ export const FilterPanel = ({ onFilterChange, isVisible }: FilterPanelProps) => 
       radius: 25,
       minRating: 0
     });
-  };
-
-  const handleLocationUpdate = async (location: string) => {
-    setSelectedLocation(location);
-    if (location.trim()) {
-      const coords = await geocodeLocation(location);
-      if (coords) {
-        setUserLocation(coords);
-      }
-    }
-    setTimeout(applyFilters, 0);
   };
 
   const handleDistanceChange = (value: number[]) => {
@@ -150,7 +136,7 @@ export const FilterPanel = ({ onFilterChange, isVisible }: FilterPanelProps) => 
           />
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4 mb-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-4">
           <Select value={selectedCategory} onValueChange={(value) => {
             setSelectedCategory(value);
             setTimeout(applyFilters, 0);
@@ -209,31 +195,35 @@ export const FilterPanel = ({ onFilterChange, isVisible }: FilterPanelProps) => 
             </SelectContent>
           </Select>
 
+          {/* Display-only location field */}
           <div className="relative">
             <MapPin className="absolute left-3 top-3 w-4 h-4 text-emerald-600" />
             <Input
-              placeholder="Location (city, state)"
-              value={selectedLocation}
-              onChange={(e) => handleLocationUpdate(e.target.value)}
-              className="bg-white/80 backdrop-blur-sm border-emerald-200 pl-10"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-emerald-800">
-              Distance: {selectedRadius[0]} miles
-            </label>
-            <Slider
-              value={selectedRadius}
-              onValueChange={handleDistanceChange}
-              max={100}
-              min={1}
-              step={1}
-              className="w-full"
+              placeholder="Set location in profile"
+              value={user?.location || ""}
+              readOnly
+              className="bg-gray-100/80 backdrop-blur-sm border-emerald-200 pl-10 cursor-not-allowed"
+              title="Update your location in your profile settings"
             />
           </div>
         </div>
 
+        {/* Distance Filter */}
+        <div className="mb-4">
+          <label className="text-sm font-medium text-emerald-800 mb-2 block">
+            Distance: {selectedRadius[0]} miles from your location
+          </label>
+          <Slider
+            value={selectedRadius}
+            onValueChange={handleDistanceChange}
+            max={100}
+            min={1}
+            step={1}
+            className="w-full max-w-md"
+          />
+        </div>
+
+        {/* Rating Filter */}
         <div className="mb-4">
           <label className="text-sm font-medium text-emerald-800 mb-2 block">
             Minimum Rating: {minRating[0]} star{minRating[0] !== 1 ? 's' : ''}
@@ -274,10 +264,10 @@ export const FilterPanel = ({ onFilterChange, isVisible }: FilterPanelProps) => 
                 {swapStatuses.find(s => s.value === swapFilter)?.label}
               </Badge>
             )}
-            {selectedLocation && (
+            {user?.location && (
               <Badge variant="secondary" className="bg-emerald-100 text-emerald-800">
                 <MapPin className="w-3 h-3 mr-1" />
-                {selectedLocation} ({selectedRadius[0]} mi)
+                {user.location} ({selectedRadius[0]} mi)
               </Badge>
             )}
             {sortBy !== "newest" && (
@@ -292,7 +282,7 @@ export const FilterPanel = ({ onFilterChange, isVisible }: FilterPanelProps) => 
               </Badge>
             )}
           </div>
-          {(selectedCategory !== "all" || selectedCondition !== "all" || swapFilter !== "all" || selectedLocation || minRating[0] > 0 || searchTerm || sortBy !== "newest") && (
+          {(selectedCategory !== "all" || selectedCondition !== "all" || swapFilter !== "all" || minRating[0] > 0 || searchTerm || sortBy !== "newest") && (
             <Button variant="outline" size="sm" onClick={clearFilters} className="border-emerald-200">
               <X className="w-4 h-4 mr-2" />
               Clear All
