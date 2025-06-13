@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -16,6 +15,7 @@ import { AuthButton } from "@/components/AuthButton";
 import { LoginDialog } from "@/components/LoginDialog";
 import { useMessageStore } from "@/stores/messageStore";
 import { useAuthStore } from "@/stores/authStore";
+import { useListingStore } from "@/stores/listingStore";
 import { useToast } from "@/components/ui/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
 
@@ -29,7 +29,13 @@ const Index = () => {
   const [userLocation, setUserLocation] = useState("Seattle, WA");
   const { createConversationFromSwipe } = useMessageStore();
   const { isAuthenticated, canCreateListing, canMakeSwap } = useAuthStore();
+  const { filteredListings, markItemAsMessaged, fetchListings } = useListingStore();
   const { toast } = useToast();
+
+  // Load listings on component mount
+  useEffect(() => {
+    fetchListings();
+  }, [fetchListings]);
 
   // Update display mode when mobile state changes
   useEffect(() => {
@@ -38,58 +44,9 @@ const Index = () => {
     }
   }, [isMobile, displayMode]);
 
-  // Mock data for demonstration
-  const mockItems = [
-    {
-      id: 1,
-      title: "Vintage Coffee Maker",
-      description: "Great condition, just upgraded to a newer model",
-      image: "https://images.unsplash.com/photo-1649972904349-6e44c42644a7?w=400&h=300&fit=crop",
-      user: "Sarah M.",
-      location: "0.8 miles away",
-      category: "Kitchen",
-      condition: "Like New",
-      wantedItems: ["Books", "Plants", "Open to offers"]
-    },
-    {
-      id: 2,
-      title: "Programming Books Collection",
-      description: "React, JavaScript, and Python books - perfect for learning",
-      image: "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?w=400&h=300&fit=crop",
-      user: "Mike K.",
-      location: "1.2 miles away",
-      category: "Books",
-      condition: "Good",
-      wantedItems: ["Electronics", "Kitchen items"]
-    },
-    {
-      id: 3,
-      title: "Yoga Mat & Blocks",
-      description: "Barely used yoga set, perfect for home workouts",
-      image: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=400&h=300&fit=crop",
-      user: "Emma L.",
-      location: "0.5 miles away",
-      category: "Fitness",
-      condition: "Like New",
-      wantedItems: ["Home decor", "Books"]
-    },
-    {
-      id: 4,
-      title: "Acoustic Guitar",
-      description: "Beautiful sound, includes case and picks",
-      image: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=300&fit=crop",
-      user: "Jake R.",
-      location: "2.1 miles away",
-      category: "Electronics",
-      condition: "Good",
-      wantedItems: ["Books", "Kitchen items"]
-    }
-  ];
-
-  const [items, setItems] = useState(mockItems);
+  // Get filtered items
+  const items = filteredListings();
   const [currentItemIndex, setCurrentItemIndex] = useState(0);
-  const [filteredItems, setFilteredItems] = useState(mockItems);
-  const [interestedItems, setInterestedItems] = useState<Set<number>>(new Set());
 
   const handleSwipe = (direction: 'left' | 'right') => {
     if (!isAuthenticated) {
@@ -107,9 +64,10 @@ const Index = () => {
     }
 
     const currentItem = items[currentItemIndex];
+    if (!currentItem) return;
 
     // Prevent multiple messages for the same item
-    if (direction === 'right' && interestedItems.has(currentItem.id)) {
+    if (direction === 'right' && currentItem.hasActiveMessage) {
       toast({
         title: "Already Interested",
         description: `You've already shown interest in ${currentItem.title}.`,
@@ -119,12 +77,12 @@ const Index = () => {
     }
 
     if (direction === 'right') {
-      const conversationId = createConversationFromSwipe(currentItem.title, currentItem.user);
-      setInterestedItems(prev => new Set([...prev, currentItem.id]));
+      const conversationId = createConversationFromSwipe(currentItem.title, currentItem.profiles?.username || 'User');
+      markItemAsMessaged(currentItem.id);
       
       toast({
         title: "Match Created!",
-        description: `You've shown interest in ${currentItem.title}! A conversation has been started with ${currentItem.user}.`,
+        description: `You've shown interest in ${currentItem.title}! A conversation has been started.`,
       });
     }
     
@@ -151,7 +109,7 @@ const Index = () => {
     }
 
     // Prevent multiple messages for the same item
-    if (interestedItems.has(item.id)) {
+    if (item.hasActiveMessage) {
       toast({
         title: "Already Interested",
         description: `You've already shown interest in ${item.title}.`,
@@ -160,12 +118,12 @@ const Index = () => {
       return;
     }
 
-    const conversationId = createConversationFromSwipe(item.title, item.user);
-    setInterestedItems(prev => new Set([...prev, item.id]));
+    const conversationId = createConversationFromSwipe(item.title, item.profiles?.username || 'User');
+    markItemAsMessaged(item.id);
     
     toast({
       title: "Interest Sent!",
-      description: `You've expressed interest in ${item.title}. A conversation has been started with ${item.user}.`,
+      description: `You've expressed interest in ${item.title}. A conversation has been started.`,
     });
   };
 
@@ -188,17 +146,8 @@ const Index = () => {
   };
 
   const handleFilterChange = (filters: any) => {
-    let filtered = mockItems;
-
-    if (filters.category !== "all") {
-      filtered = filtered.filter(item => item.category === filters.category);
-    }
-
-    if (filters.condition !== "all") {
-      filtered = filtered.filter(item => item.condition === filters.condition);
-    }
-
-    setFilteredItems(filtered);
+    // Filters are now handled by the store
+    console.log('Filters applied:', filters);
   };
 
   const resetStack = () => {
@@ -375,10 +324,10 @@ const Index = () => {
                   Browse Items
                 </h2>
                 <p className="text-gray-600">
-                  {filteredItems.length} item{filteredItems.length !== 1 ? 's' : ''} found
+                  {items.length} item{items.length !== 1 ? 's' : ''} found
                 </p>
               </div>
-              <ItemGrid items={filteredItems} onItemLike={handleItemLike} />
+              <ItemGrid items={items} onItemLike={handleItemLike} />
             </>
           )}
 
@@ -389,10 +338,10 @@ const Index = () => {
                   Browse Items
                 </h2>
                 <p className="text-gray-600">
-                  {filteredItems.length} item{filteredItems.length !== 1 ? 's' : ''} found
+                  {items.length} item{items.length !== 1 ? 's' : ''} found
                 </p>
               </div>
-              <ItemList items={filteredItems} onItemLike={handleItemLike} />
+              <ItemList items={items} onItemLike={handleItemLike} />
             </>
           )}
         </main>

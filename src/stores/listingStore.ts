@@ -23,6 +23,7 @@ export interface Listing {
     first_name?: string;
     last_name?: string;
   };
+  hasActiveMessage?: boolean; // Track if user has initiated a message for this item
 }
 
 interface ListingStore {
@@ -33,11 +34,13 @@ interface ListingStore {
   selectedCategory: string;
   selectedCondition: string;
   sortBy: string;
+  swapFilter: 'all' | 'swapped' | 'unswapped';
   
   setSearchTerm: (term: string) => void;
   setSelectedCategory: (category: string) => void;
   setSelectedCondition: (condition: string) => void;
   setSortBy: (sort: string) => void;
+  setSwapFilter: (filter: 'all' | 'swapped' | 'unswapped') => void;
   fetchListings: () => Promise<void>;
   fetchUserListings: (userId: string) => Promise<void>;
   getUserListings: (userId: string) => Promise<Listing[]>;
@@ -45,6 +48,7 @@ interface ListingStore {
   updateListing: (id: string, updates: Partial<Listing>) => Promise<void>;
   deleteListing: (id: string) => Promise<void>;
   markAsCompleted: (id: string) => Promise<void>;
+  markItemAsMessaged: (itemId: string) => void;
   filteredListings: () => Listing[];
 }
 
@@ -56,11 +60,13 @@ export const useListingStore = create<ListingStore>((set, get) => ({
   selectedCategory: '',
   selectedCondition: '',
   sortBy: 'newest',
+  swapFilter: 'all',
 
   setSearchTerm: (term) => set({ searchTerm: term }),
   setSelectedCategory: (category) => set({ selectedCategory: category }),
   setSelectedCondition: (condition) => set({ selectedCondition: condition }),
   setSortBy: (sort) => set({ sortBy: sort }),
+  setSwapFilter: (filter) => set({ swapFilter: filter }),
 
   fetchListings: async () => {
     set({ loading: true, error: null });
@@ -68,15 +74,7 @@ export const useListingStore = create<ListingStore>((set, get) => ({
     try {
       const { data, error } = await supabase
         .from('listings')
-        .select(`
-          *,
-          profiles!inner (
-            username,
-            avatar,
-            first_name,
-            last_name
-          )
-        `)
+        .select('*')
         .eq('status', 'active')
         .order('created_at', { ascending: false });
 
@@ -95,15 +93,7 @@ export const useListingStore = create<ListingStore>((set, get) => ({
     try {
       const { data, error } = await supabase
         .from('listings')
-        .select(`
-          *,
-          profiles!inner (
-            username,
-            avatar,
-            first_name,
-            last_name
-          )
-        `)
+        .select('*')
         .eq('user_id', userId)
         .order('created_at', { ascending: false });
 
@@ -120,15 +110,7 @@ export const useListingStore = create<ListingStore>((set, get) => ({
     try {
       const { data, error } = await supabase
         .from('listings')
-        .select(`
-          *,
-          profiles!inner (
-            username,
-            avatar,
-            first_name,
-            last_name
-          )
-        `)
+        .select('*')
         .eq('user_id', userId)
         .order('created_at', { ascending: false });
 
@@ -231,8 +213,16 @@ export const useListingStore = create<ListingStore>((set, get) => ({
     }
   },
 
+  markItemAsMessaged: (itemId: string) => {
+    set((state) => ({
+      listings: state.listings.map((listing) =>
+        listing.id === itemId ? { ...listing, hasActiveMessage: true } : listing
+      )
+    }));
+  },
+
   filteredListings: () => {
-    const { listings, searchTerm, selectedCategory, selectedCondition, sortBy } = get();
+    const { listings, searchTerm, selectedCategory, selectedCondition, sortBy, swapFilter } = get();
     
     let filtered = [...listings];
 
@@ -255,6 +245,13 @@ export const useListingStore = create<ListingStore>((set, get) => ({
     // Apply condition filter
     if (selectedCondition) {
       filtered = filtered.filter((listing) => listing.condition === selectedCondition);
+    }
+
+    // Apply swap filter
+    if (swapFilter === 'swapped') {
+      filtered = filtered.filter((listing) => listing.hasActiveMessage === true);
+    } else if (swapFilter === 'unswapped') {
+      filtered = filtered.filter((listing) => !listing.hasActiveMessage);
     }
 
     // Apply sorting
