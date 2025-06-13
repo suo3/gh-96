@@ -176,7 +176,7 @@ export const LoginDialog = ({ open, onOpenChange }: LoginDialogProps) => {
                   <Label htmlFor="firstName">First Name</Label>
                   <Input
                     id="firstName"
-                    value={signupForm.firstName}
+                    value={signup Form.firstName}
                     onChange={(e) => setSignupForm(prev => ({ ...prev, firstName: e.target.value }))}
                     required
                   />

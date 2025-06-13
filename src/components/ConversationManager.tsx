@@ -1,92 +1,109 @@
 
-import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { MessageSquare, User } from "lucide-react";
-import { useAuthStore } from "@/stores/authStore";
+import { useMessageStore } from "@/stores/messageStore";
+import { useToast } from "@/components/ui/use-toast";
+import { CheckCircle, Star } from "lucide-react";
+import { useState } from "react";
+import { UserRating } from "./UserRating";
 
 export const ConversationManager = () => {
-  const { user } = useAuthStore();
-  const [conversations, setConversations] = useState<any[]>([]);
+  const { conversations, markConversationComplete } = useMessageStore();
+  const { toast } = useToast();
+  const [showRating, setShowRating] = useState(false);
+  const [selectedConversation, setSelectedConversation] = useState<any>(null);
 
-  // Mock conversations for demo purposes
-  useEffect(() => {
-    if (user) {
-      setConversations([
-        {
-          id: '1',
-          otherUser: { name: 'Sarah M.', avatar: 'S' },
-          itemTitle: 'Vintage Coffee Maker',
-          lastMessage: 'Is this still available?',
-          timestamp: '2 hours ago',
-          unread: true
-        },
-        {
-          id: '2',
-          otherUser: { name: 'Mike K.', avatar: 'M' },
-          itemTitle: 'Programming Books',
-          lastMessage: 'Thanks for the trade!',
-          timestamp: '1 day ago',
-          unread: false
-        }
-      ]);
+  const handleMarkComplete = (conversationId: number, partner: string, item: string) => {
+    markConversationComplete(conversationId);
+    toast({
+      title: "Conversation Completed",
+      description: `Your swap with ${partner} has been marked as complete.`,
+    });
+    
+    // Show rating dialog
+    const conversation = conversations.find(c => c.id === conversationId);
+    if (conversation) {
+      setSelectedConversation(conversation);
+      setShowRating(true);
     }
-  }, [user]);
-
-  if (!user) return null;
+  };
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold">My Conversations</h2>
         <Badge variant="outline">
-          {conversations.length} active
+          {conversations.length} conversations
         </Badge>
       </div>
 
-      {conversations.length === 0 ? (
-        <Card>
-          <CardContent className="text-center py-8">
-            <MessageSquare className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-            <p className="text-gray-500">No conversations yet.</p>
-            <p className="text-sm text-gray-400 mt-2">
-              Start by messaging someone about their listing!
-            </p>
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="space-y-4">
-          {conversations.map((conversation) => (
-            <Card key={conversation.id} className="hover:shadow-md transition-shadow cursor-pointer">
-              <CardContent className="p-4">
-                <div className="flex items-start space-x-4">
-                  <div className="w-10 h-10 bg-gradient-to-br from-emerald-400 to-teal-400 rounded-full flex items-center justify-center text-white font-bold">
-                    {conversation.otherUser.avatar}
+      <div className="space-y-4">
+        {conversations.map((conversation) => (
+          <Card key={conversation.id}>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-lg flex items-center">
+                  <div className="w-8 h-8 bg-gradient-to-br from-emerald-400 to-teal-400 rounded-full flex items-center justify-center text-white text-sm font-bold mr-3">
+                    {conversation.avatar}
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between mb-1">
-                      <h3 className="font-semibold text-gray-900">
-                        {conversation.otherUser.name}
-                      </h3>
-                      <span className="text-xs text-gray-500">
-                        {conversation.timestamp}
-                      </span>
-                    </div>
-                    <p className="text-sm text-gray-600 mb-2">
-                      Re: {conversation.itemTitle}
-                    </p>
-                    <p className="text-sm text-gray-800 truncate">
-                      {conversation.lastMessage}
-                    </p>
-                  </div>
-                  {conversation.unread && (
-                    <div className="w-3 h-3 bg-emerald-500 rounded-full"></div>
-                  )}
+                  {conversation.partner}
+                </CardTitle>
+                <Badge 
+                  variant={
+                    conversation.status === 'completed' ? 'secondary' : 
+                    conversation.status === 'matched' ? 'default' : 'outline'
+                  }
+                >
+                  {conversation.status}
+                </Badge>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div>
+                  <p className="text-sm text-gray-600 mb-2">Item swap:</p>
+                  <p className="font-medium">{conversation.item}</p>
                 </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+                
+                <div>
+                  <p className="text-sm text-gray-600 mb-1">Last message:</p>
+                  <p className="text-sm">{conversation.lastMessage}</p>
+                  <p className="text-xs text-gray-400 mt-1">{conversation.time}</p>
+                </div>
+
+                {conversation.unread > 0 && (
+                  <Badge variant="destructive" className="text-xs">
+                    {conversation.unread} unread messages
+                  </Badge>
+                )}
+
+                {conversation.status === 'matched' && (
+                  <div className="flex space-x-2 pt-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleMarkComplete(conversation.id, conversation.partner, conversation.item)}
+                    >
+                      <CheckCircle className="w-4 h-4 mr-2" />
+                      Mark as Complete
+                    </Button>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      {selectedConversation && (
+        <UserRating
+          open={showRating}
+          onOpenChange={setShowRating}
+          ratedUserId="dummy-user-id"
+          ratedUserName={selectedConversation.partner}
+          itemTitle={selectedConversation.item}
+        />
       )}
     </div>
   );
