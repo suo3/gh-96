@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -26,7 +25,7 @@ const Index = () => {
   const [displayMode, setDisplayMode] = useState<"swipe" | "grid" | "list">(isMobile ? "swipe" : "grid");
   const [showPostDialog, setShowPostDialog] = useState(false);
   const [showLoginDialog, setShowLoginDialog] = useState(false);
-  const [showFilters, setShowFilters] = useState(false);
+  const [showFilters, setShowFilters] = useState(!isMobile); // Show filters by default on desktop
   const [userLocation, setUserLocation] = useState("Seattle, WA");
   const { createConversationFromSwipe } = useMessageStore();
   const { isAuthenticated, canCreateListing, canMakeSwap } = useAuthStore();
@@ -43,6 +42,8 @@ const Index = () => {
     if (!isMobile && displayMode === "swipe") {
       setDisplayMode("grid");
     }
+    // Show filters by default on desktop, hide on mobile
+    setShowFilters(!isMobile);
   }, [isMobile, displayMode]);
 
   // Get filtered items
