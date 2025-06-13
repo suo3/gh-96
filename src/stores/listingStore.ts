@@ -1,3 +1,4 @@
+
 import { create } from 'zustand';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -71,17 +72,10 @@ export const useListingStore = create<ListingStore>((set, get) => ({
     set({ loading: true, error: null });
     
     try {
+      // Fetch listings without trying to join with profiles since we removed the foreign key
       const { data, error } = await supabase
         .from('listings')
-        .select(`
-          *,
-          profiles:user_id (
-            username,
-            first_name,
-            last_name,
-            avatar
-          )
-        `)
+        .select('*')
         .eq('status', 'active')
         .order('created_at', { ascending: false });
 
@@ -91,7 +85,19 @@ export const useListingStore = create<ListingStore>((set, get) => ({
       }
 
       console.log('Fetched listings:', data);
-      set({ listings: data || [], loading: false });
+      
+      // Transform the data to include mock profile data for display
+      const transformedListings = (data || []).map(listing => ({
+        ...listing,
+        profiles: {
+          username: 'Anonymous User',
+          first_name: 'Anonymous',
+          last_name: 'User',
+          avatar: 'A'
+        }
+      }));
+
+      set({ listings: transformedListings, loading: false });
     } catch (error) {
       console.error('Error fetching listings:', error);
       set({ error: 'Failed to fetch listings', loading: false });
@@ -104,21 +110,23 @@ export const useListingStore = create<ListingStore>((set, get) => ({
     try {
       const { data, error } = await supabase
         .from('listings')
-        .select(`
-          *,
-          profiles:user_id (
-            username,
-            first_name,
-            last_name,
-            avatar
-          )
-        `)
+        .select('*')
         .eq('user_id', userId)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
 
-      set({ listings: data || [], loading: false });
+      const transformedListings = (data || []).map(listing => ({
+        ...listing,
+        profiles: {
+          username: 'Your Profile',
+          first_name: 'Your',
+          last_name: 'Profile',
+          avatar: 'Y'
+        }
+      }));
+
+      set({ listings: transformedListings, loading: false });
     } catch (error) {
       console.error('Error fetching user listings:', error);
       set({ error: 'Failed to fetch user listings', loading: false });
@@ -129,20 +137,21 @@ export const useListingStore = create<ListingStore>((set, get) => ({
     try {
       const { data, error } = await supabase
         .from('listings')
-        .select(`
-          *,
-          profiles:user_id (
-            username,
-            first_name,
-            last_name,
-            avatar
-          )
-        `)
+        .select('*')
         .eq('user_id', userId)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      return data || [];
+      
+      return (data || []).map(listing => ({
+        ...listing,
+        profiles: {
+          username: 'Your Profile',
+          first_name: 'Your',
+          last_name: 'Profile',
+          avatar: 'Y'
+        }
+      }));
     } catch (error) {
       console.error('Error getting user listings:', error);
       return [];
