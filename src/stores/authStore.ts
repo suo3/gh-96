@@ -53,6 +53,7 @@ export const useAuthStore = create<AuthState>()(
             console.log('Auth state change:', event, session?.user?.email);
             
             if (event === 'SIGNED_IN' && session?.user) {
+              console.log('User signed in, fetching profile...');
               // Fetch user profile
               const { data: profile, error } = await supabase
                 .from('profiles')
@@ -87,15 +88,24 @@ export const useAuthStore = create<AuthState>()(
                 });
               } else {
                 console.error('No profile found for user:', session.user.id);
-                set({ isLoading: false });
+                set({ 
+                  user: null,
+                  session: null,
+                  isAuthenticated: false,
+                  isLoading: false 
+                });
               }
             } else if (event === 'SIGNED_OUT') {
+              console.log('User signed out');
               set({ 
                 user: null, 
                 session: null, 
                 isAuthenticated: false,
                 isLoading: false 
               });
+            } else if (event === 'TOKEN_REFRESHED' && session) {
+              console.log('Token refreshed');
+              set({ session });
             }
           });
 
@@ -104,12 +114,13 @@ export const useAuthStore = create<AuthState>()(
           console.log('Initial session:', session?.user?.email, error);
           
           if (session?.user) {
+            console.log('Found existing session, fetching profile...');
             // Fetch user profile
             const { data: profile } = await supabase
               .from('profiles')
               .select('*')
               .eq('id', session.user.id)
-              .single();
+              .maybeSingle();
 
             if (profile) {
               const userProfile: UserProfile = {
@@ -134,8 +145,12 @@ export const useAuthStore = create<AuthState>()(
                 isAuthenticated: true, 
                 isLoading: false 
               });
+            } else {
+              console.log('No profile found for existing session');
+              set({ isLoading: false });
             }
           } else {
+            console.log('No existing session found');
             set({ isLoading: false });
           }
         } catch (error) {
@@ -147,20 +162,25 @@ export const useAuthStore = create<AuthState>()(
       login: async (email: string, password: string) => {
         try {
           console.log('Attempting login for:', email);
+          set({ isLoading: true });
+          
           const { data, error } = await supabase.auth.signInWithPassword({
-            email,
+            email: email.trim(),
             password,
           });
 
           if (error) {
             console.error('Login error:', error);
+            set({ isLoading: false });
             return false;
           }
 
           console.log('Login successful for:', email);
+          // Don't set loading to false here - let the auth state change handler do it
           return true;
         } catch (error) {
           console.error('Login error:', error);
+          set({ isLoading: false });
           return false;
         }
       },
@@ -168,10 +188,12 @@ export const useAuthStore = create<AuthState>()(
       signup: async (email: string, password: string, userData: Partial<UserProfile>) => {
         try {
           console.log('Attempting signup for:', email, userData);
+          set({ isLoading: true });
+          
           const redirectUrl = `${window.location.origin}/`;
           
           const { data, error } = await supabase.auth.signUp({
-            email,
+            email: email.trim(),
             password,
             options: {
               emailRedirectTo: redirectUrl,
@@ -186,13 +208,16 @@ export const useAuthStore = create<AuthState>()(
 
           if (error) {
             console.error('Signup error:', error);
+            set({ isLoading: false });
             return false;
           }
 
           console.log('Signup successful for:', email, data);
+          set({ isLoading: false });
           return true;
         } catch (error) {
           console.error('Signup error:', error);
+          set({ isLoading: false });
           return false;
         }
       },

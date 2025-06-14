@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -35,6 +36,7 @@ export const LoginDialog = ({ open, onOpenChange }: LoginDialogProps) => {
     setIsLoading(true);
 
     try {
+      console.log('Login form submitted:', loginForm.email);
       const success = await login(loginForm.email, loginForm.password);
       if (success) {
         toast({
@@ -46,11 +48,12 @@ export const LoginDialog = ({ open, onOpenChange }: LoginDialogProps) => {
       } else {
         toast({
           title: "Login failed",
-          description: "Invalid email or password.",
+          description: "Invalid email or password. Please check your credentials and try again.",
           variant: "destructive"
         });
       }
     } catch (error) {
+      console.error('Login error:', error);
       toast({
         title: "Error",
         description: "Something went wrong. Please try again.",
@@ -85,6 +88,7 @@ export const LoginDialog = ({ open, onOpenChange }: LoginDialogProps) => {
     setIsLoading(true);
 
     try {
+      console.log('Signup form submitted:', signupForm.email);
       const success = await signup(signupForm.email, signupForm.password, {
         firstName: signupForm.firstName,
         lastName: signupForm.lastName,
@@ -95,7 +99,7 @@ export const LoginDialog = ({ open, onOpenChange }: LoginDialogProps) => {
       if (success) {
         toast({
           title: "Account created!",
-          description: "Please check your email to verify your account.",
+          description: "Please check your email to verify your account before logging in.",
         });
         onOpenChange(false);
         setSignupForm({
@@ -115,6 +119,7 @@ export const LoginDialog = ({ open, onOpenChange }: LoginDialogProps) => {
         });
       }
     } catch (error) {
+      console.error('Signup error:', error);
       toast({
         title: "Signup failed",
         description: "Something went wrong. Please try again.",
@@ -149,6 +154,7 @@ export const LoginDialog = ({ open, onOpenChange }: LoginDialogProps) => {
                   value={loginForm.email}
                   onChange={(e) => setLoginForm(prev => ({ ...prev, email: e.target.value }))}
                   required
+                  autoComplete="email"
                 />
               </div>
               <div className="space-y-2">
@@ -160,6 +166,7 @@ export const LoginDialog = ({ open, onOpenChange }: LoginDialogProps) => {
                   value={loginForm.password}
                   onChange={(e) => setLoginForm(prev => ({ ...prev, password: e.target.value }))}
                   required
+                  autoComplete="current-password"
                 />
               </div>
               <Button type="submit" className="w-full" disabled={isLoading}>
@@ -179,6 +186,7 @@ export const LoginDialog = ({ open, onOpenChange }: LoginDialogProps) => {
                     value={signupForm.firstName}
                     onChange={(e) => setSignupForm(prev => ({ ...prev, firstName: e.target.value }))}
                     required
+                    autoComplete="given-name"
                   />
                 </div>
                 <div className="space-y-2">
@@ -188,6 +196,7 @@ export const LoginDialog = ({ open, onOpenChange }: LoginDialogProps) => {
                     value={signupForm.lastName}
                     onChange={(e) => setSignupForm(prev => ({ ...prev, lastName: e.target.value }))}
                     required
+                    autoComplete="family-name"
                   />
                 </div>
               </div>
@@ -199,6 +208,7 @@ export const LoginDialog = ({ open, onOpenChange }: LoginDialogProps) => {
                   value={signupForm.email}
                   onChange={(e) => setSignupForm(prev => ({ ...prev, email: e.target.value }))}
                   required
+                  autoComplete="email"
                 />
               </div>
               <div className="space-y-2">
@@ -208,6 +218,7 @@ export const LoginDialog = ({ open, onOpenChange }: LoginDialogProps) => {
                   value={signupForm.username}
                   onChange={(e) => setSignupForm(prev => ({ ...prev, username: e.target.value }))}
                   required
+                  autoComplete="username"
                 />
               </div>
               <div className="space-y-2">
@@ -226,6 +237,7 @@ export const LoginDialog = ({ open, onOpenChange }: LoginDialogProps) => {
                   value={signupForm.password}
                   onChange={(e) => setSignupForm(prev => ({ ...prev, password: e.target.value }))}
                   required
+                  autoComplete="new-password"
                 />
               </div>
               <div className="space-y-2">
@@ -236,6 +248,7 @@ export const LoginDialog = ({ open, onOpenChange }: LoginDialogProps) => {
                   value={signupForm.confirmPassword}
                   onChange={(e) => setSignupForm(prev => ({ ...prev, confirmPassword: e.target.value }))}
                   required
+                  autoComplete="new-password"
                 />
               </div>
               <Button type="submit" className="w-full" disabled={isLoading}>
