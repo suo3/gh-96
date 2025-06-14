@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,6 +11,7 @@ import { Camera, Upload, X, Plus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useListingStore } from "@/stores/listingStore";
 import { useAuthStore } from "@/stores/authStore";
+import { supabase } from "@/integrations/supabase/client";
 
 interface PostItemDialogProps {
   open: boolean;
@@ -28,6 +29,7 @@ export const PostItemDialog = ({ open, onOpenChange }: PostItemDialogProps) => {
     image: null as File | null,
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [userLocation, setUserLocation] = useState<string | null>(null);
 
   const { toast } = useToast();
   const { createListing } = useListingStore();
@@ -39,6 +41,35 @@ export const PostItemDialog = ({ open, onOpenChange }: PostItemDialogProps) => {
   ];
 
   const conditions = ["New", "Like New", "Good", "Fair"];
+
+  // Fetch user's location from profile when dialog opens
+  useEffect(() => {
+    const fetchUserLocation = async () => {
+      if (!user?.id) return;
+      
+      try {
+        const { data: profile, error } = await supabase
+          .from('profiles')
+          .select('location')
+          .eq('id', user.id)
+          .single();
+        
+        if (error) {
+          console.error('Error fetching user profile:', error);
+          return;
+        }
+        
+        setUserLocation(profile?.location || null);
+        console.log('User location from profile:', profile?.location);
+      } catch (error) {
+        console.error('Error fetching user location:', error);
+      }
+    };
+
+    if (open && user?.id) {
+      fetchUserLocation();
+    }
+  }, [open, user?.id]);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -70,6 +101,7 @@ export const PostItemDialog = ({ open, onOpenChange }: PostItemDialogProps) => {
     console.log('=== POST ITEM DEBUG START ===');
     console.log('Submit clicked, formData:', formData);
     console.log('User:', user);
+    console.log('User location from profile:', userLocation);
     console.log('createListing function:', createListing);
     console.log('isSubmitting:', isSubmitting);
     
@@ -110,7 +142,7 @@ export const PostItemDialog = ({ open, onOpenChange }: PostItemDialogProps) => {
         wanted_items: formData.wantedItems.length > 0 ? formData.wantedItems : null,
         images: [imageUrl],
         user_id: user.id,
-        location: user.location || null,
+        location: userLocation, // Use the location from user's profile
         status: 'active',
         views: 0,
         likes: 0
@@ -320,6 +352,16 @@ export const PostItemDialog = ({ open, onOpenChange }: PostItemDialogProps) => {
               </div>
             )}
           </div>
+
+          {/* Location Display */}
+          {userLocation && (
+            <div className="space-y-2">
+              <Label>Location</Label>
+              <div className="text-sm text-gray-600 bg-gray-50 p-2 rounded">
+                📍 {userLocation}
+              </div>
+            </div>
+          )}
 
           <div className="flex space-x-3 pt-4">
             <Button 
