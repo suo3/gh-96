@@ -235,24 +235,37 @@ export const useListingStore = create<ListingStore>((set, get) => ({
   },
 
   createListing: async (listing) => {
+    console.log('createListing function called with:', listing);
     set({ loading: true, error: null });
     
     try {
+      console.log('About to insert into Supabase...');
       const { data, error } = await supabase
         .from('listings')
         .insert([listing])
         .select()
         .single();
 
-      if (error) throw error;
+      console.log('Supabase insert response - data:', data, 'error:', error);
+
+      if (error) {
+        console.error('Supabase insert error:', error);
+        throw error;
+      }
+
+      console.log('Successfully inserted listing:', data);
 
       set((state) => ({
         listings: [data, ...state.listings],
         loading: false
       }));
+
+      console.log('Updated state with new listing');
+      return data; // Return the created listing
     } catch (error) {
-      console.error('Error creating listing:', error);
+      console.error('Error in createListing:', error);
       set({ error: 'Failed to create listing', loading: false });
+      throw error; // Re-throw the error so it can be caught in the component
     }
   },
 
