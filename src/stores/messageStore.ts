@@ -32,7 +32,7 @@ interface MessageStore {
   
   setSelectedConversation: (id: string | null) => void;
   sendMessage: (conversationId: string, text: string) => Promise<void>;
-  markAsRead: (conversationId: string) => void;
+  markAsRead: (conversationId: string) => Promise<void>;
   setTyping: (conversationId: string, isTyping: boolean) => void;
   addConversation: (conversation: Conversation) => void;
   createConversationFromSwipe: (itemTitle: string, partnerName: string) => Promise<string>;
@@ -78,31 +78,45 @@ export const useMessageStore = create<MessageStore>((set, get) => ({
         return;
       }
 
-      // Refresh messages for this conversation
+      // Refresh messages and conversations to get latest state
       get().fetchMessages(conversationId);
-      
-      // Update conversation's last message
-      set((state) => ({
-        conversations: state.conversations.map(conv => 
-          conv.id === conversationId 
-            ? { ...conv, lastMessage: text, time: "now" }
-            : conv
-        )
-      }));
+      get().fetchConversations();
 
     } catch (error) {
       console.error('Error sending message:', error);
     }
   },
   
-  markAsRead: (conversationId) => {
-    set((state) => ({
-      conversations: state.conversations.map(conv => 
-        conv.id === conversationId 
-          ? { ...conv, unread: 0 }
-          : conv
-      )
+  markAsRead: async (conversationId) => {
+    const { session } = useAuthStore.getState();
+    if (!session?.user) return;
+
+    const conversation = get().conversations.find(c => c.id === conversationId);
+    if (!conversation || conversation.unread === 0) return;
+
+    // Optimistic update
+    set(state => ({
+      conversations: state.conversations.map(c =>
+        c.id === conversationId ? { ...c, unread: 0 } : c
+      ),
     }));
+
+    const { error } = await supabase
+      .from('messages')
+      .update({ is_read: true })
+      .eq('conversation_id', conversationId)
+      .eq('is_read', false)
+      .neq('sender_id', session.user.id);
+    
+    if (error) {
+      console.error('Error marking messages as read', error);
+      // Revert on error
+      set(state => ({
+        conversations: state.conversations.map(c =>
+          c.id === conversationId ? { ...c, unread: conversation.unread } : c
+        ),
+      }));
+    }
   },
   
   setTyping: (conversationId, isTyping) => {
@@ -175,40 +189,48 @@ export const useMessageStore = create<MessageStore>((set, get) => ({
   fetchConversations: async () => {
     const { session } = useAuthStore.getState();
     if (!session?.user) {
-      console.error('User not authenticated');
+      set({ conversations: [], isLoading: false });
       return;
     }
 
     set({ isLoading: true });
     
     try {
-      const { data, error } = await supabase
-        .from('conversations')
-        .select(`
-          id,
-          item_title,
-          created_at,
-          user1_id,
-          user2_id
-        `)
-        .or(`user1_id.eq.${session.user.id},user2_id.eq.${session.user.id}`)
-        .order('updated_at', { ascending: false });
+      const { data, error } = await supabase.rpc('get_conversations_with_unread');
 
       if (error) {
         console.error('Error fetching conversations:', error);
+        set({ isLoading: false });
+        return;
+      }
+      
+      if (!data) {
+        set({ conversations: [], isLoading: false });
         return;
       }
 
       // Transform database conversations to UI format
       const conversations: Conversation[] = data.map(conv => {
         const partnerId = conv.user1_id === session.user.id ? conv.user2_id : conv.user1_id;
+        
+        let timeDisplay = new Date(conv.created_at).toLocaleDateString();
+        if (conv.last_message_time) {
+          const messageDate = new Date(conv.last_message_time);
+          const today = new Date();
+          if (messageDate.toDateString() === today.toDateString()) {
+            timeDisplay = messageDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+          } else {
+            timeDisplay = messageDate.toLocaleDateString();
+          }
+        }
+        
         return {
-          id: conv.id,
-          partner: 'Unknown User', // In real app, fetch from profiles
-          avatar: 'U',
-          lastMessage: 'No messages yet',
-          time: new Date(conv.created_at).toLocaleDateString(),
-          unread: 0,
+          id: conv.conv_id,
+          partner: 'Unknown User', // TODO: In real app, fetch from profiles using partnerId
+          avatar: 'U', // TODO: Fetch from profiles
+          lastMessage: conv.last_message || 'No messages yet.',
+          time: timeDisplay,
+          unread: Number(conv.unread_count) || 0,
           item: conv.item_title || 'Unknown Item',
           status: 'matched' as const
         };
@@ -217,7 +239,7 @@ export const useMessageStore = create<MessageStore>((set, get) => ({
       set({ conversations, isLoading: false });
       
     } catch (error) {
-      console.error('Error fetching conversations:', error);
+      console.error('Error in fetchConversations:', error);
       set({ isLoading: false });
     }
   },
@@ -248,7 +270,7 @@ export const useMessageStore = create<MessageStore>((set, get) => ({
         sender: msg.sender_id === session.user.id ? 'me' : 'partner',
         text: msg.content,
         timestamp: new Date(msg.created_at),
-        read: true
+        read: msg.is_read, // Map is_read from DB
       }));
 
       set((state) => ({

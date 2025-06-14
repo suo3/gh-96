@@ -93,6 +93,7 @@ export type Database = {
           conversation_id: string
           created_at: string | null
           id: string
+          is_read: boolean
           sender_id: string
         }
         Insert: {
@@ -100,6 +101,7 @@ export type Database = {
           conversation_id: string
           created_at?: string | null
           id?: string
+          is_read?: boolean
           sender_id: string
         }
         Update: {
@@ -107,6 +109,7 @@ export type Database = {
           conversation_id?: string
           created_at?: string | null
           id?: string
+          is_read?: boolean
           sender_id?: string
         }
         Relationships: [
@@ -241,7 +244,20 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_conversations_with_unread: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          conv_id: string
+          item_title: string
+          created_at: string
+          updated_at: string
+          user1_id: string
+          user2_id: string
+          last_message: string
+          last_message_time: string
+          unread_count: number
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never
