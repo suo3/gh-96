@@ -26,11 +26,11 @@ export const PostItemDialog = ({ open, onOpenChange }: PostItemDialogProps) => {
     condition: "",
     wantedItems: [] as string[],
     newWantedItem: "",
-    image: null as File | null,
+    images: [] as File[],
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [userLocation, setUserLocation] = useState<string | null>(null);
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
 
   const { toast } = useToast();
   const { createListing } = useListingStore();
@@ -73,19 +73,45 @@ export const PostItemDialog = ({ open, onOpenChange }: PostItemDialogProps) => {
   }, [open, user?.id]);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setFormData({ ...formData, image: file });
-      // Create preview URL
-      const previewUrl = URL.createObjectURL(file);
-      setImagePreview(previewUrl);
+    const files = Array.from(e.target.files || []);
+    
+    // Limit to 4 images total
+    const remainingSlots = 4 - formData.images.length;
+    const filesToAdd = files.slice(0, remainingSlots);
+    
+    if (files.length > remainingSlots) {
+      toast({
+        title: "Image Limit",
+        description: `You can only upload up to 4 images. ${remainingSlots} slots remaining.`,
+        variant: "destructive"
+      });
     }
+
+    if (filesToAdd.length > 0) {
+      const newImages = [...formData.images, ...filesToAdd];
+      setFormData({ ...formData, images: newImages });
+      
+      // Create preview URLs
+      const newPreviews = filesToAdd.map(file => URL.createObjectURL(file));
+      setImagePreviews(prev => [...prev, ...newPreviews]);
+    }
+  };
+
+  const removeImage = (index: number) => {
+    // Revoke the preview URL to free memory
+    URL.revokeObjectURL(imagePreviews[index]);
+    
+    const newImages = formData.images.filter((_, i) => i !== index);
+    const newPreviews = imagePreviews.filter((_, i) => i !== index);
+    
+    setFormData({ ...formData, images: newImages });
+    setImagePreviews(newPreviews);
   };
 
   const uploadImageToSupabase = async (file: File): Promise<string | null> => {
     try {
       const fileExt = file.name.split('.').pop();
-      const fileName = `${user!.id}/${Date.now()}.${fileExt}`;
+      const fileName = `${user!.id}/${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
       
       const { error: uploadError } = await supabase.storage
         .from('listing-images')
@@ -156,22 +182,31 @@ export const PostItemDialog = ({ open, onOpenChange }: PostItemDialogProps) => {
     setIsSubmitting(true);
 
     try {
-      let imageUrl = "https://images.unsplash.com/photo-1649972904349-6e44c42644a7?w=400&h=300&fit=crop";
+      let imageUrls: string[] = [];
       
-      // Upload image if provided
-      if (formData.image) {
-        console.log('Uploading image to Supabase...');
-        const uploadedImageUrl = await uploadImageToSupabase(formData.image);
-        if (uploadedImageUrl) {
-          imageUrl = uploadedImageUrl;
-          console.log('Image uploaded successfully:', imageUrl);
-        } else {
+      // Upload all images if provided
+      if (formData.images.length > 0) {
+        console.log('Uploading images to Supabase...');
+        const uploadPromises = formData.images.map(image => uploadImageToSupabase(image));
+        const uploadResults = await Promise.all(uploadPromises);
+        
+        // Filter out any failed uploads
+        imageUrls = uploadResults.filter(url => url !== null) as string[];
+        
+        if (imageUrls.length !== formData.images.length) {
           toast({
-            title: "Image Upload Failed",
-            description: "Failed to upload image, using default image instead.",
+            title: "Some Images Failed to Upload",
+            description: `${formData.images.length - imageUrls.length} images failed to upload.`,
             variant: "destructive",
           });
         }
+        
+        console.log('Images uploaded successfully:', imageUrls);
+      }
+
+      // If no images were uploaded, use default
+      if (imageUrls.length === 0) {
+        imageUrls = ["https://images.unsplash.com/photo-1649972904349-6e44c42644a7?w=400&h=300&fit=crop"];
       }
 
       const listingData = {
@@ -180,7 +215,7 @@ export const PostItemDialog = ({ open, onOpenChange }: PostItemDialogProps) => {
         category: formData.category,
         condition: formData.condition,
         wanted_items: formData.wantedItems.length > 0 ? formData.wantedItems : null,
-        images: [imageUrl],
+        images: imageUrls,
         user_id: user.id,
         location: userLocation,
         status: 'active',
@@ -208,9 +243,11 @@ export const PostItemDialog = ({ open, onOpenChange }: PostItemDialogProps) => {
         condition: "",
         wantedItems: [],
         newWantedItem: "",
-        image: null,
+        images: [],
       });
-      setImagePreview(null);
+      // Clean up preview URLs
+      imagePreviews.forEach(url => URL.revokeObjectURL(url));
+      setImagePreviews([]);
 
       onOpenChange(false);
     } catch (error) {
@@ -241,51 +278,57 @@ export const PostItemDialog = ({ open, onOpenChange }: PostItemDialogProps) => {
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Image Upload */}
           <div className="space-y-2">
-            <Label>Photo *</Label>
-            <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-gray-400 transition-colors">
-              {imagePreview ? (
-                <div className="relative">
-                  <img
-                    src={imagePreview}
-                    alt="Preview"
-                    className="max-h-48 mx-auto rounded-lg"
-                  />
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    className="mt-4"
-                    onClick={() => {
-                      setFormData({ ...formData, image: null });
-                      setImagePreview(null);
-                    }}
-                  >
-                    <X className="w-4 h-4 mr-2" />
-                    Remove
-                  </Button>
-                </div>
-              ) : (
-                <div>
-                  <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-600 mb-2">Upload a photo of your item</p>
-                  <div className="flex items-center justify-center space-x-4">
-                    <Button type="button" variant="outline" size="sm" asChild>
-                      <label htmlFor="image-upload" className="cursor-pointer">
-                        <Camera className="w-4 h-4 mr-2" />
-                        Choose File
-                      </label>
+            <Label>Photos (up to 4) *</Label>
+            
+            {/* Image Previews */}
+            {imagePreviews.length > 0 && (
+              <div className="grid grid-cols-2 gap-4 mb-4">
+                {imagePreviews.map((preview, index) => (
+                  <div key={index} className="relative">
+                    <img
+                      src={preview}
+                      alt={`Preview ${index + 1}`}
+                      className="w-full h-32 object-cover rounded-lg"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="absolute top-2 right-2 p-1 h-auto"
+                      onClick={() => removeImage(index)}
+                    >
+                      <X className="w-4 h-4" />
                     </Button>
                   </div>
-                  <input
-                    id="image-upload"
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageUpload}
-                    className="hidden"
-                  />
+                ))}
+              </div>
+            )}
+
+            {/* Upload Area */}
+            {formData.images.length < 4 && (
+              <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-gray-400 transition-colors">
+                <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                <p className="text-gray-600 mb-2">
+                  Upload photos of your item ({formData.images.length}/4)
+                </p>
+                <div className="flex items-center justify-center space-x-4">
+                  <Button type="button" variant="outline" size="sm" asChild>
+                    <label htmlFor="image-upload" className="cursor-pointer">
+                      <Camera className="w-4 h-4 mr-2" />
+                      Choose Files
+                    </label>
+                  </Button>
                 </div>
-              )}
-            </div>
+                <input
+                  id="image-upload"
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  onChange={handleImageUpload}
+                  className="hidden"
+                />
+              </div>
+            )}
           </div>
 
           {/* Basic Info */}

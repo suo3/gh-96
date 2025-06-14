@@ -1,7 +1,9 @@
+
 import { useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { MapPin, Heart, Star, MessageCircle, Eye } from "lucide-react";
 import { Listing } from "@/stores/listingStore";
 import { useMessageStore } from "@/stores/messageStore";
@@ -150,23 +152,48 @@ export const ItemDetailModal = ({ item, open, onOpenChange, onItemLike }: ItemDe
         </DialogHeader>
         
         <div className="space-y-6">
-          {/* Images */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Images Carousel */}
+          <div className="w-full">
             {images.length > 0 ? (
-              images.map((image, index) => (
+              images.length === 1 ? (
                 <img
-                  key={index}
-                  src={image}
-                  alt={`${item.title} - Image ${index + 1}`}
-                  className="w-full h-48 object-cover rounded-lg"
+                  src={images[0]}
+                  alt={item.title}
+                  className="w-full h-64 object-cover rounded-lg"
                   onError={(e) => {
                     e.currentTarget.src = "https://images.unsplash.com/photo-1649972904349-6e44c42644a7?w=400&h=300&fit=crop";
                   }}
                 />
-              ))
+              ) : (
+                <Carousel className="w-full">
+                  <CarouselContent>
+                    {images.map((image, index) => (
+                      <CarouselItem key={index}>
+                        <img
+                          src={image}
+                          alt={`${item.title} - Image ${index + 1}`}
+                          className="w-full h-64 object-cover rounded-lg"
+                          onError={(e) => {
+                            e.currentTarget.src = "https://images.unsplash.com/photo-1649972904349-6e44c42644a7?w=400&h=300&fit=crop";
+                          }}
+                        />
+                      </CarouselItem>
+                    ))}
+                  </CarouselContent>
+                  <CarouselPrevious />
+                  <CarouselNext />
+                </Carousel>
+              )
             ) : (
-              <div className="w-full h-48 bg-gray-200 rounded-lg flex items-center justify-center">
+              <div className="w-full h-64 bg-gray-200 rounded-lg flex items-center justify-center">
                 <span className="text-gray-500">No image available</span>
+              </div>
+            )}
+            
+            {/* Image counter */}
+            {images.length > 1 && (
+              <div className="text-center text-sm text-gray-500 mt-2">
+                {images.length} photos
               </div>
             )}
           </div>
