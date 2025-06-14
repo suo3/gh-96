@@ -67,10 +67,14 @@ export const PostItemDialog = ({ open, onOpenChange }: PostItemDialogProps) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    console.log('=== POST ITEM DEBUG START ===');
     console.log('Submit clicked, formData:', formData);
     console.log('User:', user);
+    console.log('createListing function:', createListing);
+    console.log('isSubmitting:', isSubmitting);
     
     if (!formData.title || !formData.description || !formData.category || !formData.condition) {
+      console.log('Form validation failed - missing required fields');
       toast({
         title: "Missing Information",
         description: "Please fill in all required fields.",
@@ -80,6 +84,7 @@ export const PostItemDialog = ({ open, onOpenChange }: PostItemDialogProps) => {
     }
 
     if (!user) {
+      console.log('User not authenticated');
       toast({
         title: "Authentication Required",
         description: "You must be logged in to post an item.",
@@ -88,8 +93,8 @@ export const PostItemDialog = ({ open, onOpenChange }: PostItemDialogProps) => {
       return;
     }
 
+    console.log('Setting isSubmitting to true');
     setIsSubmitting(true);
-    console.log('Starting to create listing...');
 
     try {
       // For now, we'll use a placeholder image URL since we don't have image upload set up
@@ -111,9 +116,10 @@ export const PostItemDialog = ({ open, onOpenChange }: PostItemDialogProps) => {
         likes: 0
       };
 
-      console.log('Creating listing with data:', listingData);
+      console.log('About to call createListing with data:', listingData);
       
-      await createListing(listingData);
+      const result = await createListing(listingData);
+      console.log('createListing result:', result);
 
       console.log('Listing created successfully');
 
@@ -135,20 +141,26 @@ export const PostItemDialog = ({ open, onOpenChange }: PostItemDialogProps) => {
 
       onOpenChange(false);
     } catch (error) {
-      console.error('Error posting item:', error);
+      console.error('=== ERROR POSTING ITEM ===');
+      console.error('Error details:', error);
+      console.error('Error message:', error?.message);
+      console.error('Error stack:', error?.stack);
       toast({
         title: "Error Posting Item",
-        description: "There was a problem posting your item. Please try again.",
+        description: `There was a problem posting your item: ${error?.message || 'Unknown error'}`,
         variant: "destructive",
       });
     } finally {
-      console.log('Setting isSubmitting to false');
+      console.log('Setting isSubmitting to false in finally block');
       setIsSubmitting(false);
+      console.log('=== POST ITEM DEBUG END ===');
     }
   };
 
   // Check if form is valid
   const isFormValid = formData.title && formData.description && formData.category && formData.condition;
+
+  console.log('Render - isSubmitting:', isSubmitting, 'isFormValid:', isFormValid, 'button disabled:', isSubmitting || !isFormValid);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
