@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Search, Filter, MapPin, X, Heart } from "lucide-react";
 import { useMessageStore } from "@/stores/messageStore";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 
 interface SearchAndFilterProps {
   onSearch: (keyword: string) => void;
@@ -164,13 +164,22 @@ export const SearchAndFilter = ({ onSearch, onFilterChange, onBack }: SearchAndF
     });
   };
 
-  const handleItemLike = (item: any) => {
-    const conversationId = createConversationFromSwipe(item.title, item.user);
-    toast({
-      title: "Interest Sent!",
-      description: `You've expressed interest in ${item.title}. A conversation has been started with ${item.user}.`,
-    });
-    console.log(`Started conversation ${conversationId} for ${item.title} with ${item.user}`);
+  const handleItemLike = async (item: any) => {
+    try {
+      const conversationId = await createConversationFromSwipe(item.id, item.title, 'mock-user-id');
+      toast({
+        title: "Interest Sent!",
+        description: `You've expressed interest in ${item.title}. A conversation has been started with ${item.user}.`,
+      });
+      console.log(`Started conversation ${conversationId} for ${item.title} with ${item.user}`);
+    } catch (error) {
+      console.error('Error starting conversation:', error);
+      toast({
+        title: "Error",
+        description: "Failed to start conversation. Please try again.",
+        variant: "destructive"
+      });
+    }
   };
 
   return (

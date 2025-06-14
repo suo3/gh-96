@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -93,7 +92,7 @@ const Index = () => {
   const items = filteredListings();
   const [currentItemIndex, setCurrentItemIndex] = useState(0);
 
-  const handleSwipe = (direction: 'left' | 'right') => {
+  const handleSwipe = async (direction: 'left' | 'right') => {
     if (!isAuthenticated) {
       setShowLoginDialog(true);
       return;
@@ -122,13 +121,26 @@ const Index = () => {
     }
 
     if (direction === 'right') {
-      const conversationId = createConversationFromSwipe(currentItem.title, currentItem.profiles?.username ||    'User');
-      markItemAsMessaged(currentItem.id);
-      
-      toast({
-        title: "Match Created!",
-        description: `You've shown interest in ${currentItem.title}! A conversation has been started.`,
-      });
+      try {
+        const conversationId = await createConversationFromSwipe(
+          currentItem.id, 
+          currentItem.title, 
+          currentItem.user_id || ''
+        );
+        markItemAsMessaged(currentItem.id);
+        
+        toast({
+          title: "Match Created!",
+          description: `You've shown interest in ${currentItem.title}! A conversation has been started.`,
+        });
+      } catch (error) {
+        console.error('Error creating conversation:', error);
+        toast({
+          title: "Error",
+          description: "Failed to start conversation. Please try again.",
+          variant: "destructive"
+        });
+      }
     }
     
     if (currentItemIndex < items.length - 1) {
@@ -138,7 +150,7 @@ const Index = () => {
     }
   };
 
-  const handleItemLike = (item: any) => {
+  const handleItemLike = async (item: any) => {
     if (!isAuthenticated) {
       setShowLoginDialog(true);
       return;
@@ -163,13 +175,26 @@ const Index = () => {
       return;
     }
 
-    const conversationId = createConversationFromSwipe(item.title, item.profiles?.username || 'User');
-    markItemAsMessaged(item.id);
-    
-    toast({
-      title: "Interest Sent!",
-      description: `You've expressed interest in ${item.title}. A conversation has been started.`,
-    });
+    try {
+      const conversationId = await createConversationFromSwipe(
+        item.id, 
+        item.title, 
+        item.user_id || ''
+      );
+      markItemAsMessaged(item.id);
+      
+      toast({
+        title: "Interest Sent!",
+        description: `You've expressed interest in ${item.title}. A conversation has been started.`,
+      });
+    } catch (error) {
+      console.error('Error creating conversation:', error);
+      toast({
+        title: "Error",
+        description: "Failed to start conversation. Please try again.",
+        variant: "destructive"
+      });
+    }
   };
 
   const handlePostItem = () => {
