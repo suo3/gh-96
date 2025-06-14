@@ -1,4 +1,3 @@
-
 import { create } from 'zustand';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -42,6 +41,7 @@ interface ListingStore {
   sortBy: string;
   swapFilter: 'all' | 'swapped' | 'unswapped';
   maxDistance: number;
+  minRating: number;
   userLocation: { lat: number; lng: number } | null;
   currentUserId: string | null;
   
@@ -51,6 +51,7 @@ interface ListingStore {
   setSortBy: (sort: string) => void;
   setSwapFilter: (filter: 'all' | 'swapped' | 'unswapped') => void;
   setMaxDistance: (distance: number) => void;
+  setMinRating: (rating: number) => void;
   setCurrentUserId: (userId: string | null) => void;
   setUserLocation: (location: { lat: number; lng: number } | null) => void;
   fetchListings: () => Promise<void>;
@@ -77,6 +78,7 @@ export const useListingStore = create<ListingStore>((set, get) => ({
   sortBy: 'distance', // Default to distance sorting
   swapFilter: 'all',
   maxDistance: 25, // Default to 25 miles
+  minRating: 0, // Default to 0 (no minimum rating)
   userLocation: null,
   currentUserId: null,
 
@@ -86,6 +88,7 @@ export const useListingStore = create<ListingStore>((set, get) => ({
   setSortBy: (sort) => set({ sortBy: sort }),
   setSwapFilter: (filter) => set({ swapFilter: filter }),
   setMaxDistance: (distance) => set({ maxDistance: distance }),
+  setMinRating: (rating) => set({ minRating: rating }),
   setCurrentUserId: (userId) => set({ currentUserId: userId }),
   setUserLocation: (location) => {
     set({ userLocation: location });
@@ -461,6 +464,7 @@ export const useListingStore = create<ListingStore>((set, get) => ({
       sortBy, 
       swapFilter,
       maxDistance,
+      minRating,
       userLocation,
       currentUserId
     } = get();
@@ -470,6 +474,7 @@ export const useListingStore = create<ListingStore>((set, get) => ({
     console.log('Filtering listings:', {
       totalListings: filtered.length,
       maxDistance,
+      minRating,
       userLocation,
       hasUserLocation: !!userLocation,
       currentUserId
@@ -501,6 +506,21 @@ export const useListingStore = create<ListingStore>((set, get) => ({
       filtered = filtered.filter((listing) => listing.hasActiveMessage === true);
     } else if (swapFilter === 'unswapped') {
       filtered = filtered.filter((listing) => !listing.hasActiveMessage);
+    }
+
+    // Apply minimum rating filter
+    if (minRating > 0) {
+      const { getAverageRating } = require('@/stores/ratingStore').useRatingStore.getState();
+      filtered = filtered.filter((listing) => {
+        if (!listing.user_id) return true; // Keep items without user_id
+        const userRating = getAverageRating(listing.user_id);
+        const meetsRating = userRating >= minRating;
+        if (!meetsRating) {
+          console.log(`Excluding ${listing.title} - user rating: ${userRating} < ${minRating}`);
+        }
+        return meetsRating;
+      });
+      console.log(`Rating filter: filtered to items with rating >= ${minRating}`);
     }
 
     // Apply distance filter if user location is available

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -27,6 +26,7 @@ export const FilterPanel = ({ onFilterChange, isVisible }: FilterPanelProps) => 
     selectedCondition, setSelectedCondition,
     swapFilter, setSwapFilter,
     maxDistance, setMaxDistance,
+    minRating, setMinRating,
     searchTerm, setSearchTerm,
     sortBy, setSortBy,
     userLocation, setUserLocation,
@@ -36,7 +36,7 @@ export const FilterPanel = ({ onFilterChange, isVisible }: FilterPanelProps) => 
   const { user } = useAuthStore();
   
   const [selectedRadius, setSelectedRadius] = useState([maxDistance]);
-  const [minRating, setMinRating] = useState([0]);
+  const [selectedMinRating, setSelectedMinRating] = useState([minRating]);
 
   // Initialize user location from profile
   useEffect(() => {
@@ -93,7 +93,7 @@ export const FilterPanel = ({ onFilterChange, isVisible }: FilterPanelProps) => 
       condition: selectedCondition === "all" ? "" : selectedCondition,
       location: user?.location || "",
       radius: selectedRadius[0],
-      minRating: minRating[0]
+      minRating: selectedMinRating[0]
     });
   };
 
@@ -105,7 +105,8 @@ export const FilterPanel = ({ onFilterChange, isVisible }: FilterPanelProps) => 
     setSortBy("newest");
     setSelectedRadius([25]);
     setMaxDistance(25);
-    setMinRating([0]);
+    setSelectedMinRating([0]);
+    setMinRating(0);
     onFilterChange({
       category: "",
       condition: "",
@@ -122,7 +123,8 @@ export const FilterPanel = ({ onFilterChange, isVisible }: FilterPanelProps) => 
   };
 
   const handleRatingChange = (value: number[]) => {
-    setMinRating(value);
+    setSelectedMinRating(value);
+    setMinRating(value[0]);
     setTimeout(applyFilters, 0);
   };
 
@@ -231,10 +233,10 @@ export const FilterPanel = ({ onFilterChange, isVisible }: FilterPanelProps) => 
         {/* Rating Filter */}
         <div className="mb-4">
           <label className="text-sm font-medium text-emerald-800 mb-2 block">
-            Minimum Rating: {minRating[0]} star{minRating[0] !== 1 ? 's' : ''}
+            Minimum Rating: {selectedMinRating[0]} star{selectedMinRating[0] !== 1 ? 's' : ''}
           </label>
           <Slider
-            value={minRating}
+            value={selectedMinRating}
             onValueChange={handleRatingChange}
             max={5}
             min={0}
@@ -277,14 +279,14 @@ export const FilterPanel = ({ onFilterChange, isVisible }: FilterPanelProps) => 
                 Sort: {sortOptions.find(s => s.value === sortBy)?.label}
               </Badge>
             )}
-            {minRating[0] > 0 && (
+            {minRating > 0 && (
               <Badge variant="secondary" className="bg-emerald-100 text-emerald-800">
                 <Star className="w-3 h-3 mr-1" />
-                {minRating[0]}+ stars
+                {minRating}+ stars
               </Badge>
             )}
           </div>
-          {(selectedCategory !== "all" || selectedCondition !== "all" || swapFilter !== "all" || minRating[0] > 0 || searchTerm || sortBy !== "newest") && (
+          {(selectedCategory !== "all" || selectedCondition !== "all" || swapFilter !== "all" || minRating > 0 || searchTerm || sortBy !== "newest") && (
             <Button variant="outline" size="sm" onClick={clearFilters} className="border-emerald-200">
               <X className="w-4 h-4 mr-2" />
               Clear All
