@@ -1,3 +1,4 @@
+
 import { useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
@@ -94,9 +95,6 @@ export const ItemDetailModal = ({ item, open, onOpenChange, onItemLike }: ItemDe
   };
 
   const getUserDisplayName = (item: Listing) => {
-    if (item.profiles?.first_name && item.profiles?.last_name) {
-      return `${item.profiles.first_name} ${item.profiles.last_name}`;
-    }
     return item.profiles?.first_name || item.profiles?.username || 'Anonymous User';
   };
 
