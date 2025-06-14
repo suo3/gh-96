@@ -27,7 +27,7 @@ const Index = () => {
   const [showLoginDialog, setShowLoginDialog] = useState(false);
   const [showFilters, setShowFilters] = useState(!isMobile); // Show filters by default on desktop
   const [userLocation, setUserLocation] = useState("Seattle, WA");
-  const { createConversationFromSwipe } = useMessageStore();
+  const { createConversationFromSwipe, totalUnreadCount, fetchConversationsWithUnreadCount } = useMessageStore();
   const { isAuthenticated, canCreateListing, canMakeSwap, user } = useAuthStore();
   const { 
     filteredListings, 
@@ -52,6 +52,13 @@ const Index = () => {
   useEffect(() => {
     fetchListings();
   }, [fetchListings]);
+
+  // Fetch unread messages count when authenticated
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchConversationsWithUnreadCount();
+    }
+  }, [isAuthenticated, fetchConversationsWithUnreadCount]);
 
   // Initialize user location from profile
   useEffect(() => {
@@ -257,19 +264,21 @@ const Index = () => {
                   <Filter className="w-5 h-5" />
                 </Button>
                 
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => isAuthenticated ? setCurrentView("messages") : setShowLoginDialog(true)}
-                  className="relative"
-                >
-                  <MessageCircle className="w-5 h-5" />
-                  {isAuthenticated && (
-                    <Badge className="absolute -top-1 -right-1 w-5 h-5 p-0 flex items-center justify-center bg-red-500 text-xs">
-                      3
-                    </Badge>
-                  )}
-                </Button>
+                {isAuthenticated && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setCurrentView("messages")}
+                    className="relative"
+                  >
+                    <MessageCircle className="w-5 h-5" />
+                    {totalUnreadCount > 0 && (
+                      <Badge className="absolute -top-1 -right-1 w-5 h-5 p-0 flex items-center justify-center bg-red-500 text-xs">
+                        {totalUnreadCount}
+                      </Badge>
+                    )}
+                  </Button>
+                )}
                 
                 <AuthButton
                   onLogin={() => setShowLoginDialog(true)}
