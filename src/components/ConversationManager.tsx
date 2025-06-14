@@ -1,14 +1,15 @@
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useMessageStore } from "@/stores/messageStore";
-import { useToast } from "@/components/ui/use-toast";
-import { CheckCircle, Star } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { CheckCircle, X, Star } from "lucide-react";
 import { useState } from "react";
 import { UserRating } from "./UserRating";
 
 export const ConversationManager = () => {
-  const { conversations, markConversationComplete } = useMessageStore();
+  const { conversations, markConversationComplete, rejectConversation } = useMessageStore();
   const { toast } = useToast();
   const [showRating, setShowRating] = useState(false);
   const [selectedConversation, setSelectedConversation] = useState<any>(null);
@@ -26,6 +27,15 @@ export const ConversationManager = () => {
       setSelectedConversation(conversation);
       setShowRating(true);
     }
+  };
+
+  const handleRejectSwap = async (conversationId: string, partner: string, item: string) => {
+    await rejectConversation(conversationId);
+    toast({
+      title: "Swap Request Rejected",
+      description: `You have rejected the swap request from ${partner} for "${item}".`,
+      variant: "destructive"
+    });
   };
 
   return (
@@ -47,10 +57,16 @@ export const ConversationManager = () => {
                     {conversation.avatar}
                   </div>
                   {conversation.partner}
+                  {conversation.isOwner && (
+                    <Badge variant="secondary" className="ml-2 text-xs">
+                      Owner
+                    </Badge>
+                  )}
                 </CardTitle>
                 <Badge 
                   variant={
                     conversation.status === 'completed' ? 'secondary' : 
+                    conversation.status === 'rejected' ? 'destructive' :
                     conversation.status === 'matched' ? 'default' : 'outline'
                   }
                 >
@@ -87,6 +103,23 @@ export const ConversationManager = () => {
                       <CheckCircle className="w-4 h-4 mr-2" />
                       Mark as Complete
                     </Button>
+                    
+                    {conversation.isOwner && (
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => handleRejectSwap(conversation.id, conversation.partner, conversation.item)}
+                      >
+                        <X className="w-4 h-4 mr-2" />
+                        Reject Swap
+                      </Button>
+                    )}
+                  </div>
+                )}
+
+                {conversation.status === 'rejected' && (
+                  <div className="text-sm text-red-600 font-medium">
+                    This swap request has been rejected
                   </div>
                 )}
               </div>

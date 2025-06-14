@@ -1,4 +1,3 @@
-
 import { create } from 'zustand';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuthStore } from './authStore';
@@ -20,8 +19,9 @@ export interface Conversation {
   time: string;
   unread: number;
   item: string;
-  status: 'matched' | 'pending' | 'completed';
+  status: 'matched' | 'pending' | 'completed' | 'rejected';
   isTyping?: boolean;
+  isOwner?: boolean;
 }
 
 interface MessageStore {
@@ -39,6 +39,7 @@ interface MessageStore {
   addConversation: (conversation: Conversation) => void;
   createConversationFromSwipe: (listingId: string, itemTitle: string, listingOwnerId: string) => Promise<string>;
   markConversationComplete: (conversationId: string) => void;
+  rejectConversation: (conversationId: string) => Promise<void>;
   fetchConversations: () => Promise<void>;
   fetchMessages: (conversationId: string) => Promise<void>;
 }
@@ -211,6 +212,40 @@ export const useMessageStore = create<MessageStore>((set, get) => ({
     }));
   },
 
+  rejectConversation: async (conversationId) => {
+    const { session } = useAuthStore.getState();
+    if (!session?.user) {
+      console.error('User not authenticated');
+      return;
+    }
+
+    try {
+      // Update conversation status in database if needed
+      // For now, we'll just update local state
+      set((state) => ({
+        conversations: state.conversations.map(conv =>
+          conv.id === conversationId
+            ? { ...conv, status: 'rejected', lastMessage: 'Swap request rejected' }
+            : conv
+        )
+      }));
+
+      // Add rejection message
+      await supabase
+        .from('messages')
+        .insert({
+          conversation_id: conversationId,
+          sender_id: session.user.id,
+          content: 'I have declined this swap request.'
+        });
+
+      // Refresh conversations
+      get().fetchConversations();
+    } catch (error) {
+      console.error('Error rejecting conversation:', error);
+    }
+  },
+
   fetchConversations: async () => {
     const { session } = useAuthStore.getState();
     if (!session?.user) {
@@ -238,6 +273,7 @@ export const useMessageStore = create<MessageStore>((set, get) => ({
       // Transform database conversations to UI format
       const conversations: Conversation[] = data.map(conv => {
         const partnerId = conv.user1_id === session.user.id ? conv.user2_id : conv.user1_id;
+        const isOwner = conv.user2_id === session.user.id; // Item owner is user2
         
         let timeDisplay = new Date(conv.created_at).toLocaleDateString();
         if (conv.last_message_time) {
@@ -261,7 +297,8 @@ export const useMessageStore = create<MessageStore>((set, get) => ({
           time: timeDisplay,
           unread: unreadCount,
           item: conv.item_title || 'Unknown Item',
-          status: 'matched' as const
+          status: 'matched' as const,
+          isOwner
         };
       });
 
