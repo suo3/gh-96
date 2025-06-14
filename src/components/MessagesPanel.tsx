@@ -1,15 +1,16 @@
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { ArrowLeft, Send, RotateCcw, LogIn } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { ArrowLeft, Send, MessageCircle } from "lucide-react";
+import { ConversationList } from "./ConversationList";
+import { MessageBubble } from "./MessageBubble";
+import { TypingIndicator } from "./TypingIndicator";
 import { useMessageStore } from "@/stores/messageStore";
 import { useAuthStore } from "@/stores/authStore";
-import { MessageBubble } from "@/components/MessageBubble";
-import { TypingIndicator } from "@/components/TypingIndicator";
-import { ConversationList } from "@/components/ConversationList";
 
 interface MessagesPanelProps {
   onBack: () => void;
@@ -17,40 +18,43 @@ interface MessagesPanelProps {
 }
 
 export const MessagesPanel = ({ onBack, onLogin }: MessagesPanelProps) => {
+  const [selectedChat, setSelectedChat] = useState<string | null>(null);
   const [newMessage, setNewMessage] = useState("");
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-  const { isAuthenticated, session } = useAuthStore();
+  const [isTyping, setIsTyping] = useState(false);
   
-  const {
-    conversations,
-    messages,
-    selectedConversation,
-    isTyping,
-    isLoading,
-    setSelectedConversation,
+  const { 
+    conversations, 
+    messages, 
+    fetchConversations, 
+    fetchMessages, 
     sendMessage,
-    fetchConversations,
+    isLoading 
   } = useMessageStore();
+  const { isAuthenticated, user } = useAuthStore();
 
-  // Fetch conversations when component mounts and user is authenticated
   useEffect(() => {
-    if (isAuthenticated && session?.user) {
+    if (isAuthenticated) {
       fetchConversations();
     }
-  }, [isAuthenticated, session?.user, fetchConversations]);
-
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
+  }, [isAuthenticated, fetchConversations]);
 
   useEffect(() => {
-    scrollToBottom();
-  }, [messages, selectedConversation, isTyping]);
+    if (selectedChat && isAuthenticated) {
+      fetchMessages(selectedChat);
+    }
+  }, [selectedChat, isAuthenticated, fetchMessages]);
 
   const handleSendMessage = async () => {
-    if (newMessage.trim() && selectedConversation) {
-      await sendMessage(selectedConversation, newMessage.trim());
+    if (!newMessage.trim() || !selectedChat || !user) return;
+
+    setIsTyping(true);
+    try {
+      await sendMessage(selectedChat, newMessage.trim());
       setNewMessage("");
+    } catch (error) {
+      console.error('Error sending message:', error);
+    } finally {
+      setIsTyping(false);
     }
   };
 
@@ -61,158 +65,171 @@ export const MessagesPanel = ({ onBack, onLogin }: MessagesPanelProps) => {
     }
   };
 
-  // Show login prompt if user is not authenticated
-  if (!isAuthenticated || !session?.user) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50">
-        {/* Header */}
-        <header className="bg-white/80 backdrop-blur-sm border-b border-green-100 sticky top-0 z-50">
-          <div className="container mx-auto px-4 py-4">
-            <div className="flex items-center">
-              <Button variant="ghost" size="icon" onClick={onBack} className="mr-3">
-                <ArrowLeft className="w-5 h-5" />
-              </Button>
-              <h1 className="text-xl font-bold text-gray-900">Messages</h1>
-            </div>
-          </div>
-        </header>
+  const handleLoginRedirect = () => {
+    // Redirect back to discover view and then open login
+    onBack();
+    // Small delay to ensure we're back on the discover view
+    setTimeout(() => {
+      onLogin();
+    }, 100);
+  };
 
-        <main className="container mx-auto px-4 py-8 max-w-4xl">
-          <Card className="h-[600px]">
-            <CardContent className="flex items-center justify-center h-full">
-              <div className="text-center">
-                <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <LogIn className="w-8 h-8 text-gray-400" />
-                </div>
-                <h3 className="text-lg font-medium mb-2">Login Required</h3>
-                <p className="text-sm text-gray-600 mb-4">You need to be logged in to view and send messages</p>
-                <Button onClick={onLogin} className="bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600">
-                  Login to Continue
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </main>
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50 flex items-center justify-center">
+        <Card className="w-full max-w-md mx-4">
+          <CardHeader className="text-center">
+            <div className="w-16 h-16 bg-gradient-to-br from-emerald-400 to-teal-400 rounded-full flex items-center justify-center mx-auto mb-4">
+              <MessageCircle className="w-8 h-8 text-white" />
+            </div>
+            <CardTitle className="text-2xl">Messages</CardTitle>
+          </CardHeader>
+          <CardContent className="text-center space-y-4">
+            <p className="text-gray-600">
+              You need to be logged in to access your messages and start conversations.
+            </p>
+            <div className="space-y-2">
+              <Button 
+                onClick={handleLoginRedirect}
+                className="w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600"
+              >
+                Login to Continue
+              </Button>
+              <Button 
+                variant="outline" 
+                onClick={onBack}
+                className="w-full"
+              >
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Back to Browse
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     );
   }
 
-  const selectedConversationData = conversations.find(c => c.id === selectedConversation);
-  const conversationMessages = selectedConversation ? messages[selectedConversation] || [] : [];
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-8 h-8 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading your conversations...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50">
+    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50">
       {/* Header */}
-      <header className="bg-white/80 backdrop-blur-sm border-b border-green-100 sticky top-0 z-50">
+      <header className="bg-white/90 backdrop-blur-sm border-b border-emerald-100 sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center">
-            <Button variant="ghost" size="icon" onClick={onBack} className="mr-3">
-              <ArrowLeft className="w-5 h-5" />
-            </Button>
-            <h1 className="text-xl font-bold text-gray-900">Messages</h1>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <Button variant="ghost" size="icon" onClick={onBack}>
+                <ArrowLeft className="w-5 h-5" />
+              </Button>
+              <div>
+                <h1 className="text-xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">
+                  Messages
+                </h1>
+                <div className="text-sm text-gray-600">
+                  {conversations.length} conversation{conversations.length !== 1 ? 's' : ''}
+                </div>
+              </div>
+            </div>
+            <Badge variant="secondary">
+              {conversations.filter(c => c.unread > 0).length} unread
+            </Badge>
           </div>
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-8 max-w-6xl">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[600px]">
+      <div className="container mx-auto px-4 py-8">
+        <div className="grid lg:grid-cols-3 gap-6 h-[600px]">
           {/* Conversations List */}
           <Card className="lg:col-span-1">
             <CardHeader>
-              <CardTitle>Conversations</CardTitle>
+              <CardTitle className="text-lg">Conversations</CardTitle>
             </CardHeader>
             <CardContent className="p-0">
-              {isLoading ? (
-                <div className="flex items-center justify-center h-40">
-                  <div className="text-gray-500">Loading conversations...</div>
-                </div>
-              ) : conversations.length === 0 ? (
-                <div className="flex items-center justify-center h-40">
-                  <div className="text-center text-gray-500">
-                    <div className="text-sm">No conversations yet</div>
-                    <div className="text-xs mt-1">Start swiping on items to begin chatting!</div>
-                  </div>
-                </div>
-              ) : (
+              {conversations.length > 0 ? (
                 <ConversationList
                   conversations={conversations}
-                  selectedChat={selectedConversation}
-                  onSelectChat={setSelectedConversation}
+                  selectedChat={selectedChat}
+                  onSelectChat={setSelectedChat}
                 />
+              ) : (
+                <div className="p-8 text-center text-gray-500">
+                  <MessageCircle className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+                  <p className="text-sm">No conversations yet</p>
+                  <p className="text-xs text-gray-400 mt-1">
+                    Start swiping to begin conversations!
+                  </p>
+                </div>
               )}
             </CardContent>
           </Card>
 
-          {/* Chat Area */}
+          {/* Chat Window */}
           <Card className="lg:col-span-2">
-            {selectedConversationData ? (
+            {selectedChat ? (
               <>
                 <CardHeader className="border-b">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-10 h-10 bg-gradient-to-br from-green-400 to-blue-400 rounded-full flex items-center justify-center text-white font-semibold">
-                      {selectedConversationData.avatar}
-                    </div>
-                    <div>
-                      <CardTitle className="text-lg">
-                        {selectedConversationData.partner}
-                      </CardTitle>
-                      <div className="text-sm text-gray-600 flex items-center">
-                        <RotateCcw className="w-3 h-3 mr-1" />
-                        {selectedConversationData.item}
-                      </div>
-                    </div>
-                  </div>
+                  <CardTitle className="text-lg">
+                    {conversations.find(c => c.id === selectedChat)?.partner || 'Chat'}
+                  </CardTitle>
                 </CardHeader>
-                
-                <CardContent className="p-0 flex flex-col h-[450px]">
+                <CardContent className="p-0 flex flex-col h-[500px]">
+                  {/* Messages Area */}
                   <ScrollArea className="flex-1 p-4">
                     <div className="space-y-4">
-                      {conversationMessages.map((message) => (
+                      {messages.map((message) => (
                         <MessageBubble key={message.id} message={message} />
                       ))}
-                      {isTyping[selectedConversation!] && <TypingIndicator />}
-                      <div ref={messagesEndRef} />
+                      {isTyping && <TypingIndicator />}
                     </div>
                   </ScrollArea>
-                  
+
+                  {/* Message Input */}
                   <div className="border-t p-4">
                     <div className="flex space-x-2">
                       <Input
                         value={newMessage}
                         onChange={(e) => setNewMessage(e.target.value)}
-                        placeholder="Type your message..."
                         onKeyPress={handleKeyPress}
+                        placeholder="Type your message..."
                         className="flex-1"
-                        maxLength={500}
                       />
                       <Button 
                         onClick={handleSendMessage}
-                        disabled={!newMessage.trim()}
-                        className="bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600"
+                        disabled={!newMessage.trim() || isTyping}
+                        className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600"
                       >
                         <Send className="w-4 h-4" />
                       </Button>
-                    </div>
-                    <div className="text-xs text-gray-500 mt-2">
-                      {newMessage.length}/500 characters
                     </div>
                   </div>
                 </CardContent>
               </>
             ) : (
-              <CardContent className="flex items-center justify-center h-full">
-                <div className="text-center text-gray-500">
-                  <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <Send className="w-8 h-8 text-gray-400" />
-                  </div>
-                  <h3 className="text-lg font-medium mb-2">Select a conversation</h3>
-                  <p className="text-sm">Choose a conversation from the list to start chatting</p>
+              <CardContent className="flex items-center justify-center h-[500px] text-center">
+                <div>
+                  <MessageCircle className="w-16 h-16 mx-auto mb-4 text-gray-300" />
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">
+                    Select a conversation
+                  </h3>
+                  <p className="text-gray-600">
+                    Choose a conversation from the list to start chatting
+                  </p>
                 </div>
               </CardContent>
             )}
           </Card>
         </div>
-      </main>
+      </div>
     </div>
   );
 };
