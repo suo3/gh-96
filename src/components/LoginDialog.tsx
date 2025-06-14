@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,7 +15,7 @@ interface LoginDialogProps {
 }
 
 export const LoginDialog = ({ open, onOpenChange }: LoginDialogProps) => {
-  const [isLoading, setIsLoading] = useState(false);
+  const [localIsLoading, setLocalIsLoading] = useState(false);
   const [loginForm, setLoginForm] = useState({ email: '', password: '' });
   const [signupForm, setSignupForm] = useState({
     email: '',
@@ -28,16 +27,20 @@ export const LoginDialog = ({ open, onOpenChange }: LoginDialogProps) => {
     location: ''
   });
 
-  const { login, signup } = useAuthStore();
+  const { login, signup, isLoading: authIsLoading } = useAuthStore();
   const { toast } = useToast();
+
+  // Use local loading state to prevent issues with auth store loading state
+  const isLoading = localIsLoading || authIsLoading;
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
+    setLocalIsLoading(true);
 
     try {
       console.log('Login form submitted:', loginForm.email);
       const success = await login(loginForm.email, loginForm.password);
+      
       if (success) {
         toast({
           title: "Welcome back!",
@@ -60,7 +63,7 @@ export const LoginDialog = ({ open, onOpenChange }: LoginDialogProps) => {
         variant: "destructive"
       });
     } finally {
-      setIsLoading(false);
+      setLocalIsLoading(false);
     }
   };
 
@@ -85,7 +88,7 @@ export const LoginDialog = ({ open, onOpenChange }: LoginDialogProps) => {
       return;
     }
 
-    setIsLoading(true);
+    setLocalIsLoading(true);
 
     try {
       console.log('Signup form submitted:', signupForm.email);
@@ -126,7 +129,7 @@ export const LoginDialog = ({ open, onOpenChange }: LoginDialogProps) => {
         variant: "destructive"
       });
     } finally {
-      setIsLoading(false);
+      setLocalIsLoading(false);
     }
   };
 

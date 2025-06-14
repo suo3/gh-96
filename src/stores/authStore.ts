@@ -54,47 +54,60 @@ export const useAuthStore = create<AuthState>()(
             
             if (event === 'SIGNED_IN' && session?.user) {
               console.log('User signed in, fetching profile...');
-              // Fetch user profile
-              const { data: profile, error } = await supabase
-                .from('profiles')
-                .select('*')
-                .eq('id', session.user.id)
-                .single();
+              
+              // Use setTimeout to prevent deadlock
+              setTimeout(async () => {
+                try {
+                  const { data: profile, error } = await supabase
+                    .from('profiles')
+                    .select('*')
+                    .eq('id', session.user.id)
+                    .single();
 
-              console.log('Profile fetch result:', { profile, error });
+                  console.log('Profile fetch result:', { profile, error });
 
-              if (profile) {
-                const userProfile: UserProfile = {
-                  id: profile.id,
-                  email: session.user.email || '',
-                  username: profile.username || '',
-                  firstName: profile.first_name || '',
-                  lastName: profile.last_name || '',
-                  location: profile.location || '',
-                  membershipType: profile.membership_type as 'free' | 'premium',
-                  joinedDate: new Date(profile.joined_date),
-                  rating: parseFloat(profile.rating?.toString() || '0'),
-                  totalSwaps: profile.total_swaps || 0,
-                  monthlyListings: profile.monthly_listings || 0,
-                  monthlySwaps: profile.monthly_swaps || 0,
-                  avatar: profile.avatar || ''
-                };
+                  if (profile && !error) {
+                    const userProfile: UserProfile = {
+                      id: profile.id,
+                      email: session.user.email || '',
+                      username: profile.username || '',
+                      firstName: profile.first_name || '',
+                      lastName: profile.last_name || '',
+                      location: profile.location || '',
+                      membershipType: profile.membership_type as 'free' | 'premium',
+                      joinedDate: new Date(profile.joined_date),
+                      rating: parseFloat(profile.rating?.toString() || '0'),
+                      totalSwaps: profile.total_swaps || 0,
+                      monthlyListings: profile.monthly_listings || 0,
+                      monthlySwaps: profile.monthly_swaps || 0,
+                      avatar: profile.avatar || ''
+                    };
 
-                set({ 
-                  user: userProfile, 
-                  session, 
-                  isAuthenticated: true, 
-                  isLoading: false 
-                });
-              } else {
-                console.error('No profile found for user:', session.user.id);
-                set({ 
-                  user: null,
-                  session: null,
-                  isAuthenticated: false,
-                  isLoading: false 
-                });
-              }
+                    set({ 
+                      user: userProfile, 
+                      session, 
+                      isAuthenticated: true, 
+                      isLoading: false 
+                    });
+                  } else {
+                    console.error('No profile found for user:', session.user.id, error);
+                    set({ 
+                      user: null,
+                      session: null,
+                      isAuthenticated: false,
+                      isLoading: false 
+                    });
+                  }
+                } catch (error) {
+                  console.error('Error fetching profile:', error);
+                  set({ 
+                    user: null,
+                    session: null,
+                    isAuthenticated: false,
+                    isLoading: false 
+                  });
+                }
+              }, 0);
             } else if (event === 'SIGNED_OUT') {
               console.log('User signed out');
               set({ 
@@ -106,6 +119,9 @@ export const useAuthStore = create<AuthState>()(
             } else if (event === 'TOKEN_REFRESHED' && session) {
               console.log('Token refreshed');
               set({ session });
+            } else {
+              // For other events or no session, ensure loading is false
+              set({ isLoading: false });
             }
           });
 
@@ -176,7 +192,7 @@ export const useAuthStore = create<AuthState>()(
           }
 
           console.log('Login successful for:', email);
-          // Don't set loading to false here - let the auth state change handler do it
+          // Note: Don't set loading to false here - let the auth state change handler do it
           return true;
         } catch (error) {
           console.error('Login error:', error);
