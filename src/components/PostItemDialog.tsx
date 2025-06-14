@@ -30,7 +30,7 @@ export const PostItemDialog = ({ open, onOpenChange }: PostItemDialogProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const { toast } = useToast();
-  const { createListing, loading } = useListingStore();
+  const { createListing } = useListingStore();
   const { user } = useAuthStore();
 
   const categories = [
@@ -67,6 +67,9 @@ export const PostItemDialog = ({ open, onOpenChange }: PostItemDialogProps) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    console.log('Submit clicked, formData:', formData);
+    console.log('User:', user);
+    
     if (!formData.title || !formData.description || !formData.category || !formData.condition) {
       toast({
         title: "Missing Information",
@@ -86,6 +89,7 @@ export const PostItemDialog = ({ open, onOpenChange }: PostItemDialogProps) => {
     }
 
     setIsSubmitting(true);
+    console.log('Starting to create listing...');
 
     try {
       // For now, we'll use a placeholder image URL since we don't have image upload set up
@@ -93,7 +97,7 @@ export const PostItemDialog = ({ open, onOpenChange }: PostItemDialogProps) => {
         ? "https://images.unsplash.com/photo-1649972904349-6e44c42644a7?w=400&h=300&fit=crop"
         : "https://images.unsplash.com/photo-1649972904349-6e44c42644a7?w=400&h=300&fit=crop";
 
-      await createListing({
+      const listingData = {
         title: formData.title,
         description: formData.description,
         category: formData.category,
@@ -105,7 +109,13 @@ export const PostItemDialog = ({ open, onOpenChange }: PostItemDialogProps) => {
         status: 'active',
         views: 0,
         likes: 0
-      });
+      };
+
+      console.log('Creating listing with data:', listingData);
+      
+      await createListing(listingData);
+
+      console.log('Listing created successfully');
 
       toast({
         title: "Item Posted!",
@@ -132,9 +142,13 @@ export const PostItemDialog = ({ open, onOpenChange }: PostItemDialogProps) => {
         variant: "destructive",
       });
     } finally {
+      console.log('Setting isSubmitting to false');
       setIsSubmitting(false);
     }
   };
+
+  // Check if form is valid
+  const isFormValid = formData.title && formData.description && formData.category && formData.condition;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -308,9 +322,9 @@ export const PostItemDialog = ({ open, onOpenChange }: PostItemDialogProps) => {
             <Button 
               type="submit" 
               className="flex-1 bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600"
-              disabled={isSubmitting || loading}
+              disabled={isSubmitting || !isFormValid}
             >
-              {isSubmitting || loading ? "Posting..." : "Post Item"}
+              {isSubmitting ? "Posting..." : "Post Item"}
             </Button>
           </div>
         </form>
