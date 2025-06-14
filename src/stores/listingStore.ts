@@ -1,4 +1,3 @@
-
 import { create } from 'zustand';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -64,6 +63,7 @@ interface ListingStore {
   filteredListings: () => Listing[];
   geocodeLocation: (location: string) => Promise<{ lat: number; lng: number } | null>;
   calculateDistance: (lat1: number, lng1: number, lat2: number, lng2: number) => number;
+  incrementViews: (id: string) => Promise<void>;
 }
 
 export const useListingStore = create<ListingStore>((set, get) => ({
@@ -411,6 +411,30 @@ export const useListingStore = create<ListingStore>((set, get) => ({
         listing.id === itemId ? { ...listing, hasActiveMessage: true } : listing
       )
     }));
+  },
+
+  incrementViews: async (id: string) => {
+    try {
+      // Increment views in the database
+      const { error } = await supabase
+        .from('listings')
+        .update({ views: supabase.sql`views + 1` })
+        .eq('id', id);
+
+      if (error) {
+        console.error('Error incrementing views:', error);
+        return;
+      }
+
+      // Update the local state
+      set((state) => ({
+        listings: state.listings.map((listing) =>
+          listing.id === id ? { ...listing, views: (listing.views || 0) + 1 } : listing
+        )
+      }));
+    } catch (error) {
+      console.error('Error incrementing views:', error);
+    }
   },
 
   filteredListings: () => {

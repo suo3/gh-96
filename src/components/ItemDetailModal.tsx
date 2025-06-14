@@ -1,4 +1,3 @@
-
 import { useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
@@ -8,6 +7,7 @@ import { Listing } from "@/stores/listingStore";
 import { useMessageStore } from "@/stores/messageStore";
 import { useAuthStore } from "@/stores/authStore";
 import { useRatingStore } from "@/stores/ratingStore";
+import { useListingStore } from "@/stores/listingStore";
 import { useToast } from "@/hooks/use-toast";
 
 interface ItemDetailModalProps {
@@ -21,6 +21,7 @@ export const ItemDetailModal = ({ item, open, onOpenChange, onItemLike }: ItemDe
   const { createConversationFromSwipe } = useMessageStore();
   const { user } = useAuthStore();
   const { fetchUserRatings, getAverageRating } = useRatingStore();
+  const { incrementViews } = useListingStore();
   const { toast } = useToast();
 
   // Fetch ratings when item changes
@@ -29,6 +30,14 @@ export const ItemDetailModal = ({ item, open, onOpenChange, onItemLike }: ItemDe
       fetchUserRatings(item.user_id);
     }
   }, [item?.user_id, fetchUserRatings]);
+
+  // Increment views when modal opens and item is present
+  useEffect(() => {
+    if (open && item?.id && user?.id !== item.user_id) {
+      // Only increment views if the user is not the owner of the item
+      incrementViews(item.id);
+    }
+  }, [open, item?.id, item?.user_id, user?.id, incrementViews]);
 
   if (!item) return null;
 
