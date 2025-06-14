@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,6 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuthStore } from "@/stores/authStore";
 import { useToast } from "@/hooks/use-toast";
+import { LocationInput } from "./LocationInput";
 import { Loader2 } from "lucide-react";
 
 interface LoginDialogProps {
@@ -212,12 +212,10 @@ export const LoginDialog = ({ open, onOpenChange }: LoginDialogProps) => {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="location">Location</Label>
-                <Input
-                  id="location"
-                  placeholder="Seattle, WA"
+                <LocationInput
                   value={signupForm.location}
-                  onChange={(e) => setSignupForm(prev => ({ ...prev, location: e.target.value }))}
-                  required
+                  onChange={(value) => setSignupForm(prev => ({ ...prev, location: value }))}
+                  placeholder="Enter your city and state"
                 />
               </div>
               <div className="space-y-2">

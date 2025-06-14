@@ -9,6 +9,7 @@ import { useAuthStore } from "@/stores/authStore";
 import { useToast } from "@/components/ui/use-toast";
 import { PasswordChange } from "./PasswordChange";
 import { SubscriptionPayment } from "./SubscriptionPayment";
+import { LocationInput } from "./LocationInput";
 import { Save, Crown } from "lucide-react";
 
 export const ProfileEditor = () => {
@@ -83,10 +84,10 @@ export const ProfileEditor = () => {
           </div>
           <div className="space-y-2">
             <Label htmlFor="location">Location</Label>
-            <Input
-              id="location"
+            <LocationInput
               value={formData.location}
-              onChange={(e) => setFormData(prev => ({ ...prev, location: e.target.value }))}
+              onChange={(value) => setFormData(prev => ({ ...prev, location: value }))}
+              placeholder="Enter your city and state"
             />
           </div>
           <Button onClick={handleSave} className="w-full">
