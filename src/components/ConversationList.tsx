@@ -1,4 +1,3 @@
-
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { RotateCcw } from "lucide-react";
@@ -6,8 +5,8 @@ import { Conversation } from "@/stores/messageStore";
 
 interface ConversationListProps {
   conversations: Conversation[];
-  selectedChat: number | null;
-  onSelectChat: (id: number) => void;
+  selectedChat: string | null;
+  onSelectChat: (id: string) => void;
 }
 
 export const ConversationList = ({ conversations, selectedChat, onSelectChat }: ConversationListProps) => {

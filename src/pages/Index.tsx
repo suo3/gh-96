@@ -213,7 +213,7 @@ const Index = () => {
       setCurrentView("discover");
       return null;
     }
-    return <MessagesPanel onBack={() => setCurrentView("discover")} />;
+    return <MessagesPanel onBack={() => setCurrentView("discover")} onLogin={() => setShowLoginDialog(true)} />;
   }
 
   if (currentView === "profile") {

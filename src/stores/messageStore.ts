@@ -1,4 +1,3 @@
-
 import { create } from 'zustand';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuthStore } from './authStore';
@@ -13,7 +12,7 @@ export interface Message {
 }
 
 export interface Conversation {
-  id: string;
+  id: string; // Changed from number to string for UUID compatibility
   partner: string;
   avatar: string;
   lastMessage: string;

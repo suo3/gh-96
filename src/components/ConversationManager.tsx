@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -14,7 +13,7 @@ export const ConversationManager = () => {
   const [showRating, setShowRating] = useState(false);
   const [selectedConversation, setSelectedConversation] = useState<any>(null);
 
-  const handleMarkComplete = (conversationId: number, partner: string, item: string) => {
+  const handleMarkComplete = (conversationId: string, partner: string, item: string) => {
     markConversationComplete(conversationId);
     toast({
       title: "Conversation Completed",
