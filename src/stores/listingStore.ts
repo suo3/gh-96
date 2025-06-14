@@ -1,3 +1,4 @@
+
 import { create } from 'zustand';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -415,10 +416,24 @@ export const useListingStore = create<ListingStore>((set, get) => ({
 
   incrementViews: async (id: string) => {
     try {
+      // First get the current view count
+      const { data: currentListing, error: fetchError } = await supabase
+        .from('listings')
+        .select('views')
+        .eq('id', id)
+        .single();
+
+      if (fetchError) {
+        console.error('Error fetching current views:', fetchError);
+        return;
+      }
+
+      const currentViews = currentListing?.views || 0;
+
       // Increment views in the database
       const { error } = await supabase
         .from('listings')
-        .update({ views: supabase.sql`views + 1` })
+        .update({ views: currentViews + 1 })
         .eq('id', id);
 
       if (error) {
@@ -429,7 +444,7 @@ export const useListingStore = create<ListingStore>((set, get) => ({
       // Update the local state
       set((state) => ({
         listings: state.listings.map((listing) =>
-          listing.id === id ? { ...listing, views: (listing.views || 0) + 1 } : listing
+          listing.id === id ? { ...listing, views: currentViews + 1 } : listing
         )
       }));
     } catch (error) {
