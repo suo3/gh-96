@@ -34,9 +34,19 @@ const Index = () => {
     markItemAsMessaged, 
     fetchListings,
     setUserLocation: setStoreUserLocation,
+    setCurrentUserId,
     geocodeLocation
   } = useListingStore();
   const { toast } = useToast();
+
+  // Set current user ID in the listing store when user changes
+  useEffect(() => {
+    if (user?.id) {
+      setCurrentUserId(user.id);
+    } else {
+      setCurrentUserId(null);
+    }
+  }, [user?.id, setCurrentUserId]);
 
   // Load listings on component mount and when user location changes
   useEffect(() => {

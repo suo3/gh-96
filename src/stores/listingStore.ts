@@ -1,4 +1,3 @@
-
 import { create } from 'zustand';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -29,6 +28,7 @@ export interface Listing {
     lng: number;
   };
   distance?: number; // Distance from user in miles
+  isOwnItem?: boolean; // Flag to indicate if this is user's own item
 }
 
 interface ListingStore {
@@ -42,6 +42,7 @@ interface ListingStore {
   swapFilter: 'all' | 'swapped' | 'unswapped';
   maxDistance: number;
   userLocation: { lat: number; lng: number } | null;
+  currentUserId: string | null;
   
   setSearchTerm: (term: string) => void;
   setSelectedCategory: (category: string) => void;
@@ -49,6 +50,7 @@ interface ListingStore {
   setSortBy: (sort: string) => void;
   setSwapFilter: (filter: 'all' | 'swapped' | 'unswapped') => void;
   setMaxDistance: (distance: number) => void;
+  setCurrentUserId: (userId: string | null) => void;
   setUserLocation: (location: { lat: number; lng: number } | null) => void;
   fetchListings: () => Promise<void>;
   fetchUserListings: (userId: string) => Promise<void>;
@@ -74,6 +76,7 @@ export const useListingStore = create<ListingStore>((set, get) => ({
   swapFilter: 'all',
   maxDistance: 25, // Default to 25 miles
   userLocation: null,
+  currentUserId: null,
 
   setSearchTerm: (term) => set({ searchTerm: term }),
   setSelectedCategory: (category) => set({ selectedCategory: category }),
@@ -81,6 +84,7 @@ export const useListingStore = create<ListingStore>((set, get) => ({
   setSortBy: (sort) => set({ sortBy: sort }),
   setSwapFilter: (filter) => set({ swapFilter: filter }),
   setMaxDistance: (distance) => set({ maxDistance: distance }),
+  setCurrentUserId: (userId) => set({ currentUserId: userId }),
   setUserLocation: (location) => {
     set({ userLocation: location });
     // If user location is set and we don't have a specific sort preference, default to distance
@@ -128,23 +132,35 @@ export const useListingStore = create<ListingStore>((set, get) => ({
   },
 
   fetchListings: async () => {
+    console.log('=== FETCH LISTINGS START ===');
     set({ loading: true, error: null });
     
     try {
       const { data, error } = await supabase
         .from('listings')
-        .select('*')
+        .select(`
+          *,
+          profiles:user_id (
+            username,
+            first_name,
+            last_name,
+            avatar
+          )
+        `)
         .eq('status', 'active')
         .order('created_at', { ascending: false });
+
+      console.log('Raw supabase data:', data);
+      console.log('Supabase error:', error);
 
       if (error) {
         console.error('Supabase error:', error);
         throw error;
       }
 
-      console.log('Fetched listings:', data);
+      console.log('Fetched listings from database:', data);
       
-      const { geocodeLocation, calculateDistance, userLocation } = get();
+      const { geocodeLocation, calculateDistance, userLocation, currentUserId } = get();
       
       // Transform the data and add coordinates/distance
       const transformedListings = await Promise.all((data || []).map(async (listing) => {
@@ -161,24 +177,31 @@ export const useListingStore = create<ListingStore>((set, get) => ({
           console.log(`Distance for ${listing.title}: ${distance} miles`);
         }
 
+        // Check if this is the user's own item
+        const isOwnItem = currentUserId ? listing.user_id === currentUserId : false;
+
         return {
           ...listing,
-          profiles: {
+          profiles: listing.profiles || {
             username: 'Anonymous User',
             first_name: 'Anonymous',
             last_name: 'User',
             avatar: 'A'
           },
           coordinates,
-          distance
+          distance,
+          isOwnItem
         };
       }));
 
+      console.log('Transformed listings:', transformedListings);
       set({ listings: transformedListings, loading: false });
     } catch (error) {
       console.error('Error fetching listings:', error);
       set({ error: 'Failed to fetch listings', loading: false });
     }
+    
+    console.log('=== FETCH LISTINGS END ===');
   },
 
   fetchUserListings: async (userId: string) => {
@@ -236,7 +259,7 @@ export const useListingStore = create<ListingStore>((set, get) => ({
   },
 
   createListing: async (listing) => {
-    console.log('=== CREATElisting FUNCTION START ===');
+    console.log('=== CREATELIST FUNCTION START ===');
     console.log('Input listing data:', listing);
     
     set({ loading: true, error: null });
@@ -245,38 +268,34 @@ export const useListingStore = create<ListingStore>((set, get) => ({
       console.log('About to call supabase.from("listings").insert()...');
       console.log('Supabase client:', supabase);
       
-      const insertResult = await supabase
-        .from('listings')
-        .insert([listing]);
+      const insertData = {
+        ...listing,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      };
       
-      console.log('Insert result (without select):', insertResult);
+      console.log('Insert data being sent:', insertData);
       
-      if (insertResult.error) {
-        console.error('Insert error:', insertResult.error);
-        throw insertResult.error;
-      }
-      
-      console.log('Insert successful, now selecting...');
-      
-      // Now fetch the created listing
       const { data, error } = await supabase
         .from('listings')
-        .select('*')
-        .eq('user_id', listing.user_id)
-        .eq('title', listing.title)
-        .order('created_at', { ascending: false })
-        .limit(1)
+        .insert([insertData])
+        .select()
         .single();
-
-      console.log('Select result - data:', data, 'error:', error);
+      
+      console.log('Insert with select result - data:', data, 'error:', error);
 
       if (error) {
-        console.error('Select error:', error);
+        console.error('Insert error:', error);
+        console.error('Error code:', error.code);
+        console.error('Error message:', error.message);
+        console.error('Error details:', error.details);
+        console.error('Error hint:', error.hint);
         throw error;
       }
 
-      console.log('Successfully created and retrieved listing:', data);
+      console.log('Successfully created listing:', data);
 
+      // Add the new listing to the store
       set((state) => ({
         listings: [data, ...state.listings],
         loading: false
@@ -383,7 +402,8 @@ export const useListingStore = create<ListingStore>((set, get) => ({
       sortBy, 
       swapFilter,
       maxDistance,
-      userLocation
+      userLocation,
+      currentUserId
     } = get();
     
     let filtered = [...listings];
@@ -392,7 +412,8 @@ export const useListingStore = create<ListingStore>((set, get) => ({
       totalListings: filtered.length,
       maxDistance,
       userLocation,
-      hasUserLocation: !!userLocation
+      hasUserLocation: !!userLocation,
+      currentUserId
     });
 
     // Apply search filter
@@ -424,9 +445,19 @@ export const useListingStore = create<ListingStore>((set, get) => ({
     }
 
     // Apply distance filter if user location is available
+    let localItems: Listing[] = [];
+    let userOwnItems: Listing[] = [];
+    
+    if (currentUserId) {
+      // Separate user's own items
+      userOwnItems = filtered.filter((listing) => listing.user_id === currentUserId);
+      // Get items that are not user's own
+      filtered = filtered.filter((listing) => listing.user_id !== currentUserId);
+    }
+
     if (userLocation && maxDistance > 0) {
       const beforeDistanceFilter = filtered.length;
-      filtered = filtered.filter((listing) => {
+      localItems = filtered.filter((listing) => {
         // If listing has no distance data (no location), exclude it when distance filtering is active
         if (listing.distance === undefined) {
           console.log(`Excluding ${listing.title} - no location data`);
@@ -438,23 +469,35 @@ export const useListingStore = create<ListingStore>((set, get) => ({
         }
         return withinDistance;
       });
-      console.log(`Distance filter: ${beforeDistanceFilter} -> ${filtered.length} items (within ${maxDistance} miles)`);
+      console.log(`Distance filter: ${beforeDistanceFilter} -> ${localItems.length} items (within ${maxDistance} miles)`);
+    } else {
+      localItems = filtered;
+    }
+
+    // If no local items found and user has items, show user's items
+    let finalItems: Listing[];
+    if (localItems.length === 0 && userOwnItems.length > 0) {
+      console.log('No local items found, showing user\'s own items');
+      finalItems = userOwnItems;
+    } else {
+      // Show local items (and optionally user's items if they want to see them)
+      finalItems = localItems;
     }
 
     // Apply sorting
     switch (sortBy) {
       case 'newest':
-        filtered.sort((a, b) => new Date(b.created_at || '').getTime() - new Date(a.created_at || '').getTime());
+        finalItems.sort((a, b) => new Date(b.created_at || '').getTime() - new Date(a.created_at || '').getTime());
         break;
       case 'oldest':
-        filtered.sort((a, b) => new Date(a.created_at || '').getTime() - new Date(b.created_at || '').getTime());
+        finalItems.sort((a, b) => new Date(a.created_at || '').getTime() - new Date(b.created_at || '').getTime());
         break;
       case 'title':
-        filtered.sort((a, b) => a.title.localeCompare(b.title));
+        finalItems.sort((a, b) => a.title.localeCompare(b.title));
         break;
       case 'distance':
         // Sort by distance, putting items with distance first (closest first), then items without distance
-        filtered.sort((a, b) => {
+        finalItems.sort((a, b) => {
           if (a.distance !== undefined && b.distance !== undefined) {
             return a.distance - b.distance;
           }
@@ -469,15 +512,15 @@ export const useListingStore = create<ListingStore>((set, get) => ({
         });
         break;
       case 'views':
-        filtered.sort((a, b) => (b.views || 0) - (a.views || 0));
+        finalItems.sort((a, b) => (b.views || 0) - (a.views || 0));
         break;
       case 'likes':
-        filtered.sort((a, b) => (b.likes || 0) - (a.likes || 0));
+        finalItems.sort((a, b) => (b.likes || 0) - (a.likes || 0));
         break;
       default:
         // Default to distance if user location is available, otherwise newest
         if (userLocation) {
-          filtered.sort((a, b) => {
+          finalItems.sort((a, b) => {
             if (a.distance !== undefined && b.distance !== undefined) {
               return a.distance - b.distance;
             }
@@ -490,12 +533,12 @@ export const useListingStore = create<ListingStore>((set, get) => ({
             return new Date(b.created_at || '').getTime() - new Date(a.created_at || '').getTime();
           });
         } else {
-          filtered.sort((a, b) => new Date(b.created_at || '').getTime() - new Date(a.created_at || '').getTime());
+          finalItems.sort((a, b) => new Date(b.created_at || '').getTime() - new Date(a.created_at || '').getTime());
         }
         break;
     }
 
-    console.log(`Final filtered results: ${filtered.length} items`);
-    return filtered;
+    console.log(`Final filtered results: ${finalItems.length} items`);
+    return finalItems;
   },
 }));
