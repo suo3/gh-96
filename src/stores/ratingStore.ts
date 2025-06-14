@@ -1,5 +1,6 @@
 
 import { create } from 'zustand';
+import { supabase } from '@/integrations/supabase/client';
 
 export interface Rating {
   id: string;
@@ -15,53 +16,134 @@ export interface Rating {
 
 interface RatingState {
   ratings: Rating[];
-  addRating: (rating: Omit<Rating, 'id' | 'createdAt'>) => void;
-  getUserRatings: (userId: string) => Rating[];
+  userRatings: { [userId: string]: Rating[] };
+  loading: boolean;
+  addRating: (rating: Omit<Rating, 'id' | 'createdAt'>) => Promise<void>;
+  getUserRatings: (userId: string) => Promise<Rating[]>;
   getAverageRating: (userId: string) => number;
+  fetchUserRatings: (userId: string) => Promise<void>;
 }
 
 export const useRatingStore = create<RatingState>((set, get) => ({
-  ratings: [
-    {
-      id: '1',
-      ratedUserId: 'user-2',
-      ratedUserName: 'Sarah Johnson',
-      raterUserId: 'user-1',
-      raterUserName: 'John Doe',
-      rating: 5,
-      comment: 'Great swap experience! Very responsive and item was exactly as described.',
-      itemTitle: 'Vintage Camera',
-      createdAt: new Date('2024-01-15')
-    },
-    {
-      id: '2',
-      ratedUserId: 'user-1',
-      ratedUserName: 'John Doe',
-      raterUserId: 'user-3',
-      raterUserName: 'Mike Chen',
-      rating: 4,
-      comment: 'Smooth transaction, would swap again.',
-      itemTitle: 'Gaming Console',
-      createdAt: new Date('2024-01-10')
+  ratings: [],
+  userRatings: {},
+  loading: false,
+  
+  addRating: async (newRating) => {
+    try {
+      const { data, error } = await supabase
+        .from('ratings')
+        .insert({
+          rated_user_id: newRating.ratedUserId,
+          rater_user_id: newRating.raterUserId,
+          rating: newRating.rating,
+          comment: newRating.comment,
+          item_title: newRating.itemTitle
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      const rating: Rating = {
+        id: data.id,
+        ratedUserId: data.rated_user_id,
+        ratedUserName: newRating.ratedUserName,
+        raterUserId: data.rater_user_id,
+        raterUserName: newRating.raterUserName,
+        rating: data.rating,
+        comment: data.comment || '',
+        itemTitle: data.item_title || '',
+        createdAt: new Date(data.created_at)
+      };
+
+      set((state) => ({
+        ratings: [...state.ratings, rating]
+      }));
+
+      // Update user ratings cache
+      const { userRatings } = get();
+      const existingRatings = userRatings[newRating.ratedUserId] || [];
+      set((state) => ({
+        userRatings: {
+          ...state.userRatings,
+          [newRating.ratedUserId]: [...existingRatings, rating]
+        }
+      }));
+    } catch (error) {
+      console.error('Error adding rating:', error);
+      throw error;
     }
-  ],
+  },
   
-  addRating: (newRating) => set((state) => ({
-    ratings: [...state.ratings, {
-      ...newRating,
-      id: Date.now().toString(),
-      createdAt: new Date()
-    }]
-  })),
-  
-  getUserRatings: (userId: string) => {
-    return get().ratings.filter(rating => rating.ratedUserId === userId);
+  fetchUserRatings: async (userId: string) => {
+    const { userRatings } = get();
+    
+    // Return cached ratings if available
+    if (userRatings[userId]) {
+      return;
+    }
+
+    try {
+      set({ loading: true });
+      
+      const { data, error } = await supabase
+        .from('ratings')
+        .select(`
+          *,
+          rater_profile:profiles!ratings_rater_user_id_fkey(first_name, last_name, username)
+        `)
+        .eq('rated_user_id', userId)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      const ratings: Rating[] = (data || []).map(item => ({
+        id: item.id,
+        ratedUserId: item.rated_user_id,
+        ratedUserName: '', // We don't need this for display
+        raterUserId: item.rater_user_id,
+        raterUserName: item.rater_profile 
+          ? `${item.rater_profile.first_name || ''} ${item.rater_profile.last_name || ''}`.trim() || item.rater_profile.username || 'Anonymous'
+          : 'Anonymous',
+        rating: item.rating,
+        comment: item.comment || '',
+        itemTitle: item.item_title || '',
+        createdAt: new Date(item.created_at)
+      }));
+
+      set((state) => ({
+        userRatings: {
+          ...state.userRatings,
+          [userId]: ratings
+        },
+        loading: false
+      }));
+    } catch (error) {
+      console.error('Error fetching user ratings:', error);
+      set({ loading: false });
+    }
+  },
+
+  getUserRatings: async (userId: string) => {
+    const { userRatings } = get();
+    
+    // Return cached ratings if available
+    if (userRatings[userId]) {
+      return userRatings[userId];
+    }
+
+    // Fetch if not cached
+    await get().fetchUserRatings(userId);
+    return get().userRatings[userId] || [];
   },
   
   getAverageRating: (userId: string) => {
-    const userRatings = get().getUserRatings(userId);
-    if (userRatings.length === 0) return 0;
-    const sum = userRatings.reduce((acc, rating) => acc + rating.rating, 0);
-    return Math.round((sum / userRatings.length) * 10) / 10;
+    const { userRatings } = get();
+    const ratings = userRatings[userId] || [];
+    
+    if (ratings.length === 0) return 0;
+    const sum = ratings.reduce((acc, rating) => acc + rating.rating, 0);
+    return Math.round((sum / ratings.length) * 10) / 10;
   }
 }));

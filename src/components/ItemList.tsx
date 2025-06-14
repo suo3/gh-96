@@ -1,5 +1,4 @@
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -8,6 +7,7 @@ import { ItemDetailModal } from "./ItemDetailModal";
 import { Listing } from "@/stores/listingStore";
 import { useMessageStore } from "@/stores/messageStore";
 import { useAuthStore } from "@/stores/authStore";
+import { useRatingStore } from "@/stores/ratingStore";
 import { useToast } from "@/hooks/use-toast";
 
 interface ItemListProps {
@@ -20,7 +20,18 @@ export const ItemList = ({ items, onItemLike }: ItemListProps) => {
   const [modalOpen, setModalOpen] = useState(false);
   const { createConversationFromSwipe } = useMessageStore();
   const { user } = useAuthStore();
+  const { fetchUserRatings, getAverageRating } = useRatingStore();
   const { toast } = useToast();
+
+  // Fetch ratings for all users when items change
+  useEffect(() => {
+    const userIds = [...new Set(items.map(item => item.user_id).filter(Boolean))];
+    userIds.forEach(userId => {
+      if (userId) {
+        fetchUserRatings(userId);
+      }
+    });
+  }, [items, fetchUserRatings]);
 
   const handleDetailsClick = (item: Listing) => {
     setSelectedItem(item);
@@ -83,119 +94,158 @@ export const ItemList = ({ items, onItemLike }: ItemListProps) => {
   };
 
   const getItemImage = (item: Listing) => {
-    // Check if the item has images and use the first one, otherwise use the placeholder
     if (item.images && item.images.length > 0 && item.images[0]) {
       return item.images[0];
     }
     return "https://images.unsplash.com/photo-1649972904349-6e44c42644a7?w=400&h=300&fit=crop";
   };
 
+  const getUserDisplayName = (item: Listing) => {
+    return item.profiles?.first_name || item.profiles?.username || 'User';
+  };
+
+  const getUserAvatar = (item: Listing) => {
+    if (item.profiles?.first_name) {
+      return item.profiles.first_name.charAt(0).toUpperCase();
+    }
+    if (item.profiles?.username) {
+      return item.profiles.username.charAt(0).toUpperCase();
+    }
+    return 'U';
+  };
+
+  const getUserRating = (userId: string | undefined) => {
+    if (!userId) return 0;
+    return getAverageRating(userId);
+  };
+
+  const renderStars = (rating: number) => {
+    const stars = [];
+    const fullStars = Math.floor(rating);
+    const hasHalfStar = rating % 1 >= 0.5;
+
+    for (let i = 0; i < 5; i++) {
+      if (i < fullStars) {
+        stars.push(<Star key={i} className="w-4 h-4 text-yellow-400 fill-current" />);
+      } else if (i === fullStars && hasHalfStar) {
+        stars.push(<Star key={i} className="w-4 h-4 text-yellow-400 fill-current opacity-50" />);
+      } else {
+        stars.push(<Star key={i} className="w-4 h-4 text-gray-300" />);
+      }
+    }
+    return stars;
+  };
+
   return (
     <>
       <div className="space-y-4">
-        {items.map((item) => (
-          <Card 
-            key={item.id} 
-            className={`hover:shadow-lg transition-shadow border-emerald-200 ${
-              item.hasActiveMessage ? 'ring-2 ring-blue-200 bg-blue-50/30' : ''
-            }`}
-          >
-            <CardContent className="p-4">
-              <div className="flex gap-4">
-                <img
-                  src={getItemImage(item)}
-                  alt={item.title}
-                  className="w-24 h-24 object-cover rounded-lg flex-shrink-0"
-                  onError={(e) => {
-                    e.currentTarget.src = "https://images.unsplash.com/photo-1649972904349-6e44c42644a7?w=400&h=300&fit=crop";
-                  }}
-                />
-                <div className="flex-1">
-                  <div className="flex items-start justify-between mb-2">
-                    <div>
-                      <h3 className="font-semibold text-gray-900">{item.title}</h3>
-                      <div className="flex items-center text-sm text-gray-600 mt-1">
-                        <MapPin className="w-4 h-4 mr-1" />
-                        {item.location || "Location not specified"}
+        {items.map((item) => {
+          const userRating = getUserRating(item.user_id);
+          
+          return (
+            <Card 
+              key={item.id} 
+              className={`hover:shadow-lg transition-shadow border-emerald-200 ${
+                item.hasActiveMessage ? 'ring-2 ring-blue-200 bg-blue-50/30' : ''
+              }`}
+            >
+              <CardContent className="p-4">
+                <div className="flex gap-4">
+                  <img
+                    src={getItemImage(item)}
+                    alt={item.title}
+                    className="w-24 h-24 object-cover rounded-lg flex-shrink-0"
+                    onError={(e) => {
+                      e.currentTarget.src = "https://images.unsplash.com/photo-1649972904349-6e44c42644a7?w=400&h=300&fit=crop";
+                    }}
+                  />
+                  <div className="flex-1">
+                    <div className="flex items-start justify-between mb-2">
+                      <div>
+                        <h3 className="font-semibold text-gray-900">{item.title}</h3>
+                        <div className="flex items-center text-sm text-gray-600 mt-1">
+                          <MapPin className="w-4 h-4 mr-1" />
+                          {item.location || "Location not specified"}
+                        </div>
                       </div>
-                    </div>
-                    <div className="flex gap-2">
-                      <Badge className="bg-emerald-600">
-                        {item.category}
-                      </Badge>
-                      <Badge variant="outline" className="border-emerald-200">
-                        {item.condition}
-                      </Badge>
-                      {item.hasActiveMessage && (
-                        <Badge className="bg-blue-600 text-white">
-                          <MessageCircle className="w-3 h-3 mr-1" />
-                          Sent
+                      <div className="flex gap-2">
+                        <Badge className="bg-emerald-600">
+                          {item.category}
                         </Badge>
-                      )}
-                    </div>
-                  </div>
-                  <p className="text-sm text-gray-600 mb-3 line-clamp-2">
-                    {item.description}
-                  </p>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                      <div className="flex items-center">
-                        <div className="w-6 h-6 bg-gradient-to-br from-emerald-400 to-teal-400 rounded-full flex items-center justify-center text-white font-semibold text-xs mr-2">
-                          {item.profiles?.first_name?.charAt(0) || item.profiles?.username?.charAt(0) || 'U'}
-                        </div>
-                        <div className="text-sm text-gray-900">
-                          {item.profiles?.first_name || item.profiles?.username || 'User'}
-                        </div>
-                      </div>
-                      <div className="flex items-center">
-                        {[...Array(5)].map((_, i) => (
-                          <Star key={i} className={`w-4 h-4 ${i < 4 ? 'text-yellow-400 fill-current' : 'text-gray-300'}`} />
-                        ))}
-                        <span className="text-sm text-gray-600 ml-1">(4.0)</span>
-                      </div>
-                      <div className="flex items-center text-sm text-gray-600">
-                        <Eye className="w-4 h-4 mr-1" />
-                        {item.views || 0}
-                      </div>
-                    </div>
-                    <div className="flex gap-2">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => handleDetailsClick(item)}
-                        className="border-emerald-200"
-                      >
-                        Details
-                      </Button>
-                      <Button
-                        size="sm"
-                        className={`${
-                          item.hasActiveMessage 
-                            ? 'bg-gray-400 cursor-not-allowed' 
-                            : 'bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600'
-                        }`}
-                        onClick={() => handleSwapClick(item)}
-                        disabled={item.hasActiveMessage}
-                      >
-                        {item.hasActiveMessage ? (
-                          <>
-                            <MessageCircle className="w-4 h-4 mr-1" />
+                        <Badge variant="outline" className="border-emerald-200">
+                          {item.condition}
+                        </Badge>
+                        {item.hasActiveMessage && (
+                          <Badge className="bg-blue-600 text-white">
+                            <MessageCircle className="w-3 h-3 mr-1" />
                             Sent
-                          </>
-                        ) : (
-                          <>
-                            <Heart className="w-4 h-4 mr-1" />
-                            Swap
-                          </>
+                          </Badge>
                         )}
-                      </Button>
+                      </div>
+                    </div>
+                    <p className="text-sm text-gray-600 mb-3 line-clamp-2">
+                      {item.description}
+                    </p>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-4">
+                        <div className="flex items-center">
+                          <div className="w-6 h-6 bg-gradient-to-br from-emerald-400 to-teal-400 rounded-full flex items-center justify-center text-white font-semibold text-xs mr-2">
+                            {getUserAvatar(item)}
+                          </div>
+                          <div className="text-sm text-gray-900">
+                            {getUserDisplayName(item)}
+                          </div>
+                        </div>
+                        <div className="flex items-center">
+                          {renderStars(userRating)}
+                          <span className="text-sm text-gray-600 ml-1">
+                            {userRating > 0 ? `(${userRating})` : '(No ratings)'}
+                          </span>
+                        </div>
+                        <div className="flex items-center text-sm text-gray-600">
+                          <Eye className="w-4 h-4 mr-1" />
+                          {item.views || 0}
+                        </div>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleDetailsClick(item)}
+                          className="border-emerald-200"
+                        >
+                          Details
+                        </Button>
+                        <Button
+                          size="sm"
+                          className={`${
+                            item.hasActiveMessage 
+                              ? 'bg-gray-400 cursor-not-allowed' 
+                              : 'bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600'
+                          }`}
+                          onClick={() => handleSwapClick(item)}
+                          disabled={item.hasActiveMessage}
+                        >
+                          {item.hasActiveMessage ? (
+                            <>
+                              <MessageCircle className="w-4 h-4 mr-1" />
+                              Sent
+                            </>
+                          ) : (
+                            <>
+                              <Heart className="w-4 h-4 mr-1" />
+                              Swap
+                            </>
+                          )}
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+              </CardContent>
+            </Card>
+          );
+        })}
       </div>
 
       <ItemDetailModal

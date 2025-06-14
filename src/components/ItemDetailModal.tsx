@@ -1,4 +1,4 @@
-
+import { useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -6,6 +6,7 @@ import { MapPin, Heart, Star, MessageCircle, Eye } from "lucide-react";
 import { Listing } from "@/stores/listingStore";
 import { useMessageStore } from "@/stores/messageStore";
 import { useAuthStore } from "@/stores/authStore";
+import { useRatingStore } from "@/stores/ratingStore";
 import { useToast } from "@/hooks/use-toast";
 
 interface ItemDetailModalProps {
@@ -18,7 +19,15 @@ interface ItemDetailModalProps {
 export const ItemDetailModal = ({ item, open, onOpenChange, onItemLike }: ItemDetailModalProps) => {
   const { createConversationFromSwipe } = useMessageStore();
   const { user } = useAuthStore();
+  const { fetchUserRatings, getAverageRating } = useRatingStore();
   const { toast } = useToast();
+
+  // Fetch ratings when item changes
+  useEffect(() => {
+    if (item?.user_id) {
+      fetchUserRatings(item.user_id);
+    }
+  }, [item?.user_id, fetchUserRatings]);
 
   if (!item) return null;
 
@@ -78,14 +87,53 @@ export const ItemDetailModal = ({ item, open, onOpenChange, onItemLike }: ItemDe
   };
 
   const getItemImages = (item: Listing) => {
-    // Return the actual images if they exist, otherwise return an empty array to show the placeholder
     if (item.images && item.images.length > 0) {
       return item.images.filter(img => img && img.trim() !== '');
     }
     return [];
   };
 
+  const getUserDisplayName = (item: Listing) => {
+    if (item.profiles?.first_name && item.profiles?.last_name) {
+      return `${item.profiles.first_name} ${item.profiles.last_name}`;
+    }
+    return item.profiles?.first_name || item.profiles?.username || 'Anonymous User';
+  };
+
+  const getUserAvatar = (item: Listing) => {
+    if (item.profiles?.first_name) {
+      return item.profiles.first_name.charAt(0).toUpperCase();
+    }
+    if (item.profiles?.username) {
+      return item.profiles.username.charAt(0).toUpperCase();
+    }
+    return 'U';
+  };
+
+  const getUserRating = (userId: string | undefined) => {
+    if (!userId) return 0;
+    return getAverageRating(userId);
+  };
+
+  const renderStars = (rating: number) => {
+    const stars = [];
+    const fullStars = Math.floor(rating);
+    const hasHalfStar = rating % 1 >= 0.5;
+
+    for (let i = 0; i < 5; i++) {
+      if (i < fullStars) {
+        stars.push(<Star key={i} className="w-4 h-4 text-yellow-400 fill-current" />);
+      } else if (i === fullStars && hasHalfStar) {
+        stars.push(<Star key={i} className="w-4 h-4 text-yellow-400 fill-current opacity-50" />);
+      } else {
+        stars.push(<Star key={i} className="w-4 h-4 text-gray-300" />);
+      }
+    }
+    return stars;
+  };
+
   const images = getItemImages(item);
+  const userRating = getUserRating(item.user_id);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -148,10 +196,10 @@ export const ItemDetailModal = ({ item, open, onOpenChange, onItemLike }: ItemDe
                 {item.likes || 0} likes
               </div>
               <div className="flex items-center">
-                {[...Array(5)].map((_, i) => (
-                  <Star key={i} className={`w-4 h-4 ${i < 4 ? 'text-yellow-400 fill-current' : 'text-gray-300'}`} />
-                ))}
-                <span className="ml-1">(4.0)</span>
+                {renderStars(userRating)}
+                <span className="ml-1">
+                  {userRating > 0 ? `(${userRating})` : '(No ratings)'}
+                </span>
               </div>
             </div>
 
@@ -177,14 +225,11 @@ export const ItemDetailModal = ({ item, open, onOpenChange, onItemLike }: ItemDe
             <div className="flex items-center justify-between pt-4 border-t">
               <div className="flex items-center">
                 <div className="w-10 h-10 bg-gradient-to-br from-emerald-400 to-teal-400 rounded-full flex items-center justify-center text-white font-semibold mr-3">
-                  {item.profiles?.first_name?.charAt(0) || item.profiles?.username?.charAt(0) || 'U'}
+                  {getUserAvatar(item)}
                 </div>
                 <div>
                   <div className="font-medium text-gray-900">
-                    {item.profiles?.first_name && item.profiles?.last_name 
-                      ? `${item.profiles.first_name} ${item.profiles.last_name}`
-                      : item.profiles?.username || 'Anonymous User'
-                    }
+                    {getUserDisplayName(item)}
                   </div>
                   <div className="text-sm text-gray-600">
                     Listed {new Date(item.created_at || '').toLocaleDateString()}
