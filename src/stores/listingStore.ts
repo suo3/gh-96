@@ -1,3 +1,4 @@
+
 import { create } from 'zustand';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -136,34 +137,50 @@ export const useListingStore = create<ListingStore>((set, get) => ({
     set({ loading: true, error: null });
     
     try {
-      const { data, error } = await supabase
+      // First get all listings
+      const { data: listingsData, error: listingsError } = await supabase
         .from('listings')
-        .select(`
-          *,
-          profiles:user_id (
-            username,
-            first_name,
-            last_name,
-            avatar
-          )
-        `)
+        .select('*')
         .eq('status', 'active')
         .order('created_at', { ascending: false });
 
-      console.log('Raw supabase data:', data);
-      console.log('Supabase error:', error);
+      console.log('Raw listings data:', listingsData);
+      console.log('Listings error:', listingsError);
 
-      if (error) {
-        console.error('Supabase error:', error);
-        throw error;
+      if (listingsError) {
+        console.error('Supabase error:', listingsError);
+        throw listingsError;
       }
 
-      console.log('Fetched listings from database:', data);
+      // Get unique user IDs from listings
+      const userIds = [...new Set(listingsData?.map(listing => listing.user_id).filter(Boolean) || [])];
+      
+      // Fetch profiles for all user IDs
+      const { data: profilesData, error: profilesError } = await supabase
+        .from('profiles')
+        .select('id, username, first_name, last_name, avatar')
+        .in('id', userIds);
+
+      console.log('Profiles data:', profilesData);
+      console.log('Profiles error:', profilesError);
+
+      if (profilesError) {
+        console.error('Profiles error:', profilesError);
+        // Don't throw, just log and continue with empty profiles
+      }
+
+      // Create a map of user profiles for quick lookup
+      const profilesMap = new Map();
+      (profilesData || []).forEach(profile => {
+        profilesMap.set(profile.id, profile);
+      });
+
+      console.log('Fetched listings from database:', listingsData);
       
       const { geocodeLocation, calculateDistance, userLocation, currentUserId } = get();
       
       // Transform the data and add coordinates/distance
-      const transformedListings = await Promise.all((data || []).map(async (listing) => {
+      const transformedListings = await Promise.all((listingsData || []).map(async (listing) => {
         const coordinates = listing.location ? await geocodeLocation(listing.location) : null;
         let distance = undefined;
         
@@ -180,9 +197,12 @@ export const useListingStore = create<ListingStore>((set, get) => ({
         // Check if this is the user's own item
         const isOwnItem = currentUserId ? listing.user_id === currentUserId : false;
 
+        // Get profile for this listing
+        const profile = listing.user_id ? profilesMap.get(listing.user_id) : null;
+
         return {
           ...listing,
-          profiles: listing.profiles || {
+          profiles: profile || {
             username: 'Anonymous User',
             first_name: 'Anonymous',
             last_name: 'User',
