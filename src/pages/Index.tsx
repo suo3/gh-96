@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -264,6 +265,7 @@ const Index = () => {
                   <Filter className="w-5 h-5" />
                 </Button>
                 
+                {/* Only show message icon for authenticated users */}
                 {isAuthenticated && (
                   <Button
                     variant="ghost"
