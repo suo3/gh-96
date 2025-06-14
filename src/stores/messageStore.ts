@@ -29,6 +29,7 @@ interface MessageStore {
   selectedConversation: string | null;
   isTyping: Record<string, boolean>;
   isLoading: boolean;
+  totalUnreadCount: number;
   
   setSelectedConversation: (id: string | null) => void;
   sendMessage: (conversationId: string, text: string) => Promise<void>;
@@ -47,6 +48,7 @@ export const useMessageStore = create<MessageStore>((set, get) => ({
   selectedConversation: null,
   isTyping: {},
   isLoading: false,
+  totalUnreadCount: 0,
   
   setSelectedConversation: (id) => {
     set({ selectedConversation: id });
@@ -94,11 +96,14 @@ export const useMessageStore = create<MessageStore>((set, get) => ({
     const conversation = get().conversations.find(c => c.id === conversationId);
     if (!conversation || conversation.unread === 0) return;
 
+    const unreadToClear = conversation.unread;
+
     // Optimistic update
     set(state => ({
       conversations: state.conversations.map(c =>
         c.id === conversationId ? { ...c, unread: 0 } : c
       ),
+      totalUnreadCount: Math.max(0, state.totalUnreadCount - unreadToClear),
     }));
 
     const { error } = await supabase
@@ -115,6 +120,7 @@ export const useMessageStore = create<MessageStore>((set, get) => ({
         conversations: state.conversations.map(c =>
           c.id === conversationId ? { ...c, unread: conversation.unread } : c
         ),
+        totalUnreadCount: state.totalUnreadCount + unreadToClear,
       }));
     }
   },
@@ -189,7 +195,7 @@ export const useMessageStore = create<MessageStore>((set, get) => ({
   fetchConversations: async () => {
     const { session } = useAuthStore.getState();
     if (!session?.user) {
-      set({ conversations: [], isLoading: false });
+      set({ conversations: [], isLoading: false, totalUnreadCount: 0 });
       return;
     }
 
@@ -205,10 +211,11 @@ export const useMessageStore = create<MessageStore>((set, get) => ({
       }
       
       if (!data) {
-        set({ conversations: [], isLoading: false });
+        set({ conversations: [], isLoading: false, totalUnreadCount: 0 });
         return;
       }
 
+      let totalUnread = 0;
       // Transform database conversations to UI format
       const conversations: Conversation[] = data.map(conv => {
         const partnerId = conv.user1_id === session.user.id ? conv.user2_id : conv.user1_id;
@@ -224,19 +231,22 @@ export const useMessageStore = create<MessageStore>((set, get) => ({
           }
         }
         
+        const unreadCount = Number(conv.unread_count) || 0;
+        totalUnread += unreadCount;
+        
         return {
           id: conv.conv_id,
           partner: 'Unknown User', // TODO: In real app, fetch from profiles using partnerId
           avatar: 'U', // TODO: Fetch from profiles
           lastMessage: conv.last_message || 'No messages yet.',
           time: timeDisplay,
-          unread: Number(conv.unread_count) || 0,
+          unread: unreadCount,
           item: conv.item_title || 'Unknown Item',
           status: 'matched' as const
         };
       });
 
-      set({ conversations, isLoading: false });
+      set({ conversations, isLoading: false, totalUnreadCount: totalUnread });
       
     } catch (error) {
       console.error('Error in fetchConversations:', error);

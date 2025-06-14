@@ -27,7 +27,7 @@ const Index = () => {
   const [showLoginDialog, setShowLoginDialog] = useState(false);
   const [showFilters, setShowFilters] = useState(!isMobile); // Show filters by default on desktop
   const [userLocation, setUserLocation] = useState("Seattle, WA");
-  const { createConversationFromSwipe, totalUnreadCount, fetchConversationsWithUnreadCount } = useMessageStore();
+  const { createConversationFromSwipe, totalUnreadCount, fetchConversations } = useMessageStore();
   const { isAuthenticated, canCreateListing, canMakeSwap, user } = useAuthStore();
   const { 
     filteredListings, 
@@ -56,9 +56,9 @@ const Index = () => {
   // Fetch unread messages count when authenticated
   useEffect(() => {
     if (isAuthenticated) {
-      fetchConversationsWithUnreadCount();
+      fetchConversations();
     }
-  }, [isAuthenticated, fetchConversationsWithUnreadCount]);
+  }, [isAuthenticated, fetchConversations]);
 
   // Initialize user location from profile
   useEffect(() => {
