@@ -27,28 +27,28 @@ interface UserProfile {
 }
 
 export const AuthButton = ({ onLogin, onProfile }: AuthButtonProps) => {
-  const { user, isAuthenticated, logout } = useAuthStore();
+  const { user, session, isAuthenticated, logout } = useAuthStore();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    if (user && isAuthenticated) {
+    if (session?.user && isAuthenticated) {
       fetchUserProfile();
     } else {
       setProfile(null);
       setIsLoading(false);
     }
-  }, [user, isAuthenticated]);
+  }, [session?.user, isAuthenticated]);
 
   const fetchUserProfile = async () => {
-    if (!user) return;
+    if (!session?.user) return;
     
     setIsLoading(true);
     try {
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
-        .eq('id', user.id)
+        .eq('id', session.user.id)
         .single();
 
       if (error) {
@@ -78,7 +78,7 @@ export const AuthButton = ({ onLogin, onProfile }: AuthButtonProps) => {
     // TODO: Implement premium upgrade flow
   };
 
-  if (!isAuthenticated || !user) {
+  if (!isAuthenticated || !session?.user) {
     return (
       <Button onClick={onLogin} variant="outline">
         Login
@@ -98,12 +98,12 @@ export const AuthButton = ({ onLogin, onProfile }: AuthButtonProps) => {
     );
   }
 
-  // Use profile data if available, fallback to user data
+  // Use profile data if available, fallback to session user data
   const displayName = profile ? 
     `${profile.first_name || ''} ${profile.last_name || ''}`.trim() || profile.username || 'User' :
-    user.user_metadata?.full_name || user.email?.split('@')[0] || 'User';
+    session.user.user_metadata?.full_name || session.user.email?.split('@')[0] || 'User';
   
-  const username = profile?.username || user.email?.split('@')[0] || 'user';
+  const username = profile?.username || session.user.email?.split('@')[0] || 'user';
   const avatar = profile?.avatar || displayName.charAt(0).toUpperCase();
   const membershipType = profile?.membership_type || 'free';
   const monthlyListings = profile?.monthly_listings || 0;
