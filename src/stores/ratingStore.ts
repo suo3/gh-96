@@ -98,19 +98,22 @@ export const useRatingStore = create<RatingState>((set, get) => ({
 
       if (error) throw error;
 
-      const ratings: Rating[] = (data || []).map(item => ({
-        id: item.id,
-        ratedUserId: item.rated_user_id,
-        ratedUserName: '', // We don't need this for display
-        raterUserId: item.rater_user_id,
-        raterUserName: item.rater_profile 
-          ? `${item.rater_profile.first_name || ''} ${item.rater_profile.last_name || ''}`.trim() || item.rater_profile.username || 'Anonymous'
-          : 'Anonymous',
-        rating: item.rating,
-        comment: item.comment || '',
-        itemTitle: item.item_title || '',
-        createdAt: new Date(item.created_at)
-      }));
+      const ratings: Rating[] = (data || []).map(item => {
+        const raterProfile = item.rater_profile as any;
+        return {
+          id: item.id,
+          ratedUserId: item.rated_user_id,
+          ratedUserName: '', // We don't need this for display
+          raterUserId: item.rater_user_id,
+          raterUserName: raterProfile 
+            ? `${raterProfile.first_name || ''} ${raterProfile.last_name || ''}`.trim() || raterProfile.username || 'Anonymous'
+            : 'Anonymous',
+          rating: item.rating,
+          comment: item.comment || '',
+          itemTitle: item.item_title || '',
+          createdAt: new Date(item.created_at)
+        };
+      });
 
       set((state) => ({
         userRatings: {
