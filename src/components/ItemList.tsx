@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { MapPin, Heart, Star, MessageCircle, Eye } from "lucide-react";
 import { ItemDetailModal } from "./ItemDetailModal";
-import { Listing } from "@/stores/listingStore";
+import { Listing, useListingStore } from "@/stores/listingStore";
 import { useMessageStore } from "@/stores/messageStore";
 import { useAuthStore } from "@/stores/authStore";
 import { useRatingStore } from "@/stores/ratingStore";
@@ -21,6 +21,7 @@ export const ItemList = ({ items, onItemLike }: ItemListProps) => {
   const { createConversationFromSwipe } = useMessageStore();
   const { user } = useAuthStore();
   const { fetchUserRatings, getAverageRating } = useRatingStore();
+  const { minRating } = useListingStore();
   const { toast } = useToast();
 
   // Fetch ratings for all users when items change
@@ -32,6 +33,14 @@ export const ItemList = ({ items, onItemLike }: ItemListProps) => {
       }
     });
   }, [items, fetchUserRatings]);
+
+  // Apply rating filter at component level
+  const filteredByRating = items.filter((item) => {
+    if (minRating <= 0) return true;
+    if (!item.user_id) return true; // Keep items without user_id
+    const userRating = getAverageRating(item.user_id);
+    return userRating >= minRating;
+  });
 
   const handleDetailsClick = (item: Listing) => {
     setSelectedItem(item);
@@ -139,7 +148,7 @@ export const ItemList = ({ items, onItemLike }: ItemListProps) => {
   return (
     <>
       <div className="space-y-4">
-        {items.map((item) => {
+        {filteredByRating.map((item) => {
           const userRating = getUserRating(item.user_id);
           
           return (
