@@ -9,6 +9,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { Camera, Upload, X, Plus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useListingStore } from "@/stores/listingStore";
+import { useAuthStore } from "@/stores/authStore";
 
 interface PostItemDialogProps {
   open: boolean;
@@ -25,8 +27,11 @@ export const PostItemDialog = ({ open, onOpenChange }: PostItemDialogProps) => {
     newWantedItem: "",
     image: null as File | null,
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const { toast } = useToast();
+  const { createListing, loading } = useListingStore();
+  const { user } = useAuthStore();
 
   const categories = [
     "Electronics", "Books", "Clothing", "Kitchen", "Furniture", 
@@ -59,7 +64,7 @@ export const PostItemDialog = ({ open, onOpenChange }: PostItemDialogProps) => {
     });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!formData.title || !formData.description || !formData.category || !formData.condition) {
@@ -71,26 +76,64 @@ export const PostItemDialog = ({ open, onOpenChange }: PostItemDialogProps) => {
       return;
     }
 
-    // Here you would typically upload the image and save the item
-    console.log("Posting item:", formData);
-    
-    toast({
-      title: "Item Posted!",
-      description: "Your item has been added to the swap board.",
-    });
+    if (!user) {
+      toast({
+        title: "Authentication Required",
+        description: "You must be logged in to post an item.",
+        variant: "destructive",
+      });
+      return;
+    }
 
-    // Reset form
-    setFormData({
-      title: "",
-      description: "",
-      category: "",
-      condition: "",
-      wantedItems: [],
-      newWantedItem: "",
-      image: null,
-    });
+    setIsSubmitting(true);
 
-    onOpenChange(false);
+    try {
+      // For now, we'll use a placeholder image URL since we don't have image upload set up
+      const imageUrl = formData.image 
+        ? "https://images.unsplash.com/photo-1649972904349-6e44c42644a7?w=400&h=300&fit=crop"
+        : "https://images.unsplash.com/photo-1649972904349-6e44c42644a7?w=400&h=300&fit=crop";
+
+      await createListing({
+        title: formData.title,
+        description: formData.description,
+        category: formData.category,
+        condition: formData.condition,
+        wanted_items: formData.wantedItems.length > 0 ? formData.wantedItems : null,
+        images: [imageUrl],
+        user_id: user.id,
+        location: user.location || null,
+        status: 'active',
+        views: 0,
+        likes: 0
+      });
+
+      toast({
+        title: "Item Posted!",
+        description: "Your item has been added to the swap board.",
+      });
+
+      // Reset form
+      setFormData({
+        title: "",
+        description: "",
+        category: "",
+        condition: "",
+        wantedItems: [],
+        newWantedItem: "",
+        image: null,
+      });
+
+      onOpenChange(false);
+    } catch (error) {
+      console.error('Error posting item:', error);
+      toast({
+        title: "Error Posting Item",
+        description: "There was a problem posting your item. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -156,12 +199,17 @@ export const PostItemDialog = ({ open, onOpenChange }: PostItemDialogProps) => {
                 value={formData.title}
                 onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                 placeholder="e.g., Vintage Coffee Maker"
+                disabled={isSubmitting}
               />
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="category">Category *</Label>
-              <Select value={formData.category} onValueChange={(value) => setFormData({ ...formData, category: value })}>
+              <Select 
+                value={formData.category} 
+                onValueChange={(value) => setFormData({ ...formData, category: value })}
+                disabled={isSubmitting}
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="Select a category" />
                 </SelectTrigger>
@@ -178,7 +226,11 @@ export const PostItemDialog = ({ open, onOpenChange }: PostItemDialogProps) => {
 
           <div className="space-y-2">
             <Label htmlFor="condition">Condition *</Label>
-            <Select value={formData.condition} onValueChange={(value) => setFormData({ ...formData, condition: value })}>
+            <Select 
+              value={formData.condition} 
+              onValueChange={(value) => setFormData({ ...formData, condition: value })}
+              disabled={isSubmitting}
+            >
               <SelectTrigger>
                 <SelectValue placeholder="Select condition" />
               </SelectTrigger>
@@ -200,6 +252,7 @@ export const PostItemDialog = ({ open, onOpenChange }: PostItemDialogProps) => {
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
               placeholder="Describe your item and why you're swapping it..."
               rows={3}
+              disabled={isSubmitting}
             />
           </div>
 
@@ -212,8 +265,14 @@ export const PostItemDialog = ({ open, onOpenChange }: PostItemDialogProps) => {
                 onChange={(e) => setFormData({ ...formData, newWantedItem: e.target.value })}
                 placeholder="e.g., Books, Kitchen items, or 'Open to offers'"
                 onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addWantedItem())}
+                disabled={isSubmitting}
               />
-              <Button type="button" onClick={addWantedItem} variant="outline">
+              <Button 
+                type="button" 
+                onClick={addWantedItem} 
+                variant="outline"
+                disabled={isSubmitting}
+              >
                 <Plus className="w-4 h-4" />
               </Button>
             </div>
@@ -226,6 +285,7 @@ export const PostItemDialog = ({ open, onOpenChange }: PostItemDialogProps) => {
                       type="button"
                       onClick={() => removeWantedItem(item)}
                       className="ml-1 hover:bg-gray-300 rounded-full p-0.5"
+                      disabled={isSubmitting}
                     >
                       <X className="w-3 h-3" />
                     </button>
@@ -236,11 +296,21 @@ export const PostItemDialog = ({ open, onOpenChange }: PostItemDialogProps) => {
           </div>
 
           <div className="flex space-x-3 pt-4">
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)} className="flex-1">
+            <Button 
+              type="button" 
+              variant="outline" 
+              onClick={() => onOpenChange(false)} 
+              className="flex-1"
+              disabled={isSubmitting}
+            >
               Cancel
             </Button>
-            <Button type="submit" className="flex-1 bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600">
-              Post Item
+            <Button 
+              type="submit" 
+              className="flex-1 bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600"
+              disabled={isSubmitting || loading}
+            >
+              {isSubmitting || loading ? "Posting..." : "Post Item"}
             </Button>
           </div>
         </form>
