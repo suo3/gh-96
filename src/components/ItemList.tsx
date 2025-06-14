@@ -82,6 +82,14 @@ export const ItemList = ({ items, onItemLike }: ItemListProps) => {
     }
   };
 
+  const getItemImage = (item: Listing) => {
+    // Check if the item has images and use the first one, otherwise use the placeholder
+    if (item.images && item.images.length > 0 && item.images[0]) {
+      return item.images[0];
+    }
+    return "https://images.unsplash.com/photo-1649972904349-6e44c42644a7?w=400&h=300&fit=crop";
+  };
+
   return (
     <>
       <div className="space-y-4">
@@ -95,9 +103,12 @@ export const ItemList = ({ items, onItemLike }: ItemListProps) => {
             <CardContent className="p-4">
               <div className="flex gap-4">
                 <img
-                  src={item.images?.[0] || "https://images.unsplash.com/photo-1649972904349-6e44c42644a7?w=400&h=300&fit=crop"}
+                  src={getItemImage(item)}
                   alt={item.title}
                   className="w-24 h-24 object-cover rounded-lg flex-shrink-0"
+                  onError={(e) => {
+                    e.currentTarget.src = "https://images.unsplash.com/photo-1649972904349-6e44c42644a7?w=400&h=300&fit=crop";
+                  }}
                 />
                 <div className="flex-1">
                   <div className="flex items-start justify-between mb-2">

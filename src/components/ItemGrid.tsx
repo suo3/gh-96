@@ -82,6 +82,14 @@ export const ItemGrid = ({ items, onItemLike }: ItemGridProps) => {
     }
   };
 
+  const getItemImage = (item: Listing) => {
+    // Check if the item has images and use the first one, otherwise use the placeholder
+    if (item.images && item.images.length > 0 && item.images[0]) {
+      return item.images[0];
+    }
+    return "https://images.unsplash.com/photo-1649972904349-6e44c42644a7?w=400&h=300&fit=crop";
+  };
+
   return (
     <>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -94,9 +102,12 @@ export const ItemGrid = ({ items, onItemLike }: ItemGridProps) => {
           >
             <div className="relative overflow-hidden">
               <img
-                src={item.images?.[0] || "https://images.unsplash.com/photo-1649972904349-6e44c42644a7?w=400&h=300&fit=crop"}
+                src={getItemImage(item)}
                 alt={item.title}
                 className="w-full h-48 object-cover transition-transform duration-300 group-hover:scale-110"
+                onError={(e) => {
+                  e.currentTarget.src = "https://images.unsplash.com/photo-1649972904349-6e44c42644a7?w=400&h=300&fit=crop";
+                }}
               />
               <div className="absolute top-2 right-2 flex gap-2">
                 <Badge className="bg-emerald-600/90 backdrop-blur-sm">

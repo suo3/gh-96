@@ -77,6 +77,16 @@ export const ItemDetailModal = ({ item, open, onOpenChange, onItemLike }: ItemDe
     }
   };
 
+  const getItemImages = (item: Listing) => {
+    // Return the actual images if they exist, otherwise return an empty array to show the placeholder
+    if (item.images && item.images.length > 0) {
+      return item.images.filter(img => img && img.trim() !== '');
+    }
+    return [];
+  };
+
+  const images = getItemImages(item);
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
@@ -86,22 +96,25 @@ export const ItemDetailModal = ({ item, open, onOpenChange, onItemLike }: ItemDe
         
         <div className="space-y-6">
           {/* Images */}
-          {item.images && item.images.length > 0 && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {item.images.map((image, index) => (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {images.length > 0 ? (
+              images.map((image, index) => (
                 <img
                   key={index}
                   src={image}
                   alt={`${item.title} - Image ${index + 1}`}
                   className="w-full h-48 object-cover rounded-lg"
+                  onError={(e) => {
+                    e.currentTarget.src = "https://images.unsplash.com/photo-1649972904349-6e44c42644a7?w=400&h=300&fit=crop";
+                  }}
                 />
-              )) || (
-                <div className="w-full h-48 bg-gray-200 rounded-lg flex items-center justify-center">
-                  <span className="text-gray-500">No image available</span>
-                </div>
-              )}
-            </div>
-          )}
+              ))
+            ) : (
+              <div className="w-full h-48 bg-gray-200 rounded-lg flex items-center justify-center">
+                <span className="text-gray-500">No image available</span>
+              </div>
+            )}
+          </div>
 
           {/* Details */}
           <div className="space-y-4">
