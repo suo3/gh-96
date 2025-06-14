@@ -121,6 +121,9 @@ export const MessagesPanel = ({ onBack, onLogin }: MessagesPanelProps) => {
     );
   }
 
+  // Get messages for the selected conversation
+  const currentMessages = selectedChat ? messages[selectedChat] || [] : [];
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50">
       {/* Header */}
@@ -186,7 +189,7 @@ export const MessagesPanel = ({ onBack, onLogin }: MessagesPanelProps) => {
                   {/* Messages Area */}
                   <ScrollArea className="flex-1 p-4">
                     <div className="space-y-4">
-                      {messages.map((message) => (
+                      {currentMessages.map((message) => (
                         <MessageBubble key={message.id} message={message} />
                       ))}
                       {isTyping && <TypingIndicator />}
