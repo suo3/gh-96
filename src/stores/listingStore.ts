@@ -1,3 +1,4 @@
+
 import { create } from 'zustand';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -52,7 +53,7 @@ interface ListingStore {
   fetchListings: () => Promise<void>;
   fetchUserListings: (userId: string) => Promise<void>;
   getUserListings: (userId: string) => Promise<Listing[]>;
-  createListing: (listing: Omit<Listing, 'id' | 'created_at' | 'updated_at'>) => Promise<void>;
+  createListing: (listing: Omit<Listing, 'id' | 'created_at' | 'updated_at'>) => Promise<Listing>;
   updateListing: (id: string, updates: Partial<Listing>) => Promise<void>;
   deleteListing: (id: string) => Promise<void>;
   markAsCompleted: (id: string) => Promise<void>;
