@@ -157,6 +157,7 @@ export const useListingStore = create<ListingStore>((set, get) => ({
             coordinates.lat, 
             coordinates.lng
           );
+          console.log(`Distance for ${listing.title}: ${distance} miles`);
         }
 
         return {
@@ -346,6 +347,13 @@ export const useListingStore = create<ListingStore>((set, get) => ({
     
     let filtered = [...listings];
 
+    console.log('Filtering listings:', {
+      totalListings: filtered.length,
+      maxDistance,
+      userLocation,
+      hasUserLocation: !!userLocation
+    });
+
     // Apply search filter
     if (searchTerm) {
       filtered = filtered.filter((listing) =>
@@ -376,10 +384,20 @@ export const useListingStore = create<ListingStore>((set, get) => ({
 
     // Apply distance filter if user location is available
     if (userLocation && maxDistance > 0) {
+      const beforeDistanceFilter = filtered.length;
       filtered = filtered.filter((listing) => {
-        if (!listing.distance) return true; // Include items without location data
-        return listing.distance <= maxDistance;
+        // If listing has no distance data (no location), exclude it when distance filtering is active
+        if (listing.distance === undefined) {
+          console.log(`Excluding ${listing.title} - no location data`);
+          return false;
+        }
+        const withinDistance = listing.distance <= maxDistance;
+        if (!withinDistance) {
+          console.log(`Excluding ${listing.title} - distance: ${listing.distance} > ${maxDistance}`);
+        }
+        return withinDistance;
       });
+      console.log(`Distance filter: ${beforeDistanceFilter} -> ${filtered.length} items (within ${maxDistance} miles)`);
     }
 
     // Apply sorting
@@ -436,6 +454,7 @@ export const useListingStore = create<ListingStore>((set, get) => ({
         break;
     }
 
+    console.log(`Final filtered results: ${filtered.length} items`);
     return filtered;
   },
 }));
