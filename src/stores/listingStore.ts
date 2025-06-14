@@ -236,25 +236,46 @@ export const useListingStore = create<ListingStore>((set, get) => ({
   },
 
   createListing: async (listing) => {
-    console.log('createListing function called with:', listing);
+    console.log('=== CREATElisting FUNCTION START ===');
+    console.log('Input listing data:', listing);
+    
     set({ loading: true, error: null });
     
     try {
-      console.log('About to insert into Supabase...');
+      console.log('About to call supabase.from("listings").insert()...');
+      console.log('Supabase client:', supabase);
+      
+      const insertResult = await supabase
+        .from('listings')
+        .insert([listing]);
+      
+      console.log('Insert result (without select):', insertResult);
+      
+      if (insertResult.error) {
+        console.error('Insert error:', insertResult.error);
+        throw insertResult.error;
+      }
+      
+      console.log('Insert successful, now selecting...');
+      
+      // Now fetch the created listing
       const { data, error } = await supabase
         .from('listings')
-        .insert([listing])
-        .select()
+        .select('*')
+        .eq('user_id', listing.user_id)
+        .eq('title', listing.title)
+        .order('created_at', { ascending: false })
+        .limit(1)
         .single();
 
-      console.log('Supabase insert response - data:', data, 'error:', error);
+      console.log('Select result - data:', data, 'error:', error);
 
       if (error) {
-        console.error('Supabase insert error:', error);
+        console.error('Select error:', error);
         throw error;
       }
 
-      console.log('Successfully inserted listing:', data);
+      console.log('Successfully created and retrieved listing:', data);
 
       set((state) => ({
         listings: [data, ...state.listings],
@@ -262,11 +283,17 @@ export const useListingStore = create<ListingStore>((set, get) => ({
       }));
 
       console.log('Updated state with new listing');
-      return data; // Return the created listing
+      console.log('=== CREATELIST FUNCTION END SUCCESS ===');
+      return data;
     } catch (error) {
-      console.error('Error in createListing:', error);
+      console.error('=== CREATELIST FUNCTION ERROR ===');
+      console.error('Error details:', error);
+      console.error('Error message:', error?.message);
+      console.error('Error code:', error?.code);
+      console.error('Error hint:', error?.hint);
+      console.error('Error details field:', error?.details);
       set({ error: 'Failed to create listing', loading: false });
-      throw error; // Re-throw the error so it can be caught in the component
+      throw error;
     }
   },
 
