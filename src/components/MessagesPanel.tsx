@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -73,42 +72,6 @@ export const MessagesPanel = ({ onBack, onLogin }: MessagesPanelProps) => {
       onLogin();
     }, 100);
   };
-
-  if (!isAuthenticated) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50 flex items-center justify-center">
-        <Card className="w-full max-w-md mx-4">
-          <CardHeader className="text-center">
-            <div className="w-16 h-16 bg-gradient-to-br from-emerald-400 to-teal-400 rounded-full flex items-center justify-center mx-auto mb-4">
-              <MessageCircle className="w-8 h-8 text-white" />
-            </div>
-            <CardTitle className="text-2xl">Messages</CardTitle>
-          </CardHeader>
-          <CardContent className="text-center space-y-4">
-            <p className="text-gray-600">
-              You need to be logged in to access your messages and start conversations.
-            </p>
-            <div className="space-y-2">
-              <Button 
-                onClick={handleLoginRedirect}
-                className="w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600"
-              >
-                Login to Continue
-              </Button>
-              <Button 
-                variant="outline" 
-                onClick={onBack}
-                className="w-full"
-              >
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                Back to Browse
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
 
   if (isLoading) {
     return (
@@ -203,17 +166,42 @@ export const MessagesPanel = ({ onBack, onLogin }: MessagesPanelProps) => {
                         value={newMessage}
                         onChange={(e) => setNewMessage(e.target.value)}
                         onKeyPress={handleKeyPress}
-                        placeholder="Type your message..."
+                        placeholder={
+                          isAuthenticated
+                            ? "Type your message..."
+                            : "Login to send messages"
+                        }
                         className="flex-1"
+                        disabled={!isAuthenticated || isTyping}
                       />
-                      <Button 
-                        onClick={handleSendMessage}
-                        disabled={!newMessage.trim() || isTyping}
+                      <Button
+                        onClick={
+                          isAuthenticated
+                            ? handleSendMessage
+                            : onLogin
+                        }
+                        disabled={!isAuthenticated || !newMessage.trim() || isTyping}
                         className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600"
+                        type="button"
+                        title={!isAuthenticated ? "You need to login to send" : ""}
                       >
                         <Send className="w-4 h-4" />
                       </Button>
                     </div>
+                    {!isAuthenticated && (
+                      <div className="text-xs text-gray-500 mt-2">
+                        <span>
+                          <Button
+                            variant="link"
+                            onClick={onLogin}
+                            className="p-0 h-auto min-w-0 align-baseline text-emerald-600 font-semibold"
+                          >
+                            Login
+                          </Button>
+                          {" to send messages."}
+                        </span>
+                      </div>
+                    )}
                   </div>
                 </CardContent>
               </>
