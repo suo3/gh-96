@@ -4,6 +4,9 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { MapPin, Heart, Star, MessageCircle, Eye } from "lucide-react";
 import { Listing } from "@/stores/listingStore";
+import { useMessageStore } from "@/stores/messageStore";
+import { useAuthStore } from "@/stores/authStore";
+import { useToast } from "@/hooks/use-toast";
 
 interface ItemDetailModalProps {
   item: Listing | null;
@@ -13,7 +16,66 @@ interface ItemDetailModalProps {
 }
 
 export const ItemDetailModal = ({ item, open, onOpenChange, onItemLike }: ItemDetailModalProps) => {
+  const { createConversationFromSwipe } = useMessageStore();
+  const { user } = useAuthStore();
+  const { toast } = useToast();
+
   if (!item) return null;
+
+  const handleSwapClick = async () => {
+    if (!user) {
+      toast({
+        title: "Login Required",
+        description: "Please log in to start a conversation.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (item.user_id === user.id) {
+      toast({
+        title: "Cannot swap with yourself",
+        description: "You cannot start a conversation about your own listing.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (item.hasActiveMessage) {
+      return;
+    }
+
+    try {
+      const conversationId = await createConversationFromSwipe(
+        item.id,
+        item.title,
+        item.user_id || ''
+      );
+
+      if (conversationId) {
+        // Update the item to show it has an active message
+        onItemLike(item);
+        
+        toast({
+          title: "Conversation Started!",
+          description: `Started a conversation about "${item.title}".`,
+        });
+      } else {
+        toast({
+          title: "Failed to start conversation",
+          description: "Please try again later.",
+          variant: "destructive"
+        });
+      }
+    } catch (error) {
+      console.error('Error starting conversation:', error);
+      toast({
+        title: "Error",
+        description: "Failed to start conversation. Please try again.",
+        variant: "destructive"
+      });
+    }
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -123,7 +185,7 @@ export const ItemDetailModal = ({ item, open, onOpenChange, onItemLike }: ItemDe
                     ? 'bg-gray-400 cursor-not-allowed' 
                     : 'bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600'
                 }`}
-                onClick={() => !item.hasActiveMessage && onItemLike(item)}
+                onClick={handleSwapClick}
                 disabled={item.hasActiveMessage}
               >
                 {item.hasActiveMessage ? (

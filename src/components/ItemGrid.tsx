@@ -6,6 +6,9 @@ import { Button } from "@/components/ui/button";
 import { MapPin, Heart, Star, MessageCircle, Eye } from "lucide-react";
 import { ItemDetailModal } from "./ItemDetailModal";
 import { Listing } from "@/stores/listingStore";
+import { useMessageStore } from "@/stores/messageStore";
+import { useAuthStore } from "@/stores/authStore";
+import { useToast } from "@/hooks/use-toast";
 
 interface ItemGridProps {
   items: Listing[];
@@ -15,10 +18,68 @@ interface ItemGridProps {
 export const ItemGrid = ({ items, onItemLike }: ItemGridProps) => {
   const [selectedItem, setSelectedItem] = useState<Listing | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
+  const { createConversationFromSwipe } = useMessageStore();
+  const { user } = useAuthStore();
+  const { toast } = useToast();
 
   const handleDetailsClick = (item: Listing) => {
     setSelectedItem(item);
     setModalOpen(true);
+  };
+
+  const handleSwapClick = async (item: Listing) => {
+    if (!user) {
+      toast({
+        title: "Login Required",
+        description: "Please log in to start a conversation.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (item.user_id === user.id) {
+      toast({
+        title: "Cannot swap with yourself",
+        description: "You cannot start a conversation about your own listing.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (item.hasActiveMessage) {
+      return;
+    }
+
+    try {
+      const conversationId = await createConversationFromSwipe(
+        item.id,
+        item.title,
+        item.user_id || ''
+      );
+
+      if (conversationId) {
+        // Update the item to show it has an active message
+        onItemLike(item);
+        
+        toast({
+          title: "Conversation Started!",
+          description: `Started a conversation about "${item.title}".`,
+        });
+      } else {
+        toast({
+          title: "Failed to start conversation",
+          description: "Please try again later.",
+          variant: "destructive"
+        });
+      }
+    } catch (error) {
+      console.error('Error starting conversation:', error);
+      toast({
+        title: "Error",
+        description: "Failed to start conversation. Please try again.",
+        variant: "destructive"
+      });
+    }
   };
 
   return (
@@ -51,7 +112,7 @@ export const ItemGrid = ({ items, onItemLike }: ItemGridProps) => {
               <Button
                 className="absolute top-2 left-2 w-10 h-10 rounded-full bg-white/90 hover:bg-white text-red-500 hover:text-red-600 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
                 variant="ghost"
-                onClick={() => !item.hasActiveMessage && onItemLike(item)}
+                onClick={() => handleSwapClick(item)}
                 disabled={item.hasActiveMessage}
               >
                 <Heart className="w-5 h-5" />
@@ -106,7 +167,7 @@ export const ItemGrid = ({ items, onItemLike }: ItemGridProps) => {
                         ? 'bg-gray-400 cursor-not-allowed' 
                         : 'bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600'
                     }`}
-                    onClick={() => !item.hasActiveMessage && onItemLike(item)}
+                    onClick={() => handleSwapClick(item)}
                     disabled={item.hasActiveMessage}
                   >
                     {item.hasActiveMessage ? (
@@ -132,7 +193,7 @@ export const ItemGrid = ({ items, onItemLike }: ItemGridProps) => {
         item={selectedItem}
         open={modalOpen}
         onOpenChange={setModalOpen}
-        onItemLike={onItemLike}
+        onItemLike={handleSwapClick}
       />
     </>
   );

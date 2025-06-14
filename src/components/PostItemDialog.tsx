@@ -30,6 +30,7 @@ export const PostItemDialog = ({ open, onOpenChange }: PostItemDialogProps) => {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [userLocation, setUserLocation] = useState<string | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
 
   const { toast } = useToast();
   const { createListing } = useListingStore();
@@ -75,6 +76,34 @@ export const PostItemDialog = ({ open, onOpenChange }: PostItemDialogProps) => {
     const file = e.target.files?.[0];
     if (file) {
       setFormData({ ...formData, image: file });
+      // Create preview URL
+      const previewUrl = URL.createObjectURL(file);
+      setImagePreview(previewUrl);
+    }
+  };
+
+  const uploadImageToSupabase = async (file: File): Promise<string | null> => {
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${user!.id}/${Date.now()}.${fileExt}`;
+      
+      const { error: uploadError } = await supabase.storage
+        .from('listing-images')
+        .upload(fileName, file);
+
+      if (uploadError) {
+        console.error('Error uploading image:', uploadError);
+        return null;
+      }
+
+      const { data } = supabase.storage
+        .from('listing-images')
+        .getPublicUrl(fileName);
+
+      return data.publicUrl;
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      return null;
     }
   };
 
@@ -102,8 +131,6 @@ export const PostItemDialog = ({ open, onOpenChange }: PostItemDialogProps) => {
     console.log('Submit clicked, formData:', formData);
     console.log('User:', user);
     console.log('User location from profile:', userLocation);
-    console.log('createListing function:', createListing);
-    console.log('isSubmitting:', isSubmitting);
     
     if (!formData.title || !formData.description || !formData.category || !formData.condition) {
       console.log('Form validation failed - missing required fields');
@@ -129,10 +156,23 @@ export const PostItemDialog = ({ open, onOpenChange }: PostItemDialogProps) => {
     setIsSubmitting(true);
 
     try {
-      // For now, we'll use a placeholder image URL since we don't have image upload set up
-      const imageUrl = formData.image 
-        ? "https://images.unsplash.com/photo-1649972904349-6e44c42644a7?w=400&h=300&fit=crop"
-        : "https://images.unsplash.com/photo-1649972904349-6e44c42644a7?w=400&h=300&fit=crop";
+      let imageUrl = "https://images.unsplash.com/photo-1649972904349-6e44c42644a7?w=400&h=300&fit=crop";
+      
+      // Upload image if provided
+      if (formData.image) {
+        console.log('Uploading image to Supabase...');
+        const uploadedImageUrl = await uploadImageToSupabase(formData.image);
+        if (uploadedImageUrl) {
+          imageUrl = uploadedImageUrl;
+          console.log('Image uploaded successfully:', imageUrl);
+        } else {
+          toast({
+            title: "Image Upload Failed",
+            description: "Failed to upload image, using default image instead.",
+            variant: "destructive",
+          });
+        }
+      }
 
       const listingData = {
         title: formData.title,
@@ -142,7 +182,7 @@ export const PostItemDialog = ({ open, onOpenChange }: PostItemDialogProps) => {
         wanted_items: formData.wantedItems.length > 0 ? formData.wantedItems : null,
         images: [imageUrl],
         user_id: user.id,
-        location: userLocation, // Use the location from user's profile
+        location: userLocation,
         status: 'active',
         views: 0,
         likes: 0
@@ -170,13 +210,12 @@ export const PostItemDialog = ({ open, onOpenChange }: PostItemDialogProps) => {
         newWantedItem: "",
         image: null,
       });
+      setImagePreview(null);
 
       onOpenChange(false);
     } catch (error) {
       console.error('=== ERROR POSTING ITEM ===');
       console.error('Error details:', error);
-      console.error('Error message:', error?.message);
-      console.error('Error stack:', error?.stack);
       toast({
         title: "Error Posting Item",
         description: `There was a problem posting your item: ${error?.message || 'Unknown error'}`,
@@ -192,8 +231,6 @@ export const PostItemDialog = ({ open, onOpenChange }: PostItemDialogProps) => {
   // Check if form is valid
   const isFormValid = formData.title && formData.description && formData.category && formData.condition;
 
-  console.log('Render - isSubmitting:', isSubmitting, 'isFormValid:', isFormValid, 'button disabled:', isSubmitting || !isFormValid);
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
@@ -206,10 +243,10 @@ export const PostItemDialog = ({ open, onOpenChange }: PostItemDialogProps) => {
           <div className="space-y-2">
             <Label>Photo *</Label>
             <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-gray-400 transition-colors">
-              {formData.image ? (
+              {imagePreview ? (
                 <div className="relative">
                   <img
-                    src={URL.createObjectURL(formData.image)}
+                    src={imagePreview}
                     alt="Preview"
                     className="max-h-48 mx-auto rounded-lg"
                   />
@@ -218,7 +255,10 @@ export const PostItemDialog = ({ open, onOpenChange }: PostItemDialogProps) => {
                     variant="outline"
                     size="sm"
                     className="mt-4"
-                    onClick={() => setFormData({ ...formData, image: null })}
+                    onClick={() => {
+                      setFormData({ ...formData, image: null });
+                      setImagePreview(null);
+                    }}
                   >
                     <X className="w-4 h-4 mr-2" />
                     Remove

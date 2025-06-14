@@ -1,3 +1,4 @@
+
 import { create } from 'zustand';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuthStore } from './authStore';
@@ -12,7 +13,7 @@ export interface Message {
 }
 
 export interface Conversation {
-  id: string; // Changed from number to string for UUID compatibility
+  id: string;
   partner: string;
   avatar: string;
   lastMessage: string;
@@ -36,7 +37,7 @@ interface MessageStore {
   markAsRead: (conversationId: string) => Promise<void>;
   setTyping: (conversationId: string, isTyping: boolean) => void;
   addConversation: (conversation: Conversation) => void;
-  createConversationFromSwipe: (itemTitle: string, partnerName: string) => Promise<string>;
+  createConversationFromSwipe: (listingId: string, itemTitle: string, listingOwnerId: string) => Promise<string>;
   markConversationComplete: (conversationId: string) => void;
   fetchConversations: () => Promise<void>;
   fetchMessages: (conversationId: string) => Promise<void>;
@@ -137,7 +138,7 @@ export const useMessageStore = create<MessageStore>((set, get) => ({
     }));
   },
 
-  createConversationFromSwipe: async (itemTitle, partnerName) => {
+  createConversationFromSwipe: async (listingId, itemTitle, listingOwnerId) => {
     const { session } = useAuthStore.getState();
     if (!session?.user) {
       console.error('User not authenticated');
@@ -145,14 +146,30 @@ export const useMessageStore = create<MessageStore>((set, get) => ({
     }
 
     try {
-      // For now, create a mock partner ID - in real app this would come from the item listing
-      const mockPartnerId = 'mock-partner-id';
+      console.log('Creating conversation for listing:', { listingId, itemTitle, listingOwnerId });
+      
+      // Check if conversation already exists between these users for this item
+      const { data: existingConversation, error: checkError } = await supabase
+        .from('conversations')
+        .select('id')
+        .eq('item_title', itemTitle)
+        .or(`and(user1_id.eq.${session.user.id},user2_id.eq.${listingOwnerId}),and(user1_id.eq.${listingOwnerId},user2_id.eq.${session.user.id})`)
+        .maybeSingle();
+
+      if (checkError) {
+        console.error('Error checking existing conversation:', checkError);
+      }
+
+      if (existingConversation) {
+        console.log('Conversation already exists:', existingConversation.id);
+        return existingConversation.id;
+      }
       
       const { data, error } = await supabase
         .from('conversations')
         .insert({
           user1_id: session.user.id,
-          user2_id: mockPartnerId,
+          user2_id: listingOwnerId,
           item_title: itemTitle
         })
         .select()
@@ -162,6 +179,8 @@ export const useMessageStore = create<MessageStore>((set, get) => ({
         console.error('Error creating conversation:', error);
         return '';
       }
+
+      console.log('Conversation created:', data);
 
       // Add initial message
       await supabase
@@ -280,7 +299,7 @@ export const useMessageStore = create<MessageStore>((set, get) => ({
         sender: msg.sender_id === session.user.id ? 'me' : 'partner',
         text: msg.content,
         timestamp: new Date(msg.created_at),
-        read: msg.is_read, // Map is_read from DB
+        read: msg.is_read,
       }));
 
       set((state) => ({
