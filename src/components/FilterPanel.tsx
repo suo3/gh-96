@@ -121,6 +121,11 @@ export const FilterPanel = ({ onFilterChange, isVisible }: FilterPanelProps) => 
     setTimeout(applyFilters, 0);
   };
 
+  const handleRatingChange = (value: number[]) => {
+    setMinRating(value);
+    setTimeout(applyFilters, 0);
+  };
+
   if (!isVisible) return null;
 
   return (
@@ -230,10 +235,7 @@ export const FilterPanel = ({ onFilterChange, isVisible }: FilterPanelProps) => 
           </label>
           <Slider
             value={minRating}
-            onValueChange={(value) => {
-              setMinRating(value);
-              setTimeout(applyFilters, 0);
-            }}
+            onValueChange={handleRatingChange}
             max={5}
             min={0}
             step={1}
