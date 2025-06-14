@@ -46,8 +46,62 @@ export const useAuthStore = create<AuthState>()(
 
       initialize: async () => {
         try {
+          console.log('Initializing auth...');
+          
+          // Set up auth state listener FIRST
+          supabase.auth.onAuthStateChange(async (event, session) => {
+            console.log('Auth state change:', event, session?.user?.email);
+            
+            if (event === 'SIGNED_IN' && session?.user) {
+              // Fetch user profile
+              const { data: profile, error } = await supabase
+                .from('profiles')
+                .select('*')
+                .eq('id', session.user.id)
+                .single();
+
+              console.log('Profile fetch result:', { profile, error });
+
+              if (profile) {
+                const userProfile: UserProfile = {
+                  id: profile.id,
+                  email: session.user.email || '',
+                  username: profile.username || '',
+                  firstName: profile.first_name || '',
+                  lastName: profile.last_name || '',
+                  location: profile.location || '',
+                  membershipType: profile.membership_type as 'free' | 'premium',
+                  joinedDate: new Date(profile.joined_date),
+                  rating: parseFloat(profile.rating?.toString() || '0'),
+                  totalSwaps: profile.total_swaps || 0,
+                  monthlyListings: profile.monthly_listings || 0,
+                  monthlySwaps: profile.monthly_swaps || 0,
+                  avatar: profile.avatar || ''
+                };
+
+                set({ 
+                  user: userProfile, 
+                  session, 
+                  isAuthenticated: true, 
+                  isLoading: false 
+                });
+              } else {
+                console.error('No profile found for user:', session.user.id);
+                set({ isLoading: false });
+              }
+            } else if (event === 'SIGNED_OUT') {
+              set({ 
+                user: null, 
+                session: null, 
+                isAuthenticated: false,
+                isLoading: false 
+              });
+            }
+          });
+
           // Get initial session
-          const { data: { session } } = await supabase.auth.getSession();
+          const { data: { session }, error } = await supabase.auth.getSession();
+          console.log('Initial session:', session?.user?.email, error);
           
           if (session?.user) {
             // Fetch user profile
@@ -84,47 +138,6 @@ export const useAuthStore = create<AuthState>()(
           } else {
             set({ isLoading: false });
           }
-
-          // Listen for auth changes
-          supabase.auth.onAuthStateChange(async (event, session) => {
-            if (event === 'SIGNED_IN' && session?.user) {
-              const { data: profile } = await supabase
-                .from('profiles')
-                .select('*')
-                .eq('id', session.user.id)
-                .single();
-
-              if (profile) {
-                const userProfile: UserProfile = {
-                  id: profile.id,
-                  email: session.user.email || '',
-                  username: profile.username || '',
-                  firstName: profile.first_name || '',
-                  lastName: profile.last_name || '',
-                  location: profile.location || '',
-                  membershipType: profile.membership_type as 'free' | 'premium',
-                  joinedDate: new Date(profile.joined_date),
-                  rating: parseFloat(profile.rating?.toString() || '0'),
-                  totalSwaps: profile.total_swaps || 0,
-                  monthlyListings: profile.monthly_listings || 0,
-                  monthlySwaps: profile.monthly_swaps || 0,
-                  avatar: profile.avatar || ''
-                };
-
-                set({ 
-                  user: userProfile, 
-                  session, 
-                  isAuthenticated: true 
-                });
-              }
-            } else if (event === 'SIGNED_OUT') {
-              set({ 
-                user: null, 
-                session: null, 
-                isAuthenticated: false 
-              });
-            }
-          });
         } catch (error) {
           console.error('Auth initialization error:', error);
           set({ isLoading: false });
@@ -133,6 +146,7 @@ export const useAuthStore = create<AuthState>()(
 
       login: async (email: string, password: string) => {
         try {
+          console.log('Attempting login for:', email);
           const { data, error } = await supabase.auth.signInWithPassword({
             email,
             password,
@@ -143,6 +157,7 @@ export const useAuthStore = create<AuthState>()(
             return false;
           }
 
+          console.log('Login successful for:', email);
           return true;
         } catch (error) {
           console.error('Login error:', error);
@@ -152,6 +167,7 @@ export const useAuthStore = create<AuthState>()(
 
       signup: async (email: string, password: string, userData: Partial<UserProfile>) => {
         try {
+          console.log('Attempting signup for:', email, userData);
           const redirectUrl = `${window.location.origin}/`;
           
           const { data, error } = await supabase.auth.signUp({
@@ -173,6 +189,7 @@ export const useAuthStore = create<AuthState>()(
             return false;
           }
 
+          console.log('Signup successful for:', email, data);
           return true;
         } catch (error) {
           console.error('Signup error:', error);
