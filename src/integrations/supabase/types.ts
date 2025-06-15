@@ -124,6 +124,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          achievements: string[] | null
           avatar: string | null
           created_at: string | null
           first_name: string | null
@@ -140,6 +141,7 @@ export type Database = {
           username: string | null
         }
         Insert: {
+          achievements?: string[] | null
           avatar?: string | null
           created_at?: string | null
           first_name?: string | null
@@ -156,6 +158,7 @@ export type Database = {
           username?: string | null
         }
         Update: {
+          achievements?: string[] | null
           avatar?: string | null
           created_at?: string | null
           first_name?: string | null
@@ -253,6 +256,60 @@ export type Database = {
           user_id?: string | null
         }
         Relationships: []
+      }
+      swaps: {
+        Row: {
+          created_at: string | null
+          id: string
+          item1_id: string | null
+          item1_title: string
+          item2_id: string | null
+          item2_title: string
+          status: string | null
+          updated_at: string | null
+          user1_id: string
+          user2_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          item1_id?: string | null
+          item1_title: string
+          item2_id?: string | null
+          item2_title: string
+          status?: string | null
+          updated_at?: string | null
+          user1_id: string
+          user2_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          item1_id?: string | null
+          item1_title?: string
+          item2_id?: string | null
+          item2_title?: string
+          status?: string | null
+          updated_at?: string | null
+          user1_id?: string
+          user2_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "swaps_item1_id_fkey"
+            columns: ["item1_id"]
+            isOneToOne: false
+            referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "swaps_item2_id_fkey"
+            columns: ["item2_id"]
+            isOneToOne: false
+            referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {

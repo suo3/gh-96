@@ -1,14 +1,14 @@
 
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowLeft, Award, MapPin, Calendar, Star, RotateCcw, User, MessageSquare, List, Crown } from "lucide-react";
+import { ArrowLeft, Award, MapPin, Calendar, Star, User, MessageSquare, List, Crown } from "lucide-react";
 import { ProfileEditor } from "./ProfileEditor";
 import { ListingManager } from "./ListingManager";
 import { ConversationManager } from "./ConversationManager";
+import { HistoryTab } from "./HistoryTab";
 import { useAuthStore } from "@/stores/authStore";
 
 interface UserProfileProps {
@@ -37,18 +37,6 @@ export const UserProfile = ({ onBack }: UserProfileProps) => {
   // Define limits based on membership type
   const listingLimit = user.membershipType === 'premium' ? 'Unlimited' : 50;
   const swapLimit = user.membershipType === 'premium' ? 'Unlimited' : 50;
-
-  const recentSwaps = [
-    { item: "Vintage Camera", swappedFor: "Programming Books", date: "2 days ago", partner: "Sarah M." },
-    { item: "Coffee Maker", swappedFor: "Yoga Mat", date: "1 week ago", partner: "Mike K." },
-    { item: "Board Games", swappedFor: "Kitchen Scale", date: "2 weeks ago", partner: "Emma L." }
-  ];
-
-  const currentListings = [
-    { title: "Guitar Amplifier", views: 24, likes: 8, category: "Music" },
-    { title: "Cooking Books Set", views: 18, likes: 12, category: "Books" },
-    { title: "Plant Collection", views: 31, likes: 15, category: "Garden" }
-  ];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50">
@@ -158,72 +146,10 @@ export const UserProfile = ({ onBack }: UserProfileProps) => {
           </TabsContent>
 
           <TabsContent value="history" className="mt-6">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              {/* Recent Swaps */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center">
-                    <Award className="w-5 h-5 mr-2 text-emerald-600" />
-                    Recent Swaps
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    {recentSwaps.map((swap, index) => (
-                      <div key={index} className="border rounded-lg p-4 bg-gray-50">
-                        <div className="flex items-center justify-between mb-2">
-                          <div className="font-medium text-gray-900">{swap.item}</div>
-                          <Badge variant="secondary">{swap.date}</Badge>
-                        </div>
-                        <div className="text-sm text-gray-600">
-                          <div className="flex items-center">
-                            <RotateCcw className="w-4 h-4 mr-1" />
-                            Swapped for: <span className="font-medium ml-1">{swap.swappedFor}</span>
-                          </div>
-                          <div className="mt-1">With {swap.partner}</div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Achievements */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Achievements</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-1 gap-4">
-                    <div className="text-center p-4 bg-emerald-50 rounded-lg">
-                      <div className="w-12 h-12 bg-emerald-500 rounded-full flex items-center justify-center mx-auto mb-2">
-                        <Award className="w-6 h-6 text-white" />
-                      </div>
-                      <div className="font-semibold text-emerald-700">First Swap</div>
-                      <div className="text-sm text-emerald-600">Welcome to the community!</div>
-                    </div>
-                    <div className="text-center p-4 bg-blue-50 rounded-lg">
-                      <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center mx-auto mb-2">
-                        <RotateCcw className="w-6 h-6 text-white" />
-                      </div>
-                      <div className="font-semibold text-blue-700">10 Swaps</div>
-                      <div className="text-sm text-blue-600">Active swapper</div>
-                    </div>
-                    <div className="text-center p-4 bg-yellow-50 rounded-lg">
-                      <div className="w-12 h-12 bg-yellow-500 rounded-full flex items-center justify-center mx-auto mb-2">
-                        <Star className="w-6 h-6 text-white" />
-                      </div>
-                      <div className="font-semibold text-yellow-700">5 Star Rating</div>
-                      <div className="text-sm text-yellow-600">Excellent reputation</div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
+            <HistoryTab />
           </TabsContent>
         </Tabs>
       </main>
     </div>
   );
 };
-
