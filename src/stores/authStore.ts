@@ -286,14 +286,14 @@ export const useAuthStore = create<AuthState>()(
         const { user } = get();
         if (!user) return false;
         if (user.membershipType === 'premium') return true;
-        return user.monthlyListings < 10;
+        return user.monthlyListings < 50; // Updated to 50
       },
 
       canMakeSwap: () => {
         const { user } = get();
         if (!user) return false;
         if (user.membershipType === 'premium') return true;
-        return user.monthlySwaps < 20;
+        return user.monthlySwaps < 50; // Updated to 50
       },
 
       upgradeToPremium: async () => {

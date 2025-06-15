@@ -1,4 +1,5 @@
 
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -32,6 +33,10 @@ export const UserProfile = ({ onBack }: UserProfileProps) => {
     activeListings: 3,
     totalViews: 156
   };
+
+  // Define limits based on membership type
+  const listingLimit = user.membershipType === 'premium' ? 'Unlimited' : 50;
+  const swapLimit = user.membershipType === 'premium' ? 'Unlimited' : 50;
 
   const recentSwaps = [
     { item: "Vintage Camera", swappedFor: "Programming Books", date: "2 days ago", partner: "Sarah M." },
@@ -106,10 +111,10 @@ export const UserProfile = ({ onBack }: UserProfileProps) => {
                   {user.membershipType === 'free' && (
                     <div className="text-center">
                       <div className="text-sm text-gray-600">
-                        Listings: {user.monthlyListings || 0}/10
+                        Listings: {user.monthlyListings || 0}/{listingLimit}
                       </div>
                       <div className="text-sm text-gray-600">
-                        Swaps: {user.monthlySwaps || 0}/20
+                        Swaps: {user.monthlySwaps || 0}/{swapLimit}
                       </div>
                     </div>
                   )}
@@ -221,3 +226,4 @@ export const UserProfile = ({ onBack }: UserProfileProps) => {
     </div>
   );
 };
+

@@ -1,4 +1,5 @@
 
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -169,8 +170,9 @@ export const SubscriptionPayment = () => {
       </div>
 
       <div className="text-center text-sm text-gray-500">
-        <p>Current usage: {user.monthlyListings}/10 listings, {user.monthlySwaps}/20 swaps</p>
+        <p>Current usage: {user.monthlyListings}/50 listings, {user.monthlySwaps}/50 swaps</p>
       </div>
     </div>
   );
 };
+
