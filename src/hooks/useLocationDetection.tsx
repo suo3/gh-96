@@ -103,7 +103,7 @@ export const useLocationDetection = () => {
       } else {
         throw new Error('Could not determine location name');
       }
-    } catch (error: any) => {
+    } catch (error: any) {
       console.error('Location detection error:', error);
       
       let errorMessage = 'Unable to detect location';
@@ -148,7 +148,7 @@ export const useLocationDetection = () => {
       }
     }
 
-    await detectLocation();
+    return await detectLocation();
   };
 
   return {
