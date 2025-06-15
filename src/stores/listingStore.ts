@@ -151,7 +151,7 @@ export const useListingStore = create<ListingState>()(
         set({ loading: true, error: null });
         
         try {
-          // First get all listings
+          // Fetch only active listings (exclude completed items)
           const { data: listingsData, error: listingsError } = await supabase
             .from('listings')
             .select('*')
@@ -407,10 +407,9 @@ export const useListingStore = create<ListingState>()(
 
           if (error) throw error;
 
+          // Remove the completed item from the store since we don't want to show completed items
           set((state) => ({
-            listings: state.listings.map((listing) =>
-              listing.id === id ? { ...listing, status: 'completed' } : listing
-            ),
+            listings: state.listings.filter((listing) => listing.id !== id),
             loading: false
           }));
         } catch (error) {
@@ -575,6 +574,9 @@ export const useListingStore = create<ListingState>()(
           hasUserLocation: !!userLocation,
           currentUserId
         });
+
+        // Filter out completed items (this should already be done at fetch level, but double-check)
+        filtered = filtered.filter((listing) => listing.status !== 'completed');
 
         // Apply search filter
         if (searchTerm) {
