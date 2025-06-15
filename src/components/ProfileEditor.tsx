@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useAuthStore } from "@/stores/authStore";
+import { useListingStore } from "@/stores/listingStore";
 import { useToast } from "@/components/ui/use-toast";
 import { useLocationDetection } from "@/hooks/useLocationDetection";
 import { PasswordChange } from "./PasswordChange";
@@ -15,6 +16,7 @@ import { Save, Crown, Navigation } from "lucide-react";
 
 export const ProfileEditor = () => {
   const { user, updateProfile } = useAuthStore();
+  const { geocodeLocation, setUserLocation } = useListingStore();
   const { toast } = useToast();
   const { isDetecting, requestLocationPermission } = useLocationDetection();
   
@@ -37,7 +39,17 @@ export const ProfileEditor = () => {
   }, [user]);
 
   const handleSave = async () => {
+    const previousLocation = user?.location;
     await updateProfile(formData);
+    
+    // If location changed, update the user location coordinates for distance calculations
+    if (formData.location !== previousLocation && formData.location) {
+      const coordinates = await geocodeLocation(formData.location);
+      if (coordinates) {
+        setUserLocation(coordinates);
+      }
+    }
+    
     toast({
       title: "Profile Updated",
       description: "Your profile has been successfully updated.",

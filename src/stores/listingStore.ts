@@ -97,6 +97,10 @@ export const useListingStore = create<ListingStore>((set, get) => ({
     if (location && sortBy === 'newest') {
       set({ sortBy: 'distance' });
     }
+    // Refresh listings when user location changes to update distances
+    if (location) {
+      get().fetchListings();
+    }
   },
 
   geocodeLocation: async (location: string) => {
