@@ -23,10 +23,11 @@ export const HistoryTab = () => {
   const { user } = useAuthStore();
 
   useEffect(() => {
-    if (user) {
-      fetchUserSwaps();
+    if (user?.id) {
+      console.log('Fetching swaps for user:', user.id);
+      fetchUserSwaps(user.id);
     }
-  }, [user, fetchUserSwaps]);
+  }, [user?.id, fetchUserSwaps]);
 
   if (isLoading) {
     return (
@@ -58,8 +59,8 @@ export const HistoryTab = () => {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center">
-            <Award className="w-5 h-5 mr-2 text-emerald-600" />
-            Recent Swaps
+            <RotateCcw className="w-5 h-5 mr-2 text-emerald-600" />
+            Recent Swaps ({swaps.length})
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -96,6 +97,11 @@ export const HistoryTab = () => {
                   </div>
                 </div>
               ))}
+              {swaps.length > 5 && (
+                <div className="text-center text-sm text-gray-500 mt-4">
+                  And {swaps.length - 5} more swaps...
+                </div>
+              )}
             </div>
           )}
         </CardContent>
@@ -104,7 +110,10 @@ export const HistoryTab = () => {
       {/* Achievements */}
       <Card>
         <CardHeader>
-          <CardTitle>Achievements</CardTitle>
+          <CardTitle className="flex items-center">
+            <Award className="w-5 h-5 mr-2 text-yellow-600" />
+            Achievements ({achievements.length})
+          </CardTitle>
         </CardHeader>
         <CardContent>
           {achievements.length === 0 ? (
@@ -126,6 +135,9 @@ export const HistoryTab = () => {
                     </div>
                     <div className={`font-semibold ${colors[1]}`}>{achievement.title}</div>
                     <div className={`text-sm ${colors[1]}`}>{achievement.description}</div>
+                    <div className="text-xs text-gray-500 mt-1">
+                      Unlocked: {achievement.unlockedAt.toLocaleDateString()}
+                    </div>
                   </div>
                 );
               })}

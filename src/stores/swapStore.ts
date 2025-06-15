@@ -28,8 +28,9 @@ interface SwapState {
   swaps: Swap[];
   achievements: Achievement[];
   isLoading: boolean;
-  fetchUserSwaps: () => Promise<void>;
+  fetchUserSwaps: (userId: string) => Promise<void>;
   generateAchievements: (swaps: Swap[], totalSwaps: number) => Achievement[];
+  saveAchievementsToProfile: (userId: string, achievements: Achievement[]) => Promise<void>;
 }
 
 export const useSwapStore = create<SwapState>((set, get) => ({
@@ -37,13 +38,15 @@ export const useSwapStore = create<SwapState>((set, get) => ({
   achievements: [],
   isLoading: false,
 
-  fetchUserSwaps: async () => {
+  fetchUserSwaps: async (userId: string) => {
     try {
       set({ isLoading: true });
       
+      // Fetch swaps where the user is either user1 or user2
       const { data: swaps, error } = await supabase
         .from('swaps')
         .select('*')
+        .or(`user1_id.eq.${userId},user2_id.eq.${userId}`)
         .order('created_at', { ascending: false });
 
       if (error) {
@@ -57,7 +60,12 @@ export const useSwapStore = create<SwapState>((set, get) => ({
         status: swap.status as 'pending' | 'completed' | 'cancelled'
       }));
 
+      // Generate achievements based on swaps
       const achievements = get().generateAchievements(typedSwaps, typedSwaps.length);
+      
+      // Save achievements to user profile
+      await get().saveAchievementsToProfile(userId, achievements);
+
       set({ swaps: typedSwaps, achievements });
     } catch (error) {
       console.error('Error fetching user swaps:', error);
@@ -81,29 +89,47 @@ export const useSwapStore = create<SwapState>((set, get) => ({
       });
     }
 
+    // 5 Swaps Achievement
+    if (totalSwaps >= 5) {
+      achievements.push({
+        id: '5-swaps',
+        title: '5 Swaps',
+        description: 'Getting the hang of it!',
+        icon: 'RotateCcw',
+        unlockedAt: new Date(swaps[swaps.length - 5]?.created_at || Date.now()),
+        color: 'blue'
+      });
+    }
+
     // 10 Swaps Achievement
     if (totalSwaps >= 10) {
       achievements.push({
         id: '10-swaps',
         title: '10 Swaps',
         description: 'Active swapper',
-        icon: 'RotateCcw',
+        icon: 'Star',
         unlockedAt: new Date(swaps[swaps.length - 10]?.created_at || Date.now()),
-        color: 'blue'
+        color: 'yellow'
       });
     }
 
-    // Could add more achievements based on other criteria
-    // For now, we'll add a 5-star rating achievement as a placeholder
-    achievements.push({
-      id: '5-star-rating',
-      title: '5 Star Rating',
-      description: 'Excellent reputation',
-      icon: 'Star',
-      unlockedAt: new Date(),
-      color: 'yellow'
-    });
-
     return achievements;
+  },
+
+  saveAchievementsToProfile: async (userId: string, achievements: Achievement[]) => {
+    try {
+      const achievementIds = achievements.map(a => a.id);
+      
+      const { error } = await supabase
+        .from('profiles')
+        .update({ achievements: achievementIds })
+        .eq('id', userId);
+
+      if (error) {
+        console.error('Error saving achievements:', error);
+      }
+    } catch (error) {
+      console.error('Error saving achievements to profile:', error);
+    }
   }
 }));
