@@ -10,7 +10,21 @@ import Index from "./pages/Index";
 const queryClient = new QueryClient();
 
 const App = () => {
-  useAuthInit();
+  const { isLoading, isInitialized } = useAuthInit();
+
+  console.log('App render state:', { isLoading, isInitialized });
+
+  // Show loading screen while initializing
+  if (!isInitialized) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-500 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <QueryClientProvider client={queryClient}>

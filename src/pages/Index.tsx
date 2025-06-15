@@ -20,9 +20,6 @@ import { useListingStore } from "@/stores/listingStore";
 import { useLocationDetection } from "@/hooks/useLocationDetection";
 import { useToast } from "@/components/ui/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { useRealtimeListings } from "@/hooks/useRealtimeListings";
-import { useRealtimeMessages } from "@/hooks/useRealtimeMessages";
-import { useRealtimeRatings } from "@/hooks/useRealtimeRatings";
 
 const Index = () => {
   const [currentView, setCurrentView] = useState("discover");
@@ -45,11 +42,6 @@ const Index = () => {
   } = useListingStore();
   const { requestLocationPermission } = useLocationDetection();
   const { toast } = useToast();
-
-  // Initialize real-time subscriptions
-  useRealtimeListings();
-  useRealtimeMessages();
-  useRealtimeRatings();
 
   // Set current user ID in the listing store when user changes
   useEffect(() => {

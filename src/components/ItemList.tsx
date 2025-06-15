@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -19,7 +20,7 @@ export const ItemList = ({ items, onItemLike }: ItemListProps) => {
   const [selectedItem, setSelectedItem] = useState<Listing | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const { createConversationFromSwipe } = useMessageStore();
-  const { user } = useAuthStore();
+  const { user, session } = useAuthStore();
   const { fetchUserRatings, getAverageRating } = useRatingStore();
   const { minRating } = useListingStore();
   const { toast } = useToast();
@@ -48,7 +49,15 @@ export const ItemList = ({ items, onItemLike }: ItemListProps) => {
   };
 
   const handleSwapClick = async (item: Listing) => {
+    console.log('=== SWAP BUTTON CLICKED ===');
+    console.log('User:', user);
+    console.log('Session:', !!session);
+    console.log('Item:', item);
+    console.log('Item user_id:', item.user_id);
+    console.log('Current user id:', user?.id);
+
     if (!user) {
+      console.log('No user found, showing login toast');
       toast({
         title: "Login Required",
         description: "Please log in to start a conversation.",
@@ -58,6 +67,7 @@ export const ItemList = ({ items, onItemLike }: ItemListProps) => {
     }
 
     if (item.user_id === user.id) {
+      console.log('User trying to swap with themselves');
       toast({
         title: "Cannot swap with yourself",
         description: "You cannot start a conversation about your own listing.",
@@ -67,15 +77,24 @@ export const ItemList = ({ items, onItemLike }: ItemListProps) => {
     }
 
     if (item.hasActiveMessage) {
+      console.log('Item already has active message');
       return;
     }
 
     try {
+      console.log('Creating conversation with:', {
+        itemId: item.id,
+        itemTitle: item.title,
+        itemUserId: item.user_id
+      });
+      
       const conversationId = await createConversationFromSwipe(
         item.id,
         item.title,
         item.user_id || ''
       );
+
+      console.log('Conversation created with ID:', conversationId);
 
       if (conversationId) {
         // Update the item to show it has an active message
@@ -86,6 +105,7 @@ export const ItemList = ({ items, onItemLike }: ItemListProps) => {
           description: `Started a conversation about "${item.title}".`,
         });
       } else {
+        console.log('No conversation ID returned');
         toast({
           title: "Failed to start conversation",
           description: "Please try again later.",

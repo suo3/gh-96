@@ -5,69 +5,27 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSepara
 import { Badge } from "@/components/ui/badge";
 import { useAuthStore } from "@/stores/authStore";
 import { User, LogOut, Settings, Crown } from "lucide-react";
-import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
 
 interface AuthButtonProps {
   onLogin: () => void;
   onProfile: () => void;
 }
 
-interface UserProfile {
-  id: string;
-  username?: string;
-  first_name?: string;
-  last_name?: string;
-  avatar?: string;
-  membership_type?: string;
-  monthly_listings?: number;
-  monthly_swaps?: number;
-  total_swaps?: number;
-  rating?: number;
-}
-
 export const AuthButton = ({ onLogin, onProfile }: AuthButtonProps) => {
-  const { user, session, isAuthenticated, logout } = useAuthStore();
-  const [profile, setProfile] = useState<UserProfile | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const { user, isAuthenticated, logout, session } = useAuthStore();
 
-  useEffect(() => {
-    if (session?.user && isAuthenticated) {
-      fetchUserProfile();
-    } else {
-      setProfile(null);
-      setIsLoading(false);
-    }
-  }, [session?.user, isAuthenticated]);
-
-  const fetchUserProfile = async () => {
-    if (!session?.user) return;
-    
-    setIsLoading(true);
-    try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', session.user.id)
-        .single();
-
-      if (error) {
-        console.error('Error fetching user profile:', error);
-        return;
-      }
-
-      setProfile(data);
-    } catch (error) {
-      console.error('Error fetching user profile:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  // Debug logging
+  console.log('AuthButton render:', { 
+    isAuthenticated, 
+    hasUser: !!user, 
+    hasSession: !!session,
+    userEmail: user?.email,
+    sessionEmail: session?.user?.email
+  });
 
   const handleLogout = async () => {
     try {
       await logout();
-      setProfile(null);
     } catch (error) {
       console.error('Error logging out:', error);
     }
@@ -78,7 +36,8 @@ export const AuthButton = ({ onLogin, onProfile }: AuthButtonProps) => {
     // TODO: Implement premium upgrade flow
   };
 
-  if (!isAuthenticated || !session?.user) {
+  if (!isAuthenticated || !user) {
+    console.log('Showing login button - not authenticated or no user');
     return (
       <Button onClick={onLogin} variant="outline">
         Login
@@ -86,28 +45,18 @@ export const AuthButton = ({ onLogin, onProfile }: AuthButtonProps) => {
     );
   }
 
-  if (isLoading) {
-    return (
-      <Button variant="ghost" className="h-10 w-10 rounded-full" disabled>
-        <Avatar className="h-10 w-10">
-          <AvatarFallback className="bg-gradient-to-br from-emerald-400 to-teal-400 text-white">
-            ...
-          </AvatarFallback>
-        </Avatar>
-      </Button>
-    );
-  }
+  console.log('Showing user avatar - authenticated with user:', user.email);
 
-  // Use profile data if available, fallback to session user data
-  const displayName = profile ? 
-    `${profile.first_name || ''} ${profile.last_name || ''}`.trim() || profile.username || 'User' :
-    session.user.user_metadata?.full_name || session.user.email?.split('@')[0] || 'User';
+  // Use auth store user data
+  const displayName = user.firstName && user.lastName ? 
+    `${user.firstName} ${user.lastName}`.trim() : 
+    user.username || 'User';
   
-  const username = profile?.username || session.user.email?.split('@')[0] || 'user';
-  const avatar = profile?.avatar || displayName.charAt(0).toUpperCase();
-  const membershipType = profile?.membership_type || 'free';
-  const monthlyListings = profile?.monthly_listings || 0;
-  const monthlySwaps = profile?.monthly_swaps || 0;
+  const username = user.username || 'user';
+  const avatar = user.avatar || displayName.charAt(0).toUpperCase();
+  const membershipType = user.membershipType || 'free';
+  const monthlyListings = user.monthlyListings || 0;
+  const monthlySwaps = user.monthlySwaps || 0;
 
   // Calculate limits based on membership
   const listingLimit = membershipType === 'premium' ? '∞' : '10';
