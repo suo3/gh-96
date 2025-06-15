@@ -15,6 +15,16 @@ export interface Swap {
   updated_at: string;
 }
 
+export interface PendingSwap {
+  id: string;
+  item_title: string;
+  user1_id: string;
+  user2_id: string;
+  status: 'pending';
+  created_at: string;
+  updated_at: string;
+}
+
 export interface Achievement {
   id: string;
   title: string;
@@ -26,15 +36,17 @@ export interface Achievement {
 
 interface SwapState {
   swaps: Swap[];
+  pendingSwaps: PendingSwap[];
   achievements: Achievement[];
   isLoading: boolean;
   fetchUserSwaps: (userId: string) => Promise<void>;
-  generateAchievements: (swaps: Swap[], totalSwaps: number) => Achievement[];
+  generateAchievements: (totalSwaps: number, totalPending: number) => Achievement[];
   saveAchievementsToProfile: (userId: string, achievements: Achievement[]) => Promise<void>;
 }
 
 export const useSwapStore = create<SwapState>((set, get) => ({
   swaps: [],
+  pendingSwaps: [],
   achievements: [],
   isLoading: false,
 
@@ -42,31 +54,60 @@ export const useSwapStore = create<SwapState>((set, get) => ({
     try {
       set({ isLoading: true });
       
-      // Fetch swaps where the user is either user1 or user2
-      const { data: swaps, error } = await supabase
+      // Fetch completed swaps where the user is either user1 or user2
+      const { data: swaps, error: swapsError } = await supabase
         .from('swaps')
         .select('*')
         .or(`user1_id.eq.${userId},user2_id.eq.${userId}`)
         .order('created_at', { ascending: false });
 
-      if (error) {
-        console.error('Error fetching swaps:', error);
-        return;
+      if (swapsError) {
+        console.error('Error fetching swaps:', swapsError);
       }
 
-      // Type the data properly by casting the status field
+      // Fetch pending conversations (representing pending swaps)
+      const { data: conversations, error: conversationsError } = await supabase
+        .from('conversations')
+        .select('*')
+        .or(`user1_id.eq.${userId},user2_id.eq.${userId}`)
+        .order('created_at', { ascending: false });
+
+      if (conversationsError) {
+        console.error('Error fetching conversations:', conversationsError);
+      }
+
+      // Type the swaps data properly
       const typedSwaps: Swap[] = (swaps || []).map(swap => ({
         ...swap,
         status: swap.status as 'pending' | 'completed' | 'cancelled'
       }));
 
-      // Generate achievements based on swaps
-      const achievements = get().generateAchievements(typedSwaps, typedSwaps.length);
+      // Convert conversations to pending swaps
+      const pendingSwaps: PendingSwap[] = (conversations || []).map(conv => ({
+        id: conv.id,
+        item_title: conv.item_title || 'Unknown Item',
+        user1_id: conv.user1_id,
+        user2_id: conv.user2_id,
+        status: 'pending' as const,
+        created_at: conv.created_at || new Date().toISOString(),
+        updated_at: conv.updated_at || new Date().toISOString()
+      }));
+
+      console.log('Fetched swaps:', typedSwaps);
+      console.log('Fetched pending swaps from conversations:', pendingSwaps);
+
+      // Generate achievements based on total activity
+      const totalActivity = typedSwaps.length + pendingSwaps.length;
+      const achievements = get().generateAchievements(typedSwaps.length, totalActivity);
       
       // Save achievements to user profile
       await get().saveAchievementsToProfile(userId, achievements);
 
-      set({ swaps: typedSwaps, achievements });
+      set({ 
+        swaps: typedSwaps, 
+        pendingSwaps: pendingSwaps,
+        achievements 
+      });
     } catch (error) {
       console.error('Error fetching user swaps:', error);
     } finally {
@@ -74,41 +115,53 @@ export const useSwapStore = create<SwapState>((set, get) => ({
     }
   },
 
-  generateAchievements: (swaps: Swap[], totalSwaps: number) => {
+  generateAchievements: (completedSwaps: number, totalActivity: number) => {
     const achievements: Achievement[] = [];
 
-    // First Swap Achievement
-    if (totalSwaps >= 1) {
+    // First Activity Achievement (includes conversations)
+    if (totalActivity >= 1) {
       achievements.push({
-        id: 'first-swap',
-        title: 'First Swap',
+        id: 'first-activity',
+        title: 'First Swap Attempt',
         description: 'Welcome to the community!',
         icon: 'Award',
-        unlockedAt: new Date(swaps[swaps.length - 1]?.created_at || Date.now()),
+        unlockedAt: new Date(),
         color: 'emerald'
       });
     }
 
-    // 5 Swaps Achievement
-    if (totalSwaps >= 5) {
+    // First Completed Swap Achievement
+    if (completedSwaps >= 1) {
       achievements.push({
-        id: '5-swaps',
-        title: '5 Swaps',
-        description: 'Getting the hang of it!',
+        id: 'first-swap',
+        title: 'First Completed Swap',
+        description: 'Successfully completed your first swap!',
         icon: 'RotateCcw',
-        unlockedAt: new Date(swaps[swaps.length - 5]?.created_at || Date.now()),
+        unlockedAt: new Date(),
         color: 'blue'
       });
     }
 
-    // 10 Swaps Achievement
-    if (totalSwaps >= 10) {
+    // 5 Activities Achievement
+    if (totalActivity >= 5) {
       achievements.push({
-        id: '10-swaps',
-        title: '10 Swaps',
-        description: 'Active swapper',
+        id: '5-activities',
+        title: '5 Swap Activities',
+        description: 'Getting active in the community!',
         icon: 'Star',
-        unlockedAt: new Date(swaps[swaps.length - 10]?.created_at || Date.now()),
+        unlockedAt: new Date(),
+        color: 'yellow'
+      });
+    }
+
+    // 5 Completed Swaps Achievement
+    if (completedSwaps >= 5) {
+      achievements.push({
+        id: '5-swaps',
+        title: '5 Completed Swaps',
+        description: 'Experienced swapper!',
+        icon: 'Star',
+        unlockedAt: new Date(),
         color: 'yellow'
       });
     }

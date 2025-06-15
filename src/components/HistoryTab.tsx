@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useSwapStore } from "@/stores/swapStore";
 import { useAuthStore } from "@/stores/authStore";
-import { Award, RotateCcw, Star, Loader2 } from "lucide-react";
+import { Award, RotateCcw, Star, Loader2, MessageCircle } from "lucide-react";
 
 const iconMap = {
   Award,
@@ -19,7 +19,7 @@ const colorMap = {
 };
 
 export const HistoryTab = () => {
-  const { swaps, achievements, isLoading, fetchUserSwaps } = useSwapStore();
+  const { swaps, pendingSwaps, achievements, isLoading, fetchUserSwaps } = useSwapStore();
   const { user } = useAuthStore();
 
   useEffect(() => {
@@ -44,62 +44,101 @@ export const HistoryTab = () => {
   };
 
   const getUserSwapItem = (swap: any) => {
+    // For pending swaps, we only have item_title
+    if (swap.item_title) {
+      return swap.item_title;
+    }
+    // For completed swaps, we have item1_title and item2_title
     if (!user) return swap.item1_title;
     return swap.user1_id === user.id ? swap.item1_title : swap.item2_title;
   };
 
   const getPartnerSwapItem = (swap: any) => {
+    // For pending swaps, we don't have partner item info yet
+    if (swap.item_title) {
+      return 'Pending...';
+    }
+    // For completed swaps
     if (!user) return swap.item2_title;
     return swap.user1_id === user.id ? swap.item2_title : swap.item1_title;
   };
 
+  // Combine and sort all activities
+  const allActivities = [
+    ...swaps.map(swap => ({ ...swap, type: 'completed' })),
+    ...pendingSwaps.map(swap => ({ ...swap, type: 'pending' }))
+  ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+
+  const totalActivities = allActivities.length;
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-      {/* Recent Swaps */}
+      {/* Recent Activities */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center">
             <RotateCcw className="w-5 h-5 mr-2 text-emerald-600" />
-            Recent Swaps ({swaps.length})
+            Recent Activities ({totalActivities})
           </CardTitle>
         </CardHeader>
         <CardContent>
-          {swaps.length === 0 ? (
+          {totalActivities === 0 ? (
             <div className="text-center py-8 text-gray-500">
               <RotateCcw className="w-12 h-12 mx-auto mb-4 opacity-50" />
-              <p>No swaps yet</p>
+              <p>No swap activity yet</p>
               <p className="text-sm">Start swapping to see your history here!</p>
             </div>
           ) : (
             <div className="space-y-4">
-              {swaps.slice(0, 5).map((swap) => (
-                <div key={swap.id} className="border rounded-lg p-4 bg-gray-50">
+              {allActivities.slice(0, 5).map((activity) => (
+                <div key={activity.id} className="border rounded-lg p-4 bg-gray-50">
                   <div className="flex items-center justify-between mb-2">
-                    <div className="font-medium text-gray-900">{getUserSwapItem(swap)}</div>
-                    <Badge variant="secondary">
-                      {new Date(swap.created_at).toLocaleDateString()}
-                    </Badge>
+                    <div className="font-medium text-gray-900">{getUserSwapItem(activity)}</div>
+                    <div className="flex items-center gap-2">
+                      <Badge variant="secondary">
+                        {new Date(activity.created_at).toLocaleDateString()}
+                      </Badge>
+                      {activity.type === 'pending' && (
+                        <MessageCircle className="w-4 h-4 text-blue-500" />
+                      )}
+                    </div>
                   </div>
                   <div className="text-sm text-gray-600">
-                    <div className="flex items-center">
-                      <RotateCcw className="w-4 h-4 mr-1" />
-                      Swapped for: <span className="font-medium ml-1">{getPartnerSwapItem(swap)}</span>
-                    </div>
-                    <div className="mt-1">With {getSwapPartner(swap)}</div>
+                    {activity.type === 'completed' ? (
+                      <>
+                        <div className="flex items-center">
+                          <RotateCcw className="w-4 h-4 mr-1" />
+                          Swapped for: <span className="font-medium ml-1">{getPartnerSwapItem(activity)}</span>
+                        </div>
+                        <div className="mt-1">With {getSwapPartner(activity)}</div>
+                      </>
+                    ) : (
+                      <>
+                        <div className="flex items-center">
+                          <MessageCircle className="w-4 h-4 mr-1" />
+                          Conversation started about this item
+                        </div>
+                        <div className="mt-1">With {getSwapPartner(activity)}</div>
+                      </>
+                    )}
                     <div className="mt-1">
                       <Badge 
-                        variant={swap.status === 'completed' ? 'default' : swap.status === 'pending' ? 'secondary' : 'destructive'}
+                        variant={
+                          activity.status === 'completed' ? 'default' : 
+                          activity.status === 'pending' ? 'secondary' : 
+                          'destructive'
+                        }
                         className="text-xs"
                       >
-                        {swap.status}
+                        {activity.status}
                       </Badge>
                     </div>
                   </div>
                 </div>
               ))}
-              {swaps.length > 5 && (
+              {totalActivities > 5 && (
                 <div className="text-center text-sm text-gray-500 mt-4">
-                  And {swaps.length - 5} more swaps...
+                  And {totalActivities - 5} more activities...
                 </div>
               )}
             </div>
@@ -120,7 +159,7 @@ export const HistoryTab = () => {
             <div className="text-center py-8 text-gray-500">
               <Award className="w-12 h-12 mx-auto mb-4 opacity-50" />
               <p>No achievements yet</p>
-              <p className="text-sm">Complete swaps to unlock achievements!</p>
+              <p className="text-sm">Start conversations and complete swaps to unlock achievements!</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 gap-4">
