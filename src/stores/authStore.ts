@@ -1,3 +1,4 @@
+
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { supabase } from '@/integrations/supabase/client';
@@ -94,9 +95,85 @@ export const useAuthStore = create<AuthState>()(
           
           set({ isLoading: true });
 
-          // Set up auth state listener FIRST
+          // Get initial session first
+          const { data: { session: initialSession }, error } = await supabase.auth.getSession();
+          console.log('Initial session check:', initialSession?.user?.email, error);
+          
+          if (initialSession?.user) {
+            console.log('Found existing session, fetching profile...');
+            
+            try {
+              const { data: profile, error: profileError } = await supabase
+                .from('profiles')
+                .select('*')
+                .eq('id', initialSession.user.id)
+                .single();
+
+              console.log('Profile fetch result:', { profile, error: profileError });
+
+              if (profile && !profileError) {
+                const userProfile: UserProfile = {
+                  id: profile.id,
+                  email: initialSession.user.email || '',
+                  username: profile.username || '',
+                  firstName: profile.first_name || '',
+                  lastName: profile.last_name || '',
+                  location: profile.location || '',
+                  membershipType: profile.membership_type as 'free' | 'premium',
+                  joinedDate: new Date(profile.joined_date),
+                  rating: parseFloat(profile.rating?.toString() || '0'),
+                  totalSwaps: profile.total_swaps || 0,
+                  monthlyListings: profile.monthly_listings || 0,
+                  monthlySwaps: profile.monthly_swaps || 0,
+                  avatar: profile.avatar || ''
+                };
+
+                set({ 
+                  user: userProfile, 
+                  session: initialSession, 
+                  isAuthenticated: true, 
+                  isLoading: false,
+                  isInitialized: true
+                });
+              } else {
+                console.error('No profile found for user:', initialSession.user.id, profileError);
+                set({ 
+                  user: null,
+                  session: null,
+                  isAuthenticated: false,
+                  isLoading: false,
+                  isInitialized: true
+                });
+              }
+            } catch (error) {
+              console.error('Error fetching profile:', error);
+              set({ 
+                user: null,
+                session: null,
+                isAuthenticated: false,
+                isLoading: false,
+                isInitialized: true
+              });
+            }
+          } else {
+            console.log('No existing session found');
+            set({ 
+              user: null,
+              session: null,
+              isAuthenticated: false,
+              isLoading: false,
+              isInitialized: true
+            });
+          }
+
+          // Set up auth state listener after initial check
           supabase.auth.onAuthStateChange(async (event, session) => {
             console.log('Auth state change:', event, session?.user?.email);
+            
+            // Skip handling initial session since we already processed it
+            if (event === 'INITIAL_SESSION') {
+              return;
+            }
             
             if (event === 'SIGNED_IN' && session?.user) {
               console.log('User signed in, fetching profile...');
@@ -166,38 +243,15 @@ export const useAuthStore = create<AuthState>()(
             } else if (event === 'TOKEN_REFRESHED' && session) {
               console.log('Token refreshed');
               set({ session });
-            } else if (event === 'INITIAL_SESSION') {
-              // Handle initial session specially to ensure proper loading state
-              if (session) {
-                console.log('Initial session found, processing...');
-                // Don't set loading to false yet, let the SIGNED_IN event handle it
-              } else {
-                console.log('No initial session found');
-                set({ 
-                  isLoading: false,
-                  isInitialized: true
-                });
-              }
             }
           });
-
-          // Get initial session
-          const { data: { session }, error } = await supabase.auth.getSession();
-          console.log('Initial session check:', session?.user?.email, error);
-          
-          // If there's an initial session, the auth state change handler will process it
-          // If not, ensure we set loading to false
-          if (!session) {
-            console.log('No existing session found');
-            set({ 
-              isLoading: false,
-              isInitialized: true
-            });
-          }
           
         } catch (error) {
           console.error('Auth initialization error:', error);
           set({ 
+            user: null,
+            session: null,
+            isAuthenticated: false,
             isLoading: false,
             isInitialized: true
           });

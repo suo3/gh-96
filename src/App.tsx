@@ -5,17 +5,17 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { useAuthInit } from "@/hooks/useAuthInit";
-import { useAuthStore } from "@/stores/authStore";
 import Index from "./pages/Index";
 
 const queryClient = new QueryClient();
 
 const App = () => {
-  const { isLoading } = useAuthInit();
-  const { isInitialized } = useAuthStore();
+  const { isLoading, isInitialized } = useAuthInit();
 
-  // Show loading screen until auth is properly initialized
-  if (isLoading || !isInitialized) {
+  console.log('App render state:', { isLoading, isInitialized });
+
+  // Show loading screen only while actually loading and not yet initialized
+  if (isLoading && !isInitialized) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
