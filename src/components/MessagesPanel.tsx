@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowLeft, Send, MessageCircle, X, Package } from "lucide-react";
+import { ArrowLeft, Send, MessageCircle, X } from "lucide-react";
 import { ConversationList } from "./ConversationList";
 import { MessageBubble } from "./MessageBubble";
 import { TypingIndicator } from "./TypingIndicator";
@@ -29,8 +29,7 @@ export const MessagesPanel = ({ onBack, onLogin }: MessagesPanelProps) => {
     fetchConversations, 
     fetchMessages, 
     sendMessage,
-    isLoading,
-    getSelectedConversation
+    isLoading 
   } = useMessageStore();
   const { isAuthenticated, user } = useAuthStore();
 
@@ -73,9 +72,6 @@ export const MessagesPanel = ({ onBack, onLogin }: MessagesPanelProps) => {
       onLogin();
     }, 100);
   };
-
-  // Get current conversation details
-  const currentConversation = getSelectedConversation();
 
   if (!isAuthenticated) {
     return (
@@ -235,24 +231,9 @@ export const MessagesPanel = ({ onBack, onLogin }: MessagesPanelProps) => {
             {selectedChat ? (
               <>
                 <CardHeader className="border-b">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <CardTitle className="text-lg">
-                        {currentConversation?.partner || 'Chat'}
-                      </CardTitle>
-                      {currentConversation && (
-                        <div className="flex items-center text-sm text-gray-600 mt-1">
-                          <Package className="w-4 h-4 mr-1" />
-                          <span>Discussing: {currentConversation.item}</span>
-                        </div>
-                      )}
-                    </div>
-                    {currentConversation && (
-                      <Badge variant={currentConversation.isOwner ? "secondary" : "outline"}>
-                        {currentConversation.isOwner ? "You own this item" : "Interested in item"}
-                      </Badge>
-                    )}
-                  </div>
+                  <CardTitle className="text-lg">
+                    {conversations.find(c => c.id === selectedChat)?.partner || 'Chat'}
+                  </CardTitle>
                 </CardHeader>
                 <CardContent className="p-0 flex flex-col h-[500px]">
                   {/* Messages Area */}

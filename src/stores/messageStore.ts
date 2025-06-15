@@ -1,3 +1,4 @@
+
 import { create } from 'zustand';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuthStore } from './authStore';
@@ -43,7 +44,6 @@ interface MessageStore {
   rejectConversation: (conversationId: string) => Promise<void>;
   fetchConversations: () => Promise<void>;
   fetchMessages: (conversationId: string) => Promise<void>;
-  getSelectedConversation: () => Conversation | null;
 }
 
 export const useMessageStore = create<MessageStore>((set, get) => ({
@@ -386,10 +386,5 @@ export const useMessageStore = create<MessageStore>((set, get) => ({
     } catch (error) {
       console.error('Error fetching messages:', error);
     }
-  },
-
-  getSelectedConversation: () => {
-    const { conversations, selectedConversation } = get();
-    return conversations.find(c => c.id === selectedConversation) || null;
   }
 }));
