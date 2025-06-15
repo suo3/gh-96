@@ -51,8 +51,14 @@ export const useSwapStore = create<SwapState>((set, get) => ({
         return;
       }
 
-      const achievements = get().generateAchievements(swaps || [], swaps?.length || 0);
-      set({ swaps: swaps || [], achievements });
+      // Type the data properly by casting the status field
+      const typedSwaps: Swap[] = (swaps || []).map(swap => ({
+        ...swap,
+        status: swap.status as 'pending' | 'completed' | 'cancelled'
+      }));
+
+      const achievements = get().generateAchievements(typedSwaps, typedSwaps.length);
+      set({ swaps: typedSwaps, achievements });
     } catch (error) {
       console.error('Error fetching user swaps:', error);
     } finally {
