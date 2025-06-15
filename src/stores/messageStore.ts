@@ -193,6 +193,12 @@ export const useMessageStore = create<MessageStore>((set, get) => ({
     try {
       console.log('Creating conversation for listing:', { listingId, itemTitle, listingOwnerId });
       
+      // First, immediately add to active messages set to prevent race condition
+      const key = `${itemTitle}-${listingOwnerId}`;
+      set(state => ({
+        itemsWithActiveMessages: new Set([...state.itemsWithActiveMessages, key])
+      }));
+      
       // Check if conversation already exists between these users for this item
       const { data: existingConversation, error: checkError } = await supabase
         .from('conversations')
@@ -207,11 +213,6 @@ export const useMessageStore = create<MessageStore>((set, get) => ({
 
       if (existingConversation) {
         console.log('Conversation already exists:', existingConversation.id);
-        // Update the items with active messages set
-        const key = `${itemTitle}-${listingOwnerId}`;
-        set(state => ({
-          itemsWithActiveMessages: new Set([...state.itemsWithActiveMessages, key])
-        }));
         return existingConversation.id;
       }
       
@@ -227,16 +228,16 @@ export const useMessageStore = create<MessageStore>((set, get) => ({
 
       if (error) {
         console.error('Error creating conversation:', error);
+        // Remove from set if creation failed
+        set(state => {
+          const newSet = new Set(state.itemsWithActiveMessages);
+          newSet.delete(key);
+          return { itemsWithActiveMessages: newSet };
+        });
         return '';
       }
 
       console.log('Conversation created:', data);
-
-      // Add to active messages set
-      const key = `${itemTitle}-${listingOwnerId}`;
-      set(state => ({
-        itemsWithActiveMessages: new Set([...state.itemsWithActiveMessages, key])
-      }));
 
       // Add initial message
       await supabase
@@ -247,12 +248,25 @@ export const useMessageStore = create<MessageStore>((set, get) => ({
           content: `Hi! I'm interested in your ${itemTitle}.`
         });
 
-      // Refresh conversations
-      get().fetchConversations();
+      // Refresh conversations but preserve the active messages set
+      const currentActiveMessages = get().itemsWithActiveMessages;
+      await get().fetchConversations();
+      
+      // Ensure our newly created conversation is still marked as active
+      set(state => ({
+        itemsWithActiveMessages: new Set([...state.itemsWithActiveMessages, key])
+      }));
       
       return data.id;
     } catch (error) {
       console.error('Error creating conversation:', error);
+      // Remove from set if creation failed
+      const key = `${itemTitle}-${listingOwnerId}`;
+      set(state => {
+        const newSet = new Set(state.itemsWithActiveMessages);
+        newSet.delete(key);
+        return { itemsWithActiveMessages: newSet };
+      });
       return '';
     }
   },
@@ -397,12 +411,17 @@ export const useMessageStore = create<MessageStore>((set, get) => ({
       });
 
       console.log('Processed conversations:', conversations);
+      
+      // Preserve any existing active message keys that might not be in the fetched data yet
+      const currentActiveMessages = get().itemsWithActiveMessages;
+      const mergedActiveMessages = new Set([...activeMessageKeys, ...currentActiveMessages]);
+      
       set({ 
         conversations, 
         isLoading: false, 
         totalUnreadCount: totalUnread, 
         error: null,
-        itemsWithActiveMessages: activeMessageKeys
+        itemsWithActiveMessages: mergedActiveMessages
       });
       
     } catch (error) {
