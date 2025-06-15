@@ -24,6 +24,7 @@ interface AuthState {
   session: Session | null;
   isAuthenticated: boolean;
   isLoading: boolean;
+  isInitialized: boolean;
   login: (email: string, password: string) => Promise<boolean>;
   signup: (email: string, password: string, userData: Partial<UserProfile>) => Promise<boolean>;
   logout: () => Promise<void>;
@@ -44,6 +45,7 @@ export const useAuthStore = create<AuthState>()(
       session: null,
       isAuthenticated: false,
       isLoading: true,
+      isInitialized: false,
 
       refreshUserProfile: async () => {
         const { user, session } = get();
@@ -82,8 +84,16 @@ export const useAuthStore = create<AuthState>()(
 
       initialize: async () => {
         try {
-          console.log('Initializing auth...');
+          console.log('Auth: Starting initialization...');
           
+          // Don't re-initialize if already done
+          if (get().isInitialized) {
+            console.log('Auth: Already initialized, skipping');
+            return;
+          }
+          
+          set({ isLoading: true });
+
           // Set up auth state listener FIRST
           supabase.auth.onAuthStateChange(async (event, session) => {
             console.log('Auth state change:', event, session?.user?.email);
@@ -91,123 +101,106 @@ export const useAuthStore = create<AuthState>()(
             if (event === 'SIGNED_IN' && session?.user) {
               console.log('User signed in, fetching profile...');
               
-              // Use setTimeout to prevent deadlock
-              setTimeout(async () => {
-                try {
-                  const { data: profile, error } = await supabase
-                    .from('profiles')
-                    .select('*')
-                    .eq('id', session.user.id)
-                    .single();
+              try {
+                const { data: profile, error } = await supabase
+                  .from('profiles')
+                  .select('*')
+                  .eq('id', session.user.id)
+                  .single();
 
-                  console.log('Profile fetch result:', { profile, error });
+                console.log('Profile fetch result:', { profile, error });
 
-                  if (profile && !error) {
-                    const userProfile: UserProfile = {
-                      id: profile.id,
-                      email: session.user.email || '',
-                      username: profile.username || '',
-                      firstName: profile.first_name || '',
-                      lastName: profile.last_name || '',
-                      location: profile.location || '',
-                      membershipType: profile.membership_type as 'free' | 'premium',
-                      joinedDate: new Date(profile.joined_date),
-                      rating: parseFloat(profile.rating?.toString() || '0'),
-                      totalSwaps: profile.total_swaps || 0,
-                      monthlyListings: profile.monthly_listings || 0,
-                      monthlySwaps: profile.monthly_swaps || 0,
-                      avatar: profile.avatar || ''
-                    };
+                if (profile && !error) {
+                  const userProfile: UserProfile = {
+                    id: profile.id,
+                    email: session.user.email || '',
+                    username: profile.username || '',
+                    firstName: profile.first_name || '',
+                    lastName: profile.last_name || '',
+                    location: profile.location || '',
+                    membershipType: profile.membership_type as 'free' | 'premium',
+                    joinedDate: new Date(profile.joined_date),
+                    rating: parseFloat(profile.rating?.toString() || '0'),
+                    totalSwaps: profile.total_swaps || 0,
+                    monthlyListings: profile.monthly_listings || 0,
+                    monthlySwaps: profile.monthly_swaps || 0,
+                    avatar: profile.avatar || ''
+                  };
 
-                    set({ 
-                      user: userProfile, 
-                      session, 
-                      isAuthenticated: true, 
-                      isLoading: false 
-                    });
-                  } else {
-                    console.error('No profile found for user:', session.user.id, error);
-                    set({ 
-                      user: null,
-                      session: null,
-                      isAuthenticated: false,
-                      isLoading: false 
-                    });
-                  }
-                } catch (error) {
-                  console.error('Error fetching profile:', error);
+                  set({ 
+                    user: userProfile, 
+                    session, 
+                    isAuthenticated: true, 
+                    isLoading: false,
+                    isInitialized: true
+                  });
+                } else {
+                  console.error('No profile found for user:', session.user.id, error);
                   set({ 
                     user: null,
                     session: null,
                     isAuthenticated: false,
-                    isLoading: false 
+                    isLoading: false,
+                    isInitialized: true
                   });
                 }
-              }, 0);
+              } catch (error) {
+                console.error('Error fetching profile:', error);
+                set({ 
+                  user: null,
+                  session: null,
+                  isAuthenticated: false,
+                  isLoading: false,
+                  isInitialized: true
+                });
+              }
             } else if (event === 'SIGNED_OUT') {
               console.log('User signed out');
               set({ 
                 user: null, 
                 session: null, 
                 isAuthenticated: false,
-                isLoading: false 
+                isLoading: false,
+                isInitialized: true
               });
             } else if (event === 'TOKEN_REFRESHED' && session) {
               console.log('Token refreshed');
               set({ session });
-            } else {
-              // For other events or no session, ensure loading is false
-              set({ isLoading: false });
+            } else if (event === 'INITIAL_SESSION') {
+              // Handle initial session specially to ensure proper loading state
+              if (session) {
+                console.log('Initial session found, processing...');
+                // Don't set loading to false yet, let the SIGNED_IN event handle it
+              } else {
+                console.log('No initial session found');
+                set({ 
+                  isLoading: false,
+                  isInitialized: true
+                });
+              }
             }
           });
 
           // Get initial session
           const { data: { session }, error } = await supabase.auth.getSession();
-          console.log('Initial session:', session?.user?.email, error);
+          console.log('Initial session check:', session?.user?.email, error);
           
-          if (session?.user) {
-            console.log('Found existing session, fetching profile...');
-            // Fetch user profile
-            const { data: profile } = await supabase
-              .from('profiles')
-              .select('*')
-              .eq('id', session.user.id)
-              .maybeSingle();
-
-            if (profile) {
-              const userProfile: UserProfile = {
-                id: profile.id,
-                email: session.user.email || '',
-                username: profile.username || '',
-                firstName: profile.first_name || '',
-                lastName: profile.last_name || '',
-                location: profile.location || '',
-                membershipType: profile.membership_type as 'free' | 'premium',
-                joinedDate: new Date(profile.joined_date),
-                rating: parseFloat(profile.rating?.toString() || '0'),
-                totalSwaps: profile.total_swaps || 0,
-                monthlyListings: profile.monthly_listings || 0,
-                monthlySwaps: profile.monthly_swaps || 0,
-                avatar: profile.avatar || ''
-              };
-
-              set({ 
-                user: userProfile, 
-                session, 
-                isAuthenticated: true, 
-                isLoading: false 
-              });
-            } else {
-              console.log('No profile found for existing session');
-              set({ isLoading: false });
-            }
-          } else {
+          // If there's an initial session, the auth state change handler will process it
+          // If not, ensure we set loading to false
+          if (!session) {
             console.log('No existing session found');
-            set({ isLoading: false });
+            set({ 
+              isLoading: false,
+              isInitialized: true
+            });
           }
+          
         } catch (error) {
           console.error('Auth initialization error:', error);
-          set({ isLoading: false });
+          set({ 
+            isLoading: false,
+            isInitialized: true
+          });
         }
       },
 
@@ -391,7 +384,8 @@ export const useAuthStore = create<AuthState>()(
       name: 'auth-storage',
       partialize: (state) => ({ 
         user: state.user,
-        isAuthenticated: state.isAuthenticated 
+        isAuthenticated: state.isAuthenticated,
+        isInitialized: state.isInitialized
       }),
     }
   )
