@@ -12,7 +12,16 @@ interface AuthButtonProps {
 }
 
 export const AuthButton = ({ onLogin, onProfile }: AuthButtonProps) => {
-  const { user, isAuthenticated, logout } = useAuthStore();
+  const { user, isAuthenticated, logout, session } = useAuthStore();
+
+  // Debug logging
+  console.log('AuthButton render:', { 
+    isAuthenticated, 
+    hasUser: !!user, 
+    hasSession: !!session,
+    userEmail: user?.email,
+    sessionEmail: session?.user?.email
+  });
 
   const handleLogout = async () => {
     try {
@@ -28,12 +37,15 @@ export const AuthButton = ({ onLogin, onProfile }: AuthButtonProps) => {
   };
 
   if (!isAuthenticated || !user) {
+    console.log('Showing login button - not authenticated or no user');
     return (
       <Button onClick={onLogin} variant="outline">
         Login
       </Button>
     );
   }
+
+  console.log('Showing user avatar - authenticated with user:', user.email);
 
   // Use auth store user data
   const displayName = user.firstName && user.lastName ? 
