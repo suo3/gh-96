@@ -136,6 +136,7 @@ export const useAuthStore = create<AuthState>()(
               console.log('No profile found, using basic session data');
             }
 
+            console.log('Setting auth state to authenticated with user:', userProfile.email);
             set({ 
               user: userProfile, 
               session, 
@@ -163,6 +164,7 @@ export const useAuthStore = create<AuthState>()(
               avatar: session.user.email?.charAt(0).toUpperCase() || 'U'
             };
 
+            console.log('Setting auth state with basic profile due to error');
             set({ 
               user: basicUserProfile, 
               session, 
@@ -197,12 +199,18 @@ export const useAuthStore = create<AuthState>()(
         set({ isLoading: true });
 
         try {
-          // Get initial session
+          // Set up auth state listener FIRST
+          const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+            console.log('Auth state change detected:', event, session?.user?.email);
+            await get().handleAuthStateChange(event, session);
+          });
+
+          // Then get initial session
           const { data: { session: initialSession }, error } = await supabase.auth.getSession();
           console.log('Initial session check:', initialSession?.user?.email, error);
           
           if (initialSession?.user) {
-            console.log('Found existing session, fetching profile...');
+            console.log('Found existing session, processing...');
             await get().handleAuthStateChange('SIGNED_IN', initialSession);
           } else {
             console.log('No existing session found');
@@ -214,15 +222,6 @@ export const useAuthStore = create<AuthState>()(
               isInitialized: true
             });
           }
-
-          // Set up auth state listener
-          supabase.auth.onAuthStateChange(async (event, session) => {
-            if (event === 'INITIAL_SESSION') {
-              return; // Skip, already handled above
-            }
-            
-            await get().handleAuthStateChange(event, session);
-          });
           
         } catch (error) {
           console.error('Auth initialization error:', error);
@@ -253,6 +252,7 @@ export const useAuthStore = create<AuthState>()(
           }
 
           console.log('Login successful for:', email);
+          // Don't set isLoading to false here, let the auth state change handler do it
           return true;
         } catch (error) {
           console.error('Login error:', error);
