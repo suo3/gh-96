@@ -193,11 +193,13 @@ export const useMessageStore = create<MessageStore>((set, get) => ({
     try {
       console.log('Creating conversation for listing:', { listingId, itemTitle, listingOwnerId });
       
-      // First, immediately add to active messages set to prevent race condition
+      // First, immediately add to active messages set to prevent race condition - create new Set for reactivity
       const key = `${itemTitle}-${listingOwnerId}`;
       set(state => ({
         itemsWithActiveMessages: new Set([...state.itemsWithActiveMessages, key])
       }));
+      
+      console.log('Added to itemsWithActiveMessages:', key);
       
       // Check if conversation already exists between these users for this item
       const { data: existingConversation, error: checkError } = await supabase
@@ -228,7 +230,7 @@ export const useMessageStore = create<MessageStore>((set, get) => ({
 
       if (error) {
         console.error('Error creating conversation:', error);
-        // Remove from set if creation failed
+        // Remove from set if creation failed - create new Set for reactivity
         set(state => {
           const newSet = new Set(state.itemsWithActiveMessages);
           newSet.delete(key);
@@ -249,18 +251,19 @@ export const useMessageStore = create<MessageStore>((set, get) => ({
         });
 
       // Refresh conversations but preserve the active messages set
-      const currentActiveMessages = get().itemsWithActiveMessages;
       await get().fetchConversations();
       
-      // Ensure our newly created conversation is still marked as active
+      // Ensure our newly created conversation is still marked as active - create new Set for reactivity
       set(state => ({
         itemsWithActiveMessages: new Set([...state.itemsWithActiveMessages, key])
       }));
       
+      console.log('Final itemsWithActiveMessages state:', get().itemsWithActiveMessages);
+      
       return data.id;
     } catch (error) {
       console.error('Error creating conversation:', error);
-      // Remove from set if creation failed
+      // Remove from set if creation failed - create new Set for reactivity
       const key = `${itemTitle}-${listingOwnerId}`;
       set(state => {
         const newSet = new Set(state.itemsWithActiveMessages);
@@ -411,10 +414,13 @@ export const useMessageStore = create<MessageStore>((set, get) => ({
       });
 
       console.log('Processed conversations:', conversations);
+      console.log('Active message keys from fetch:', activeMessageKeys);
       
       // Preserve any existing active message keys that might not be in the fetched data yet
       const currentActiveMessages = get().itemsWithActiveMessages;
       const mergedActiveMessages = new Set([...activeMessageKeys, ...currentActiveMessages]);
+      
+      console.log('Merged active message keys:', mergedActiveMessages);
       
       set({ 
         conversations, 
