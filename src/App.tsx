@@ -14,8 +14,8 @@ const App = () => {
 
   console.log('App render state:', { isLoading, isInitialized });
 
-  // Show loading screen only while actually loading and not yet initialized
-  if (isLoading && !isInitialized) {
+  // Show loading screen while initializing
+  if (!isInitialized) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
