@@ -1,7 +1,8 @@
+
 import { create } from 'zustand';
 import { supabase } from '@/integrations/supabase/client';
 import { persist } from 'zustand/middleware';
-import { useAuthStore } from '@/stores/auth';
+import { useAuthStore } from '@/stores/authStore';
 
 export interface Listing {
   id: string;
@@ -458,7 +459,7 @@ export const useListingStore = create<ListingState>()(
           set((state) => ({
             listings: state.listings.map((listing) =>
               listing.id === id ? { ...listing, views: currentViews + 1 } : listing
-            ))
+            )
           }));
         } catch (error) {
           console.error('Error incrementing views:', error);
@@ -508,25 +509,9 @@ export const useListingStore = create<ListingState>()(
             });
           }
 
-          const transformedListing: Listing = {
-            id: data.id,
-            title: data.title,
-            description: data.description || '',
-            category: data.category,
-            condition: data.condition,
-            images: data.images || [],
-            location: data.location || '',
-            wantedItems: data.wanted_items || [],
-            userId: data.user_id,
-            createdAt: new Date(data.created_at),
-            updatedAt: new Date(data.updated_at),
-            views: data.views || 0,
-            likes: data.likes || 0,
-            status: data.status || 'active'
-          };
-
+          // Add the new listing to the store
           set((state) => ({
-            listings: [...state.listings, transformedListing]
+            listings: [data, ...state.listings]
           }));
 
           return true;
