@@ -1,10 +1,12 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { ArrowLeft, Send, MessageCircle } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ArrowLeft, Send, MessageCircle, X } from "lucide-react";
 import { ConversationList } from "./ConversationList";
 import { MessageBubble } from "./MessageBubble";
 import { TypingIndicator } from "./TypingIndicator";
@@ -65,9 +67,7 @@ export const MessagesPanel = ({ onBack, onLogin }: MessagesPanelProps) => {
   };
 
   const handleLoginRedirect = () => {
-    // Redirect back to discover view and then open login
     onBack();
-    // Small delay to ensure we're back on the discover view
     setTimeout(() => {
       onLogin();
     }, 100);
@@ -120,6 +120,14 @@ export const MessagesPanel = ({ onBack, onLogin }: MessagesPanelProps) => {
     );
   }
 
+  // Filter conversations by status
+  const activeConversations = conversations.filter(conv => 
+    conv.status === 'matched' || conv.status === 'completed'
+  );
+  const rejectedConversations = conversations.filter(conv => 
+    conv.status === 'rejected'
+  );
+
   // Get messages for the selected conversation
   const currentMessages = selectedChat ? messages[selectedChat] || [] : [];
 
@@ -151,18 +159,61 @@ export const MessagesPanel = ({ onBack, onLogin }: MessagesPanelProps) => {
 
       <div className="container mx-auto px-4 py-8">
         <div className="grid lg:grid-cols-3 gap-6 h-[600px]">
-          {/* Conversations List */}
+          {/* Conversations List with Tabs */}
           <Card className="lg:col-span-1">
             <CardHeader>
               <CardTitle className="text-lg">Conversations</CardTitle>
             </CardHeader>
             <CardContent className="p-0">
               {conversations.length > 0 ? (
-                <ConversationList
-                  conversations={conversations}
-                  selectedChat={selectedChat}
-                  onSelectChat={setSelectedChat}
-                />
+                <Tabs defaultValue="active" className="w-full">
+                  <TabsList className="grid w-full grid-cols-2 mx-4 mb-4">
+                    <TabsTrigger value="active" className="flex items-center">
+                      <MessageCircle className="w-4 h-4 mr-2" />
+                      Active ({activeConversations.length})
+                    </TabsTrigger>
+                    <TabsTrigger value="rejected" className="flex items-center">
+                      <X className="w-4 h-4 mr-2" />
+                      Rejected ({rejectedConversations.length})
+                    </TabsTrigger>
+                  </TabsList>
+
+                  <TabsContent value="active" className="mt-0">
+                    {activeConversations.length === 0 ? (
+                      <div className="p-8 text-center text-gray-500">
+                        <MessageCircle className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+                        <p className="text-sm">No active conversations</p>
+                        <p className="text-xs text-gray-400 mt-1">
+                          Start swiping to begin conversations!
+                        </p>
+                      </div>
+                    ) : (
+                      <ConversationList
+                        conversations={activeConversations}
+                        selectedChat={selectedChat}
+                        onSelectChat={setSelectedChat}
+                      />
+                    )}
+                  </TabsContent>
+
+                  <TabsContent value="rejected" className="mt-0">
+                    {rejectedConversations.length === 0 ? (
+                      <div className="p-8 text-center text-gray-500">
+                        <X className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+                        <p className="text-sm">No rejected conversations</p>
+                        <p className="text-xs text-gray-400 mt-1">
+                          Rejected swap requests will appear here.
+                        </p>
+                      </div>
+                    ) : (
+                      <ConversationList
+                        conversations={rejectedConversations}
+                        selectedChat={selectedChat}
+                        onSelectChat={setSelectedChat}
+                      />
+                    )}
+                  </TabsContent>
+                </Tabs>
               ) : (
                 <div className="p-8 text-center text-gray-500">
                   <MessageCircle className="w-12 h-12 mx-auto mb-4 text-gray-300" />
