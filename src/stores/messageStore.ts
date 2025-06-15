@@ -1,3 +1,4 @@
+
 import { create } from 'zustand';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuthStore } from './authStore';
@@ -31,6 +32,7 @@ interface MessageStore {
   isTyping: Record<string, boolean>;
   isLoading: boolean;
   totalUnreadCount: number;
+  error: string | null;
   
   setSelectedConversation: (id: string | null) => void;
   sendMessage: (conversationId: string, text: string) => Promise<void>;
@@ -51,6 +53,7 @@ export const useMessageStore = create<MessageStore>((set, get) => ({
   isTyping: {},
   isLoading: false,
   totalUnreadCount: 0,
+  error: null,
   
   setSelectedConversation: (id) => {
     set({ selectedConversation: id });
@@ -249,23 +252,29 @@ export const useMessageStore = create<MessageStore>((set, get) => ({
   fetchConversations: async () => {
     const { session } = useAuthStore.getState();
     if (!session?.user) {
-      set({ conversations: [], isLoading: false, totalUnreadCount: 0 });
+      console.log('No authenticated user, clearing conversations');
+      set({ conversations: [], isLoading: false, totalUnreadCount: 0, error: null });
       return;
     }
 
-    set({ isLoading: true });
+    set({ isLoading: true, error: null });
     
     try {
+      console.log('Fetching conversations for user:', session.user.id);
+      
       const { data, error } = await supabase.rpc('get_conversations_with_unread');
 
       if (error) {
         console.error('Error fetching conversations:', error);
-        set({ isLoading: false });
+        set({ isLoading: false, error: error.message });
         return;
       }
       
-      if (!data) {
-        set({ conversations: [], isLoading: false, totalUnreadCount: 0 });
+      console.log('Fetched conversations data:', data);
+
+      if (!data || data.length === 0) {
+        console.log('No conversations found');
+        set({ conversations: [], isLoading: false, totalUnreadCount: 0, error: null });
         return;
       }
 
@@ -302,11 +311,12 @@ export const useMessageStore = create<MessageStore>((set, get) => ({
         };
       });
 
-      set({ conversations, isLoading: false, totalUnreadCount: totalUnread });
+      console.log('Processed conversations:', conversations);
+      set({ conversations, isLoading: false, totalUnreadCount: totalUnread, error: null });
       
     } catch (error) {
       console.error('Error in fetchConversations:', error);
-      set({ isLoading: false });
+      set({ isLoading: false, error: error instanceof Error ? error.message : 'Unknown error' });
     }
   },
 

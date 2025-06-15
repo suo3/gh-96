@@ -1,18 +1,31 @@
 
+import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useMessageStore } from "@/stores/messageStore";
 import { useToast } from "@/hooks/use-toast";
-import { CheckCircle, X, Star } from "lucide-react";
+import { CheckCircle, X, Star, Loader2, MessageCircle } from "lucide-react";
 import { useState } from "react";
 import { UserRating } from "./UserRating";
 
 export const ConversationManager = () => {
-  const { conversations, markConversationComplete, rejectConversation } = useMessageStore();
+  const { 
+    conversations, 
+    markConversationComplete, 
+    rejectConversation, 
+    fetchConversations, 
+    isLoading, 
+    error 
+  } = useMessageStore();
   const { toast } = useToast();
   const [showRating, setShowRating] = useState(false);
   const [selectedConversation, setSelectedConversation] = useState<any>(null);
+
+  useEffect(() => {
+    console.log('ConversationManager: Fetching conversations on mount');
+    fetchConversations();
+  }, [fetchConversations]);
 
   const handleMarkComplete = (conversationId: string, partner: string, item: string) => {
     markConversationComplete(conversationId);
@@ -38,6 +51,26 @@ export const ConversationManager = () => {
     });
   };
 
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <Loader2 className="w-6 h-6 animate-spin mr-2" />
+        <span>Loading conversations...</span>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="text-center p-8">
+        <div className="text-red-600 mb-4">Error loading conversations: {error}</div>
+        <Button onClick={fetchConversations} variant="outline">
+          Try Again
+        </Button>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -47,86 +80,94 @@ export const ConversationManager = () => {
         </Badge>
       </div>
 
-      <div className="space-y-4">
-        {conversations.map((conversation) => (
-          <Card key={conversation.id}>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-lg flex items-center">
-                  <div className="w-8 h-8 bg-gradient-to-br from-emerald-400 to-teal-400 rounded-full flex items-center justify-center text-white text-sm font-bold mr-3">
-                    {conversation.avatar}
+      {conversations.length === 0 ? (
+        <div className="text-center py-8 text-gray-500">
+          <MessageCircle className="w-12 h-12 mx-auto mb-4 opacity-50" />
+          <p>No conversations yet</p>
+          <p className="text-sm">Start swiping to begin conversations!</p>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {conversations.map((conversation) => (
+            <Card key={conversation.id}>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-lg flex items-center">
+                    <div className="w-8 h-8 bg-gradient-to-br from-emerald-400 to-teal-400 rounded-full flex items-center justify-center text-white text-sm font-bold mr-3">
+                      {conversation.avatar}
+                    </div>
+                    {conversation.partner}
+                    {conversation.isOwner && (
+                      <Badge variant="secondary" className="ml-2 text-xs">
+                        Owner
+                      </Badge>
+                    )}
+                  </CardTitle>
+                  <Badge 
+                    variant={
+                      conversation.status === 'completed' ? 'secondary' : 
+                      conversation.status === 'rejected' ? 'destructive' :
+                      conversation.status === 'matched' ? 'default' : 'outline'
+                    }
+                  >
+                    {conversation.status}
+                  </Badge>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div>
+                    <p className="text-sm text-gray-600 mb-2">Item swap:</p>
+                    <p className="font-medium">{conversation.item}</p>
                   </div>
-                  {conversation.partner}
-                  {conversation.isOwner && (
-                    <Badge variant="secondary" className="ml-2 text-xs">
-                      Owner
+                  
+                  <div>
+                    <p className="text-sm text-gray-600 mb-1">Last message:</p>
+                    <p className="text-sm">{conversation.lastMessage}</p>
+                    <p className="text-xs text-gray-400 mt-1">{conversation.time}</p>
+                  </div>
+
+                  {conversation.unread > 0 && (
+                    <Badge variant="destructive" className="text-xs">
+                      {conversation.unread} unread messages
                     </Badge>
                   )}
-                </CardTitle>
-                <Badge 
-                  variant={
-                    conversation.status === 'completed' ? 'secondary' : 
-                    conversation.status === 'rejected' ? 'destructive' :
-                    conversation.status === 'matched' ? 'default' : 'outline'
-                  }
-                >
-                  {conversation.status}
-                </Badge>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div>
-                  <p className="text-sm text-gray-600 mb-2">Item swap:</p>
-                  <p className="font-medium">{conversation.item}</p>
-                </div>
-                
-                <div>
-                  <p className="text-sm text-gray-600 mb-1">Last message:</p>
-                  <p className="text-sm">{conversation.lastMessage}</p>
-                  <p className="text-xs text-gray-400 mt-1">{conversation.time}</p>
-                </div>
 
-                {conversation.unread > 0 && (
-                  <Badge variant="destructive" className="text-xs">
-                    {conversation.unread} unread messages
-                  </Badge>
-                )}
-
-                {conversation.status === 'matched' && (
-                  <div className="flex space-x-2 pt-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleMarkComplete(conversation.id, conversation.partner, conversation.item)}
-                    >
-                      <CheckCircle className="w-4 h-4 mr-2" />
-                      Mark as Complete
-                    </Button>
-                    
-                    {conversation.isOwner && (
+                  {conversation.status === 'matched' && (
+                    <div className="flex space-x-2 pt-2">
                       <Button
-                        variant="destructive"
+                        variant="outline"
                         size="sm"
-                        onClick={() => handleRejectSwap(conversation.id, conversation.partner, conversation.item)}
+                        onClick={() => handleMarkComplete(conversation.id, conversation.partner, conversation.item)}
                       >
-                        <X className="w-4 h-4 mr-2" />
-                        Reject Swap
+                        <CheckCircle className="w-4 h-4 mr-2" />
+                        Mark as Complete
                       </Button>
-                    )}
-                  </div>
-                )}
+                      
+                      {conversation.isOwner && (
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => handleRejectSwap(conversation.id, conversation.partner, conversation.item)}
+                        >
+                          <X className="w-4 h-4 mr-2" />
+                          Reject Swap
+                        </Button>
+                      )}
+                    </div>
+                  )}
 
-                {conversation.status === 'rejected' && (
-                  <div className="text-sm text-red-600 font-medium">
-                    This swap request has been rejected
-                  </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+                  {conversation.status === 'rejected' && (
+                    <div className="text-sm text-red-600 font-medium">
+                      This swap request has been rejected
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
 
       {selectedConversation && (
         <UserRating
