@@ -3,6 +3,7 @@ import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useMessageStore } from "@/stores/messageStore";
 import { useToast } from "@/hooks/use-toast";
 import { CheckCircle, X, Star, Loader2, MessageCircle } from "lucide-react";
@@ -71,6 +72,96 @@ export const ConversationManager = () => {
     );
   }
 
+  // Filter conversations by status
+  const activeConversations = conversations.filter(conv => 
+    conv.status === 'matched' || conv.status === 'completed'
+  );
+  const rejectedConversations = conversations.filter(conv => 
+    conv.status === 'rejected'
+  );
+
+  const renderConversationCard = (conversation: any) => (
+    <Card key={conversation.id}>
+      <CardHeader>
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-lg flex items-center">
+            <div className="w-8 h-8 bg-gradient-to-br from-emerald-400 to-teal-400 rounded-full flex items-center justify-center text-white text-sm font-bold mr-3">
+              {conversation.avatar}
+            </div>
+            {conversation.partner}
+            {conversation.isOwner && (
+              <Badge variant="secondary" className="ml-2 text-xs">
+                Owner
+              </Badge>
+            )}
+          </CardTitle>
+          <Badge 
+            variant={
+              conversation.status === 'completed' ? 'secondary' : 
+              conversation.status === 'rejected' ? 'destructive' :
+              conversation.status === 'matched' ? 'default' : 'outline'
+            }
+          >
+            {conversation.status === 'rejected' ? 'REJECTED' : conversation.status}
+          </Badge>
+        </div>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-4">
+          <div>
+            <p className="text-sm text-gray-600 mb-2">Item swap:</p>
+            <p className="font-medium">{conversation.item}</p>
+          </div>
+          
+          <div>
+            <p className="text-sm text-gray-600 mb-1">Last message:</p>
+            <p className="text-sm">{conversation.lastMessage}</p>
+            <p className="text-xs text-gray-400 mt-1">{conversation.time}</p>
+          </div>
+
+          {conversation.unread > 0 && (
+            <Badge variant="destructive" className="text-xs">
+              {conversation.unread} unread messages
+            </Badge>
+          )}
+
+          {conversation.status === 'matched' && (
+            <div className="flex space-x-2 pt-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handleMarkComplete(conversation.id, conversation.partner, conversation.item)}
+              >
+                <CheckCircle className="w-4 h-4 mr-2" />
+                Mark as Complete
+              </Button>
+              
+              {conversation.isOwner && (
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={() => handleRejectSwap(conversation.id, conversation.partner, conversation.item)}
+                >
+                  <X className="w-4 h-4 mr-2" />
+                  Reject Swap
+                </Button>
+              )}
+            </div>
+          )}
+
+          {conversation.status === 'rejected' && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+              <div className="flex items-center text-red-700">
+                <X className="w-4 h-4 mr-2" />
+                <span className="text-sm font-medium">This swap request has been rejected</span>
+              </div>
+            </div>
+          )}
+        </div>
+      </CardContent>
+    </Card>
+  );
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -80,94 +171,46 @@ export const ConversationManager = () => {
         </Badge>
       </div>
 
-      {conversations.length === 0 ? (
-        <div className="text-center py-8 text-gray-500">
-          <MessageCircle className="w-12 h-12 mx-auto mb-4 opacity-50" />
-          <p>No conversations yet</p>
-          <p className="text-sm">Start swiping to begin conversations!</p>
-        </div>
-      ) : (
-        <div className="space-y-4">
-          {conversations.map((conversation) => (
-            <Card key={conversation.id}>
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-lg flex items-center">
-                    <div className="w-8 h-8 bg-gradient-to-br from-emerald-400 to-teal-400 rounded-full flex items-center justify-center text-white text-sm font-bold mr-3">
-                      {conversation.avatar}
-                    </div>
-                    {conversation.partner}
-                    {conversation.isOwner && (
-                      <Badge variant="secondary" className="ml-2 text-xs">
-                        Owner
-                      </Badge>
-                    )}
-                  </CardTitle>
-                  <Badge 
-                    variant={
-                      conversation.status === 'completed' ? 'secondary' : 
-                      conversation.status === 'rejected' ? 'destructive' :
-                      conversation.status === 'matched' ? 'default' : 'outline'
-                    }
-                  >
-                    {conversation.status}
-                  </Badge>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div>
-                    <p className="text-sm text-gray-600 mb-2">Item swap:</p>
-                    <p className="font-medium">{conversation.item}</p>
-                  </div>
-                  
-                  <div>
-                    <p className="text-sm text-gray-600 mb-1">Last message:</p>
-                    <p className="text-sm">{conversation.lastMessage}</p>
-                    <p className="text-xs text-gray-400 mt-1">{conversation.time}</p>
-                  </div>
+      <Tabs defaultValue="active" className="w-full">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="active" className="flex items-center">
+            <MessageCircle className="w-4 h-4 mr-2" />
+            Active ({activeConversations.length})
+          </TabsTrigger>
+          <TabsTrigger value="rejected" className="flex items-center">
+            <X className="w-4 h-4 mr-2" />
+            Rejected ({rejectedConversations.length})
+          </TabsTrigger>
+        </TabsList>
 
-                  {conversation.unread > 0 && (
-                    <Badge variant="destructive" className="text-xs">
-                      {conversation.unread} unread messages
-                    </Badge>
-                  )}
+        <TabsContent value="active" className="mt-6">
+          {activeConversations.length === 0 ? (
+            <div className="text-center py-8 text-gray-500">
+              <MessageCircle className="w-12 h-12 mx-auto mb-4 opacity-50" />
+              <p>No active conversations yet</p>
+              <p className="text-sm">Start swiping to begin conversations!</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {activeConversations.map(renderConversationCard)}
+            </div>
+          )}
+        </TabsContent>
 
-                  {conversation.status === 'matched' && (
-                    <div className="flex space-x-2 pt-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleMarkComplete(conversation.id, conversation.partner, conversation.item)}
-                      >
-                        <CheckCircle className="w-4 h-4 mr-2" />
-                        Mark as Complete
-                      </Button>
-                      
-                      {conversation.isOwner && (
-                        <Button
-                          variant="destructive"
-                          size="sm"
-                          onClick={() => handleRejectSwap(conversation.id, conversation.partner, conversation.item)}
-                        >
-                          <X className="w-4 h-4 mr-2" />
-                          Reject Swap
-                        </Button>
-                      )}
-                    </div>
-                  )}
-
-                  {conversation.status === 'rejected' && (
-                    <div className="text-sm text-red-600 font-medium">
-                      This swap request has been rejected
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      )}
+        <TabsContent value="rejected" className="mt-6">
+          {rejectedConversations.length === 0 ? (
+            <div className="text-center py-8 text-gray-500">
+              <X className="w-12 h-12 mx-auto mb-4 opacity-50" />
+              <p>No rejected conversations</p>
+              <p className="text-sm">Rejected swap requests will appear here.</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {rejectedConversations.map(renderConversationCard)}
+            </div>
+          )}
+        </TabsContent>
+      </Tabs>
 
       {selectedConversation && (
         <UserRating
