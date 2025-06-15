@@ -278,11 +278,38 @@ export const useMessageStore = create<MessageStore>((set, get) => ({
         return;
       }
 
+      // Get all unique partner IDs
+      const partnerIds = data.map(conv => {
+        return conv.user1_id === session.user.id ? conv.user2_id : conv.user1_id;
+      }).filter(Boolean);
+
+      // Fetch profiles for all partners
+      const { data: profiles, error: profilesError } = await supabase
+        .from('profiles')
+        .select('id, first_name, last_name, username, avatar')
+        .in('id', partnerIds);
+
+      if (profilesError) {
+        console.error('Error fetching partner profiles:', profilesError);
+      }
+
+      console.log('Fetched partner profiles:', profiles);
+
       let totalUnread = 0;
       // Transform database conversations to UI format
       const conversations: Conversation[] = data.map(conv => {
         const partnerId = conv.user1_id === session.user.id ? conv.user2_id : conv.user1_id;
         const isOwner = conv.user2_id === session.user.id; // Item owner is user2
+        
+        // Find partner profile
+        const partnerProfile = profiles?.find(p => p.id === partnerId);
+        const partnerName = partnerProfile 
+          ? `${partnerProfile.first_name || ''} ${partnerProfile.last_name || ''}`.trim() || partnerProfile.username || 'User'
+          : 'Unknown User';
+        
+        const partnerAvatar = partnerProfile?.avatar || 
+          (partnerProfile?.first_name ? partnerProfile.first_name.charAt(0).toUpperCase() : 
+           partnerProfile?.username ? partnerProfile.username.charAt(0).toUpperCase() : 'U');
         
         let timeDisplay = new Date(conv.created_at).toLocaleDateString();
         if (conv.last_message_time) {
@@ -300,8 +327,8 @@ export const useMessageStore = create<MessageStore>((set, get) => ({
         
         return {
           id: conv.conv_id,
-          partner: 'Unknown User', // TODO: In real app, fetch from profiles using partnerId
-          avatar: 'U', // TODO: Fetch from profiles
+          partner: partnerName,
+          avatar: partnerAvatar,
           lastMessage: conv.last_message || 'No messages yet.',
           time: timeDisplay,
           unread: unreadCount,
