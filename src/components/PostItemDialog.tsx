@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -67,7 +68,7 @@ export const PostItemDialog = ({ open, onOpenChange }: PostItemDialogProps) => {
     },
   });
 
-  const onSubmit = async (values: FormData) => {
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
     console.log('Form submitted with values:', values);
     
     const success = await addListing({
@@ -76,7 +77,7 @@ export const PostItemDialog = ({ open, onOpenChange }: PostItemDialogProps) => {
       category: values.category,
       condition: values.condition,
       location: values.location,
-      wantedItems: values.wantedItems,
+      wanted_items: values.wantedItems ? [values.wantedItems] : [],
       images: []
     });
 
