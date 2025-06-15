@@ -98,11 +98,29 @@ export const useAuthStore = create<AuthState>()(
 
             console.log('Profile fetch result:', { profile, error });
 
+            // Create user profile from session data first
+            let userProfile: UserProfile = {
+              id: session.user.id,
+              email: session.user.email || '',
+              username: session.user.email?.split('@')[0] || '',
+              firstName: '',
+              lastName: '',
+              location: '',
+              membershipType: 'free',
+              joinedDate: new Date(),
+              rating: 0,
+              totalSwaps: 0,
+              monthlyListings: 0,
+              monthlySwaps: 0,
+              avatar: session.user.email?.charAt(0).toUpperCase() || 'U'
+            };
+
+            // If profile exists in database, use that data instead
             if (profile && !error) {
-              const userProfile: UserProfile = {
+              userProfile = {
                 id: profile.id,
                 email: session.user.email || '',
-                username: profile.username || '',
+                username: profile.username || userProfile.username,
                 firstName: profile.first_name || '',
                 lastName: profile.last_name || '',
                 location: profile.location || '',
@@ -112,32 +130,43 @@ export const useAuthStore = create<AuthState>()(
                 totalSwaps: profile.total_swaps || 0,
                 monthlyListings: profile.monthly_listings || 0,
                 monthlySwaps: profile.monthly_swaps || 0,
-                avatar: profile.avatar || ''
+                avatar: profile.avatar || userProfile.avatar
               };
-
-              set({ 
-                user: userProfile, 
-                session, 
-                isAuthenticated: true, 
-                isLoading: false,
-                isInitialized: true
-              });
             } else {
-              console.error('No profile found for user:', session.user.id, error);
-              set({ 
-                user: null,
-                session: null,
-                isAuthenticated: false,
-                isLoading: false,
-                isInitialized: true
-              });
+              console.log('No profile found, using basic session data');
             }
+
+            set({ 
+              user: userProfile, 
+              session, 
+              isAuthenticated: true, 
+              isLoading: false,
+              isInitialized: true
+            });
           } catch (error) {
             console.error('Error fetching profile:', error);
+            
+            // Even if profile fetch fails, still log the user in with basic data
+            const basicUserProfile: UserProfile = {
+              id: session.user.id,
+              email: session.user.email || '',
+              username: session.user.email?.split('@')[0] || '',
+              firstName: '',
+              lastName: '',
+              location: '',
+              membershipType: 'free',
+              joinedDate: new Date(),
+              rating: 0,
+              totalSwaps: 0,
+              monthlyListings: 0,
+              monthlySwaps: 0,
+              avatar: session.user.email?.charAt(0).toUpperCase() || 'U'
+            };
+
             set({ 
-              user: null,
-              session: null,
-              isAuthenticated: false,
+              user: basicUserProfile, 
+              session, 
+              isAuthenticated: true, 
               isLoading: false,
               isInitialized: true
             });
