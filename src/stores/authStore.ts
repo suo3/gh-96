@@ -1,4 +1,3 @@
-
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { supabase } from '@/integrations/supabase/client';
@@ -138,6 +137,7 @@ export const useAuthStore = create<AuthState>()(
             }
 
             console.log('Setting auth state to authenticated with user:', userProfile.email);
+            console.log('Setting session:', !!session);
             set({ 
               user: userProfile, 
               session, 
@@ -145,19 +145,6 @@ export const useAuthStore = create<AuthState>()(
               isLoading: false,
               isInitialized: true
             });
-
-            // Force a re-render by triggering a state update
-            setTimeout(() => {
-              console.log('Forcing auth state refresh');
-              const currentState = get();
-              set({ 
-                user: currentState.user, 
-                session: currentState.session, 
-                isAuthenticated: true, 
-                isLoading: false,
-                isInitialized: true
-              });
-            }, 100);
 
           } catch (error) {
             console.error('Error fetching profile:', error);
@@ -180,6 +167,7 @@ export const useAuthStore = create<AuthState>()(
             };
 
             console.log('Setting auth state with basic profile due to error');
+            console.log('Setting session:', !!session);
             set({ 
               user: basicUserProfile, 
               session, 
@@ -198,7 +186,7 @@ export const useAuthStore = create<AuthState>()(
             isInitialized: true
           });
         } else if (event === 'TOKEN_REFRESHED' && session) {
-          console.log('Token refreshed');
+          console.log('Token refreshed, updating session');
           set({ session });
         } else {
           console.log('Other auth event:', event, 'with session:', !!session);
@@ -270,6 +258,7 @@ export const useAuthStore = create<AuthState>()(
 
           console.log('Login successful for:', email);
           console.log('Login data:', data);
+          console.log('Session from login:', !!data.session);
           
           // Manually trigger auth state change if it doesn't happen automatically
           if (data.session) {
