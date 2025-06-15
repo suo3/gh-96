@@ -40,7 +40,7 @@ export const SwipeCard = ({ item, nextItem, onSwipe }: SwipeCardProps) => {
   const cardRef = useRef<HTMLDivElement>(null);
   const { itemsWithActiveMessages } = useMessageStore();
 
-  // Check if this item has an active message
+  // Check if this item has an active message using store state
   const hasActiveMessage = item.user_id ? itemsWithActiveMessages.has(`${item.title}-${item.user_id}`) : false;
 
   const handleMouseDown = (e: React.MouseEvent) => {
