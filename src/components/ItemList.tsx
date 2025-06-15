@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -18,7 +19,7 @@ interface ItemListProps {
 export const ItemList = ({ items, onItemLike }: ItemListProps) => {
   const [selectedItem, setSelectedItem] = useState<Listing | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
-  const { createConversationFromSwipe } = useMessageStore();
+  const { createConversationFromSwipe, itemsWithActiveMessages } = useMessageStore();
   const { user } = useAuthStore();
   const { fetchUserRatings, getAverageRating } = useRatingStore();
   const { minRating } = useListingStore();
@@ -66,7 +67,9 @@ export const ItemList = ({ items, onItemLike }: ItemListProps) => {
       return;
     }
 
-    if (item.hasActiveMessage) {
+    // Check if there's already an active message for this item
+    const hasActiveMessage = item.user_id ? itemsWithActiveMessages.has(`${item.title}-${item.user_id}`) : false;
+    if (hasActiveMessage) {
       return;
     }
 
@@ -150,12 +153,13 @@ export const ItemList = ({ items, onItemLike }: ItemListProps) => {
       <div className="space-y-4">
         {filteredByRating.map((item) => {
           const userRating = getUserRating(item.user_id);
+          const hasActiveMessage = item.user_id ? itemsWithActiveMessages.has(`${item.title}-${item.user_id}`) : false;
           
           return (
             <Card 
               key={item.id} 
               className={`hover:shadow-lg transition-shadow border-emerald-200 ${
-                item.hasActiveMessage ? 'ring-2 ring-blue-200 bg-blue-50/30' : ''
+                hasActiveMessage ? 'ring-2 ring-blue-200 bg-blue-50/30' : ''
               }`}
             >
               <CardContent className="p-4">
@@ -184,7 +188,7 @@ export const ItemList = ({ items, onItemLike }: ItemListProps) => {
                         <Badge variant="outline" className="border-emerald-200">
                           {item.condition}
                         </Badge>
-                        {item.hasActiveMessage && (
+                        {hasActiveMessage && (
                           <Badge className="bg-blue-600 text-white">
                             <MessageCircle className="w-3 h-3 mr-1" />
                             Sent
@@ -228,14 +232,14 @@ export const ItemList = ({ items, onItemLike }: ItemListProps) => {
                         <Button
                           size="sm"
                           className={`${
-                            item.hasActiveMessage 
+                            hasActiveMessage 
                               ? 'bg-gray-400 cursor-not-allowed' 
                               : 'bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600'
                           }`}
                           onClick={() => handleSwapClick(item)}
-                          disabled={item.hasActiveMessage}
+                          disabled={hasActiveMessage}
                         >
-                          {item.hasActiveMessage ? (
+                          {hasActiveMessage ? (
                             <>
                               <MessageCircle className="w-4 h-4 mr-1" />
                               Sent
