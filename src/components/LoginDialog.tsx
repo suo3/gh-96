@@ -1,13 +1,15 @@
+
 import { useState } from "react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuthStore } from "@/stores/authStore";
 import { useToast } from "@/hooks/use-toast";
+import { useLocationDetection } from "@/hooks/useLocationDetection";
 import { LocationInput } from "./LocationInput";
-import { Loader2 } from "lucide-react";
+import { Navigation } from "lucide-react";
 
 interface LoginDialogProps {
   open: boolean;
@@ -15,121 +17,107 @@ interface LoginDialogProps {
 }
 
 export const LoginDialog = ({ open, onOpenChange }: LoginDialogProps) => {
-  const [localIsLoading, setLocalIsLoading] = useState(false);
-  const [loginForm, setLoginForm] = useState({ email: '', password: '' });
-  const [signupForm, setSignupForm] = useState({
-    email: '',
-    password: '',
-    confirmPassword: '',
-    firstName: '',
-    lastName: '',
-    username: '',
-    location: ''
+  const { login, signup } = useAuthStore();
+  const { toast } = useToast();
+  const { isDetecting, requestLocationPermission } = useLocationDetection();
+  
+  const [loginData, setLoginData] = useState({
+    email: "",
+    password: "",
   });
 
-  const { login, signup, isLoading: authIsLoading } = useAuthStore();
-  const { toast } = useToast();
+  const [signupData, setSignupData] = useState({
+    email: "",
+    password: "",
+    confirmPassword: "",
+    username: "",
+    firstName: "",
+    lastName: "",
+    location: "",
+  });
 
-  // Use local loading state to prevent issues with auth store loading state
-  const isLoading = localIsLoading || authIsLoading;
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLocalIsLoading(true);
+    setIsLoading(true);
 
     try {
-      console.log('Login form submitted:', loginForm.email);
-      const success = await login(loginForm.email, loginForm.password);
-      
+      const success = await login(loginData.email, loginData.password);
       if (success) {
-        toast({
-          title: "Welcome back!",
-          description: "You've been successfully logged in.",
-        });
         onOpenChange(false);
-        setLoginForm({ email: '', password: '' });
+        toast({
+          title: "Login successful",
+          description: "Welcome back!",
+        });
       } else {
         toast({
           title: "Login failed",
-          description: "Invalid email or password. Please check your credentials and try again.",
-          variant: "destructive"
+          description: "Please check your email and password.",
+          variant: "destructive",
         });
       }
     } catch (error) {
-      console.error('Login error:', error);
       toast({
-        title: "Error",
-        description: "Something went wrong. Please try again.",
-        variant: "destructive"
+        title: "Login error",
+        description: "An unexpected error occurred.",
+        variant: "destructive",
       });
     } finally {
-      setLocalIsLoading(false);
+      setIsLoading(false);
     }
   };
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (signupForm.password !== signupForm.confirmPassword) {
+    if (signupData.password !== signupData.confirmPassword) {
       toast({
         title: "Password mismatch",
-        description: "Passwords don't match.",
-        variant: "destructive"
+        description: "Passwords do not match.",
+        variant: "destructive",
       });
       return;
     }
 
-    if (signupForm.password.length < 6) {
-      toast({
-        title: "Password too short",
-        description: "Password must be at least 6 characters long.",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    setLocalIsLoading(true);
+    setIsLoading(true);
 
     try {
-      console.log('Signup form submitted:', signupForm.email);
-      const success = await signup(signupForm.email, signupForm.password, {
-        firstName: signupForm.firstName,
-        lastName: signupForm.lastName,
-        username: signupForm.username,
-        location: signupForm.location
+      const success = await signup(signupData.email, signupData.password, {
+        username: signupData.username,
+        firstName: signupData.firstName,
+        lastName: signupData.lastName,
+        location: signupData.location,
       });
 
       if (success) {
         toast({
-          title: "Account created!",
-          description: "Please check your email to verify your account before logging in.",
+          title: "Account created",
+          description: "Please check your email to verify your account.",
         });
         onOpenChange(false);
-        setSignupForm({
-          email: '',
-          password: '',
-          confirmPassword: '',
-          firstName: '',
-          lastName: '',
-          username: '',
-          location: ''
-        });
       } else {
         toast({
           title: "Signup failed",
-          description: "Please try again or check if the email is already in use.",
-          variant: "destructive"
+          description: "Please try again.",
+          variant: "destructive",
         });
       }
     } catch (error) {
-      console.error('Signup error:', error);
       toast({
-        title: "Signup failed",
-        description: "Something went wrong. Please try again.",
-        variant: "destructive"
+        title: "Signup error",
+        description: "An unexpected error occurred.",
+        variant: "destructive",
       });
     } finally {
-      setLocalIsLoading(false);
+      setIsLoading(false);
+    }
+  };
+
+  const handleAutoDetectLocation = async () => {
+    const location = await requestLocationPermission();
+    if (location) {
+      setSignupData(prev => ({ ...prev, location }));
     }
   };
 
@@ -137,126 +125,133 @@ export const LoginDialog = ({ open, onOpenChange }: LoginDialogProps) => {
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="text-center">Welcome to SwapBoard</DialogTitle>
+          <DialogTitle>Welcome to SwapSpace</DialogTitle>
         </DialogHeader>
-
+        
         <Tabs defaultValue="login" className="w-full">
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="login">Login</TabsTrigger>
             <TabsTrigger value="signup">Sign Up</TabsTrigger>
           </TabsList>
-
-          <TabsContent value="login" className="space-y-4">
+          
+          <TabsContent value="login">
             <form onSubmit={handleLogin} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="login-email">Email</Label>
                 <Input
-                  id="email"
+                  id="login-email"
                   type="email"
-                  placeholder="your@email.com"
-                  value={loginForm.email}
-                  onChange={(e) => setLoginForm(prev => ({ ...prev, email: e.target.value }))}
+                  value={loginData.email}
+                  onChange={(e) => setLoginData(prev => ({ ...prev, email: e.target.value }))}
                   required
-                  autoComplete="email"
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
+                <Label htmlFor="login-password">Password</Label>
                 <Input
-                  id="password"
+                  id="login-password"
                   type="password"
-                  placeholder="Your password"
-                  value={loginForm.password}
-                  onChange={(e) => setLoginForm(prev => ({ ...prev, password: e.target.value }))}
+                  value={loginData.password}
+                  onChange={(e) => setLoginData(prev => ({ ...prev, password: e.target.value }))}
                   required
-                  autoComplete="current-password"
                 />
               </div>
               <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Login
+                {isLoading ? "Logging in..." : "Login"}
               </Button>
             </form>
           </TabsContent>
-
-          <TabsContent value="signup" className="space-y-4">
+          
+          <TabsContent value="signup">
             <form onSubmit={handleSignup} className="space-y-4">
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="firstName">First Name</Label>
                   <Input
                     id="firstName"
-                    value={signupForm.firstName}
-                    onChange={(e) => setSignupForm(prev => ({ ...prev, firstName: e.target.value }))}
+                    value={signupData.firstName}
+                    onChange={(e) => setSignupData(prev => ({ ...prev, firstName: e.target.value }))}
                     required
-                    autoComplete="given-name"
                   />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="lastName">Last Name</Label>
                   <Input
                     id="lastName"
-                    value={signupForm.lastName}
-                    onChange={(e) => setSignupForm(prev => ({ ...prev, lastName: e.target.value }))}
+                    value={signupData.lastName}
+                    onChange={(e) => setSignupData(prev => ({ ...prev, lastName: e.target.value }))}
                     required
-                    autoComplete="family-name"
                   />
                 </div>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="signupEmail">Email</Label>
-                <Input
-                  id="signupEmail"
-                  type="email"
-                  value={signupForm.email}
-                  onChange={(e) => setSignupForm(prev => ({ ...prev, email: e.target.value }))}
-                  required
-                  autoComplete="email"
-                />
-              </div>
+              
               <div className="space-y-2">
                 <Label htmlFor="username">Username</Label>
                 <Input
                   id="username"
-                  value={signupForm.username}
-                  onChange={(e) => setSignupForm(prev => ({ ...prev, username: e.target.value }))}
+                  value={signupData.username}
+                  onChange={(e) => setSignupData(prev => ({ ...prev, username: e.target.value }))}
                   required
-                  autoComplete="username"
                 />
               </div>
+              
               <div className="space-y-2">
-                <Label htmlFor="location">Location</Label>
+                <Label htmlFor="signup-email">Email</Label>
+                <Input
+                  id="signup-email"
+                  type="email"
+                  value={signupData.email}
+                  onChange={(e) => setSignupData(prev => ({ ...prev, email: e.target.value }))}
+                  required
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="location">Location</Label>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={handleAutoDetectLocation}
+                    disabled={isDetecting}
+                    className="text-xs"
+                  >
+                    <Navigation className="w-3 h-3 mr-1" />
+                    {isDetecting ? 'Detecting...' : 'Auto-detect'}
+                  </Button>
+                </div>
                 <LocationInput
-                  value={signupForm.location}
-                  onChange={(value) => setSignupForm(prev => ({ ...prev, location: value }))}
+                  value={signupData.location}
+                  onChange={(value) => setSignupData(prev => ({ ...prev, location: value }))}
                   placeholder="Enter your city and state"
                 />
               </div>
+              
               <div className="space-y-2">
-                <Label htmlFor="signupPassword">Password</Label>
+                <Label htmlFor="signup-password">Password</Label>
                 <Input
-                  id="signupPassword"
+                  id="signup-password"
                   type="password"
-                  value={signupForm.password}
-                  onChange={(e) => setSignupForm(prev => ({ ...prev, password: e.target.value }))}
+                  value={signupData.password}
+                  onChange={(e) => setSignupData(prev => ({ ...prev, password: e.target.value }))}
                   required
-                  autoComplete="new-password"
                 />
               </div>
+              
               <div className="space-y-2">
-                <Label htmlFor="confirmPassword">Confirm Password</Label>
+                <Label htmlFor="confirm-password">Confirm Password</Label>
                 <Input
-                  id="confirmPassword"
+                  id="confirm-password"
                   type="password"
-                  value={signupForm.confirmPassword}
-                  onChange={(e) => setSignupForm(prev => ({ ...prev, confirmPassword: e.target.value }))}
+                  value={signupData.confirmPassword}
+                  onChange={(e) => setSignupData(prev => ({ ...prev, confirmPassword: e.target.value }))}
                   required
-                  autoComplete="new-password"
                 />
               </div>
+              
               <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Create Account
+                {isLoading ? "Creating account..." : "Sign Up"}
               </Button>
             </form>
           </TabsContent>
