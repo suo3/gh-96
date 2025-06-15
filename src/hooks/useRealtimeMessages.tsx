@@ -52,7 +52,7 @@ export const useRealtimeMessages = () => {
           fetchConversations();
           
           // If we're viewing a specific conversation, refresh its messages
-          if (selectedConversation && payload.new && payload.new.conversation_id === selectedConversation) {
+          if (selectedConversation && payload.new && typeof payload.new === 'object' && 'conversation_id' in payload.new && payload.new.conversation_id === selectedConversation) {
             fetchMessages(selectedConversation);
           }
         }

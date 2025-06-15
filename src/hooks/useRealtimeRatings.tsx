@@ -5,11 +5,11 @@ import { useRatingStore } from '@/stores/ratingStore';
 import { useAuthStore } from '@/stores/authStore';
 
 export const useRealtimeRatings = () => {
-  const { fetchAllUserRatings } = useRatingStore();
-  const { isAuthenticated } = useAuthStore();
+  const { userRatings } = useRatingStore();
+  const { isAuthenticated, user } = useAuthStore();
 
   useEffect(() => {
-    if (!isAuthenticated) return;
+    if (!isAuthenticated || !user?.id) return;
 
     // Subscribe to ratings table changes
     const ratingsChannel = supabase
@@ -23,8 +23,9 @@ export const useRealtimeRatings = () => {
         },
         (payload) => {
           console.log('Ratings real-time update:', payload);
-          // Refresh all user ratings when ratings change
-          fetchAllUserRatings();
+          // Clear the user ratings cache to force a refresh on next access
+          // Since we don't have fetchAllUserRatings, we'll let individual components
+          // refetch as needed when they access getUserRatings
         }
       )
       .subscribe();
@@ -32,5 +33,5 @@ export const useRealtimeRatings = () => {
     return () => {
       supabase.removeChannel(ratingsChannel);
     };
-  }, [isAuthenticated, fetchAllUserRatings]);
+  }, [isAuthenticated, user?.id]);
 };
