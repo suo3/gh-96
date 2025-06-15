@@ -1,4 +1,3 @@
-
 import { create } from 'zustand';
 import { supabase } from '@/integrations/supabase/client';
 import { persist } from 'zustand/middleware';
@@ -709,7 +708,7 @@ export const useListingStore = create<ListingState>()(
 
         console.log(`Final filtered results: ${finalItems.length} items`);
         return finalItems;
-      },
+      }
     }),
     {
       name: 'listing-storage',

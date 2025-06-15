@@ -34,6 +34,7 @@ interface AuthState {
   upgradeToPremium: () => Promise<void>;
   processSubscriptionPayment: (planType: 'monthly' | 'yearly') => Promise<boolean>;
   initialize: () => Promise<void>;
+  refreshUserProfile: () => Promise<void>;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -43,6 +44,41 @@ export const useAuthStore = create<AuthState>()(
       session: null,
       isAuthenticated: false,
       isLoading: true,
+
+      refreshUserProfile: async () => {
+        const { user, session } = get();
+        if (!user || !session) return;
+
+        try {
+          const { data: profile, error } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', user.id)
+            .single();
+
+          if (profile && !error) {
+            const updatedUser: UserProfile = {
+              id: profile.id,
+              email: session.user.email || '',
+              username: profile.username || '',
+              firstName: profile.first_name || '',
+              lastName: profile.last_name || '',
+              location: profile.location || '',
+              membershipType: profile.membership_type as 'free' | 'premium',
+              joinedDate: new Date(profile.joined_date),
+              rating: parseFloat(profile.rating?.toString() || '0'),
+              totalSwaps: profile.total_swaps || 0,
+              monthlyListings: profile.monthly_listings || 0,
+              monthlySwaps: profile.monthly_swaps || 0,
+              avatar: profile.avatar || ''
+            };
+
+            set({ user: updatedUser });
+          }
+        } catch (error) {
+          console.error('Error refreshing user profile:', error);
+        }
+      },
 
       initialize: async () => {
         try {
@@ -258,11 +294,16 @@ export const useAuthStore = create<AuthState>()(
               first_name: updates.firstName,
               last_name: updates.lastName,
               location: updates.location,
+              monthly_listings: updates.monthlyListings,
+              monthly_swaps: updates.monthlySwaps,
+              total_swaps: updates.totalSwaps,
             })
             .eq('id', user.id);
 
           if (!error) {
             set({ user: { ...user, ...updates } });
+            // Refresh profile to get latest data
+            get().refreshUserProfile();
           }
         } catch (error) {
           console.error('Profile update error:', error);
