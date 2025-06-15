@@ -24,7 +24,6 @@ interface AuthState {
   session: Session | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  isInitialized: boolean;
   login: (email: string, password: string) => Promise<boolean>;
   signup: (email: string, password: string, userData: Partial<UserProfile>) => Promise<boolean>;
   logout: () => Promise<void>;
@@ -36,7 +35,6 @@ interface AuthState {
   processSubscriptionPayment: (planType: 'monthly' | 'yearly') => Promise<boolean>;
   initialize: () => Promise<void>;
   refreshUserProfile: () => Promise<void>;
-  handleAuthStateChange: (event: string, session: Session | null) => Promise<void>;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -45,8 +43,7 @@ export const useAuthStore = create<AuthState>()(
       user: null,
       session: null,
       isAuthenticated: false,
-      isLoading: false,
-      isInitialized: false,
+      isLoading: true,
 
       refreshUserProfile: async () => {
         const { user, session } = get();
@@ -83,44 +80,105 @@ export const useAuthStore = create<AuthState>()(
         }
       },
 
-      handleAuthStateChange: async (event: string, session: Session | null) => {
-        console.log('Auth state change:', event, session?.user?.email);
-        
-        if (event === 'SIGNED_IN' && session?.user) {
-          console.log('User signed in, fetching profile...');
+      initialize: async () => {
+        try {
+          console.log('Initializing auth...');
           
-          try {
-            const { data: profile, error } = await supabase
+          // Set up auth state listener FIRST
+          supabase.auth.onAuthStateChange(async (event, session) => {
+            console.log('Auth state change:', event, session?.user?.email);
+            
+            if (event === 'SIGNED_IN' && session?.user) {
+              console.log('User signed in, fetching profile...');
+              
+              // Use setTimeout to prevent deadlock
+              setTimeout(async () => {
+                try {
+                  const { data: profile, error } = await supabase
+                    .from('profiles')
+                    .select('*')
+                    .eq('id', session.user.id)
+                    .single();
+
+                  console.log('Profile fetch result:', { profile, error });
+
+                  if (profile && !error) {
+                    const userProfile: UserProfile = {
+                      id: profile.id,
+                      email: session.user.email || '',
+                      username: profile.username || '',
+                      firstName: profile.first_name || '',
+                      lastName: profile.last_name || '',
+                      location: profile.location || '',
+                      membershipType: profile.membership_type as 'free' | 'premium',
+                      joinedDate: new Date(profile.joined_date),
+                      rating: parseFloat(profile.rating?.toString() || '0'),
+                      totalSwaps: profile.total_swaps || 0,
+                      monthlyListings: profile.monthly_listings || 0,
+                      monthlySwaps: profile.monthly_swaps || 0,
+                      avatar: profile.avatar || ''
+                    };
+
+                    set({ 
+                      user: userProfile, 
+                      session, 
+                      isAuthenticated: true, 
+                      isLoading: false 
+                    });
+                  } else {
+                    console.error('No profile found for user:', session.user.id, error);
+                    set({ 
+                      user: null,
+                      session: null,
+                      isAuthenticated: false,
+                      isLoading: false 
+                    });
+                  }
+                } catch (error) {
+                  console.error('Error fetching profile:', error);
+                  set({ 
+                    user: null,
+                    session: null,
+                    isAuthenticated: false,
+                    isLoading: false 
+                  });
+                }
+              }, 0);
+            } else if (event === 'SIGNED_OUT') {
+              console.log('User signed out');
+              set({ 
+                user: null, 
+                session: null, 
+                isAuthenticated: false,
+                isLoading: false 
+              });
+            } else if (event === 'TOKEN_REFRESHED' && session) {
+              console.log('Token refreshed');
+              set({ session });
+            } else {
+              // For other events or no session, ensure loading is false
+              set({ isLoading: false });
+            }
+          });
+
+          // Get initial session
+          const { data: { session }, error } = await supabase.auth.getSession();
+          console.log('Initial session:', session?.user?.email, error);
+          
+          if (session?.user) {
+            console.log('Found existing session, fetching profile...');
+            // Fetch user profile
+            const { data: profile } = await supabase
               .from('profiles')
               .select('*')
               .eq('id', session.user.id)
-              .single();
+              .maybeSingle();
 
-            console.log('Profile fetch result:', { profile, error });
-
-            // Create user profile from session data first
-            let userProfile: UserProfile = {
-              id: session.user.id,
-              email: session.user.email || '',
-              username: session.user.email?.split('@')[0] || '',
-              firstName: '',
-              lastName: '',
-              location: '',
-              membershipType: 'free',
-              joinedDate: new Date(),
-              rating: 0,
-              totalSwaps: 0,
-              monthlyListings: 0,
-              monthlySwaps: 0,
-              avatar: session.user.email?.charAt(0).toUpperCase() || 'U'
-            };
-
-            // If profile exists in database, use that data instead
-            if (profile && !error) {
-              userProfile = {
+            if (profile) {
+              const userProfile: UserProfile = {
                 id: profile.id,
                 email: session.user.email || '',
-                username: profile.username || userProfile.username,
+                username: profile.username || '',
                 firstName: profile.first_name || '',
                 lastName: profile.last_name || '',
                 location: profile.location || '',
@@ -130,113 +188,26 @@ export const useAuthStore = create<AuthState>()(
                 totalSwaps: profile.total_swaps || 0,
                 monthlyListings: profile.monthly_listings || 0,
                 monthlySwaps: profile.monthly_swaps || 0,
-                avatar: profile.avatar || userProfile.avatar
+                avatar: profile.avatar || ''
               };
+
+              set({ 
+                user: userProfile, 
+                session, 
+                isAuthenticated: true, 
+                isLoading: false 
+              });
             } else {
-              console.log('No profile found, using basic session data');
+              console.log('No profile found for existing session');
+              set({ isLoading: false });
             }
-
-            console.log('Setting auth state to authenticated with user:', userProfile.email);
-            console.log('Setting session:', !!session);
-            set({ 
-              user: userProfile, 
-              session, 
-              isAuthenticated: true, 
-              isLoading: false,
-              isInitialized: true
-            });
-
-          } catch (error) {
-            console.error('Error fetching profile:', error);
-            
-            // Even if profile fetch fails, still log the user in with basic data
-            const basicUserProfile: UserProfile = {
-              id: session.user.id,
-              email: session.user.email || '',
-              username: session.user.email?.split('@')[0] || '',
-              firstName: '',
-              lastName: '',
-              location: '',
-              membershipType: 'free',
-              joinedDate: new Date(),
-              rating: 0,
-              totalSwaps: 0,
-              monthlyListings: 0,
-              monthlySwaps: 0,
-              avatar: session.user.email?.charAt(0).toUpperCase() || 'U'
-            };
-
-            console.log('Setting auth state with basic profile due to error');
-            console.log('Setting session:', !!session);
-            set({ 
-              user: basicUserProfile, 
-              session, 
-              isAuthenticated: true, 
-              isLoading: false,
-              isInitialized: true
-            });
-          }
-        } else if (event === 'SIGNED_OUT') {
-          console.log('User signed out');
-          set({ 
-            user: null, 
-            session: null, 
-            isAuthenticated: false,
-            isLoading: false,
-            isInitialized: true
-          });
-        } else if (event === 'TOKEN_REFRESHED' && session) {
-          console.log('Token refreshed, updating session');
-          set({ session });
-        } else {
-          console.log('Other auth event:', event, 'with session:', !!session);
-        }
-      },
-
-      initialize: async () => {
-        console.log('Auth: Starting initialization...');
-        
-        if (get().isInitialized) {
-          console.log('Auth: Already initialized, skipping');
-          return;
-        }
-        
-        set({ isLoading: true });
-
-        try {
-          // Set up auth state listener FIRST
-          const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-            console.log('Auth state change detected:', event, session?.user?.email);
-            await get().handleAuthStateChange(event, session);
-          });
-
-          // Then get initial session
-          const { data: { session: initialSession }, error } = await supabase.auth.getSession();
-          console.log('Initial session check:', initialSession?.user?.email, error);
-          
-          if (initialSession?.user) {
-            console.log('Found existing session, processing...');
-            await get().handleAuthStateChange('SIGNED_IN', initialSession);
           } else {
             console.log('No existing session found');
-            set({ 
-              user: null,
-              session: null,
-              isAuthenticated: false,
-              isLoading: false,
-              isInitialized: true
-            });
+            set({ isLoading: false });
           }
-          
         } catch (error) {
           console.error('Auth initialization error:', error);
-          set({ 
-            user: null,
-            session: null,
-            isAuthenticated: false,
-            isLoading: false,
-            isInitialized: true
-          });
+          set({ isLoading: false });
         }
       },
 
@@ -257,15 +228,7 @@ export const useAuthStore = create<AuthState>()(
           }
 
           console.log('Login successful for:', email);
-          console.log('Login data:', data);
-          console.log('Session from login:', !!data.session);
-          
-          // Manually trigger auth state change if it doesn't happen automatically
-          if (data.session) {
-            console.log('Manually triggering auth state change with session');
-            await get().handleAuthStateChange('SIGNED_IN', data.session);
-          }
-          
+          // Note: Don't set loading to false here - let the auth state change handler do it
           return true;
         } catch (error) {
           console.error('Login error:', error);
@@ -339,6 +302,7 @@ export const useAuthStore = create<AuthState>()(
 
           if (!error) {
             set({ user: { ...user, ...updates } });
+            // Refresh profile to get latest data
             get().refreshUserProfile();
           }
         } catch (error) {
@@ -363,14 +327,14 @@ export const useAuthStore = create<AuthState>()(
         const { user } = get();
         if (!user) return false;
         if (user.membershipType === 'premium') return true;
-        return user.monthlyListings < 50;
+        return user.monthlyListings < 50; // Updated to 50
       },
 
       canMakeSwap: () => {
         const { user } = get();
         if (!user) return false;
         if (user.membershipType === 'premium') return true;
-        return user.monthlySwaps < 50;
+        return user.monthlySwaps < 50; // Updated to 50
       },
 
       upgradeToPremium: async () => {
@@ -396,6 +360,7 @@ export const useAuthStore = create<AuthState>()(
         if (!user) return false;
 
         try {
+          // Call the Stripe checkout edge function
           const { data, error } = await supabase.functions.invoke('create-stripe-checkout', {
             body: {
               planType,
@@ -410,6 +375,7 @@ export const useAuthStore = create<AuthState>()(
           }
 
           if (data?.url) {
+            // Open Stripe checkout in a new tab
             window.open(data.url, '_blank');
             return true;
           }
@@ -425,8 +391,7 @@ export const useAuthStore = create<AuthState>()(
       name: 'auth-storage',
       partialize: (state) => ({ 
         user: state.user,
-        isAuthenticated: state.isAuthenticated,
-        isInitialized: state.isInitialized
+        isAuthenticated: state.isAuthenticated 
       }),
     }
   )
