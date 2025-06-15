@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -105,10 +106,10 @@ export const UserProfile = ({ onBack }: UserProfileProps) => {
                   {user.membershipType === 'free' && (
                     <div className="text-center">
                       <div className="text-sm text-gray-600">
-                        Listings: {user.monthlyListings}/10
+                        Listings: {user.monthlyListings || 0}/10
                       </div>
                       <div className="text-sm text-gray-600">
-                        Swaps: {user.monthlySwaps}/20
+                        Swaps: {user.monthlySwaps || 0}/20
                       </div>
                     </div>
                   )}
