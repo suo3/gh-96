@@ -9,6 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { CheckCircle, X, Star, Loader2, MessageCircle } from "lucide-react";
 import { useState } from "react";
 import { UserRating } from "./UserRating";
+import { useAuthStore } from "@/stores/authStore";
 
 export const ConversationManager = () => {
   const { 
@@ -19,6 +20,7 @@ export const ConversationManager = () => {
     isLoading, 
     error 
   } = useMessageStore();
+  const { user } = useAuthStore();
   const { toast } = useToast();
   const [showRating, setShowRating] = useState(false);
   const [selectedConversation, setSelectedConversation] = useState<any>(null);
@@ -50,6 +52,12 @@ export const ConversationManager = () => {
       description: `You have rejected the swap request from ${partner} for "${item}".`,
       variant: "destructive"
     });
+  };
+
+  // Helper function to get the partner's user ID from the conversation
+  const getPartnerUserId = (conversation: any) => {
+    if (!user) return null;
+    return conversation.user1_id === user.id ? conversation.user2_id : conversation.user1_id;
   };
 
   if (isLoading) {
@@ -216,7 +224,7 @@ export const ConversationManager = () => {
         <UserRating
           open={showRating}
           onOpenChange={setShowRating}
-          ratedUserId="dummy-user-id"
+          ratedUserId={getPartnerUserId(selectedConversation) || ""}
           ratedUserName={selectedConversation.partner}
           itemTitle={selectedConversation.item}
         />
