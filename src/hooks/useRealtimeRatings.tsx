@@ -8,10 +8,10 @@ export const useRealtimeRatings = () => {
   const { userRatings } = useRatingStore();
   const { isAuthenticated, user } = useAuthStore();
 
+  // Set up ratings subscription
   useEffect(() => {
     if (!isAuthenticated || !user?.id) return;
 
-    // Subscribe to ratings table changes
     const ratingsChannel = supabase
       .channel('ratings-changes')
       .on(

@@ -8,10 +8,10 @@ export const useRealtimeMessages = () => {
   const { fetchConversations, fetchMessages, selectedConversation } = useMessageStore();
   const { isAuthenticated } = useAuthStore();
 
+  // Set up conversations subscription
   useEffect(() => {
     if (!isAuthenticated) return;
 
-    // Subscribe to conversations table changes
     const conversationsChannel = supabase
       .channel('conversations-changes')
       .on(
@@ -33,10 +33,10 @@ export const useRealtimeMessages = () => {
     };
   }, [isAuthenticated, fetchConversations]);
 
+  // Set up messages subscription
   useEffect(() => {
     if (!isAuthenticated) return;
 
-    // Subscribe to messages table changes
     const messagesChannel = supabase
       .channel('messages-changes')
       .on(

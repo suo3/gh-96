@@ -8,8 +8,8 @@ export const useRealtimeListings = () => {
   const { fetchListings } = useListingStore();
   const { isAuthenticated } = useAuthStore();
 
+  // Always set up the listings subscription
   useEffect(() => {
-    // Subscribe to listings table changes
     const listingsChannel = supabase
       .channel('listings-changes')
       .on(
@@ -32,10 +32,10 @@ export const useRealtimeListings = () => {
     };
   }, [fetchListings]);
 
+  // Set up profiles subscription only when authenticated
   useEffect(() => {
     if (!isAuthenticated) return;
 
-    // Subscribe to profiles table changes (for user ratings, etc.)
     const profilesChannel = supabase
       .channel('profiles-changes')
       .on(
