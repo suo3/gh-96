@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, MessageCircle, Heart, X, RotateCcw, Plus, User, Filter } from "lucide-react";
+import { MapPin, MessageCircle, Heart, X, RotateCcw, Plus, User, Filter, Navigation } from "lucide-react";
 import { SwipeCard } from "@/components/SwipeCard";
 import { ViewToggle } from "@/components/ViewToggle";
 import { FilterPanel } from "@/components/FilterPanel";
@@ -13,9 +13,11 @@ import { UserProfile } from "@/components/UserProfile";
 import { MessagesPanel } from "@/components/MessagesPanel";
 import { AuthButton } from "@/components/AuthButton";
 import { LoginDialog } from "@/components/LoginDialog";
+import { LocationPermissionPrompt } from "@/components/LocationPermissionPrompt";
 import { useMessageStore } from "@/stores/messageStore";
 import { useAuthStore } from "@/stores/authStore";
 import { useListingStore } from "@/stores/listingStore";
+import { useLocationDetection } from "@/hooks/useLocationDetection";
 import { useToast } from "@/components/ui/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
 
@@ -25,7 +27,8 @@ const Index = () => {
   const [displayMode, setDisplayMode] = useState<"swipe" | "grid" | "list">(isMobile ? "swipe" : "grid");
   const [showPostDialog, setShowPostDialog] = useState(false);
   const [showLoginDialog, setShowLoginDialog] = useState(false);
-  const [showFilters, setShowFilters] = useState(!isMobile); // Show filters by default on desktop
+  const [showFilters, setShowFilters] = useState(!isMobile);
+  const [showLocationPrompt, setShowLocationPrompt] = useState(false);
   const [userLocation, setUserLocation] = useState("Seattle, WA");
   const { createConversationFromSwipe, totalUnreadCount, fetchConversations } = useMessageStore();
   const { isAuthenticated, canCreateListing, canMakeSwap, user } = useAuthStore();
@@ -37,6 +40,7 @@ const Index = () => {
     setCurrentUserId,
     geocodeLocation
   } = useListingStore();
+  const { requestLocationPermission } = useLocationDetection();
   const { toast } = useToast();
 
   // Set current user ID in the listing store when user changes
@@ -60,33 +64,63 @@ const Index = () => {
     }
   }, [isAuthenticated, fetchConversations]);
 
-  // Initialize user location from profile
+  // Handle location initialization and prompt
   useEffect(() => {
     const initializeLocation = async () => {
+      // If user has location in profile, use it
       if (user?.location) {
         setUserLocation(user.location);
         const coords = await geocodeLocation(user.location);
         if (coords) {
           setStoreUserLocation(coords);
-          // Refetch listings to calculate distances
           fetchListings();
         }
+        return;
+      }
+
+      // Check if we should show location prompt
+      const hasSeenLocationPrompt = localStorage.getItem('hasSeenLocationPrompt');
+      if (!hasSeenLocationPrompt) {
+        setShowLocationPrompt(true);
+        localStorage.setItem('hasSeenLocationPrompt', 'true');
       }
     };
     
-    if (isAuthenticated && user) {
-      initializeLocation();
-    }
-  }, [user?.location, isAuthenticated, geocodeLocation, setStoreUserLocation, fetchListings]);
+    initializeLocation();
+  }, [user?.location, geocodeLocation, setStoreUserLocation, fetchListings]);
 
   // Update display mode when mobile state changes
   useEffect(() => {
     if (!isMobile && displayMode === "swipe") {
       setDisplayMode("grid");
     }
-    // Show filters by default on desktop, hide on mobile
     setShowFilters(!isMobile);
   }, [isMobile, displayMode]);
+
+  const handleLocationSet = (location: string) => {
+    setUserLocation(location);
+    setShowLocationPrompt(false);
+  };
+
+  const handleManualLocationEntry = () => {
+    setShowLocationPrompt(false);
+    if (isAuthenticated) {
+      setCurrentView("profile");
+    } else {
+      setShowLoginDialog(true);
+    }
+  };
+
+  const handleLocationPromptDismiss = () => {
+    setShowLocationPrompt(false);
+  };
+
+  const handleLocationDetect = async () => {
+    const location = await requestLocationPermission();
+    if (location) {
+      setUserLocation(location);
+    }
+  };
 
   // Get filtered items
   const items = filteredListings();
@@ -110,7 +144,6 @@ const Index = () => {
     const currentItem = items[currentItemIndex];
     if (!currentItem) return;
 
-    // Prevent multiple messages for the same item
     if (direction === 'right' && currentItem.hasActiveMessage) {
       toast({
         title: "Already Interested",
@@ -165,7 +198,6 @@ const Index = () => {
       return;
     }
 
-    // Prevent multiple messages for the same item
     if (item.hasActiveMessage) {
       toast({
         title: "Already Interested",
@@ -216,7 +248,6 @@ const Index = () => {
   };
 
   const handleFilterChange = (filters: any) => {
-    // Filters are now handled by the store
     console.log('Filters applied:', filters);
   };
 
@@ -224,7 +255,6 @@ const Index = () => {
     setCurrentItemIndex(0);
   };
 
-  // Convert Listing to SwipeCard compatible format
   const convertToSwipeFormat = (listing: any) => {
     return {
       id: listing.id,
@@ -274,6 +304,15 @@ const Index = () => {
                   <div className="flex items-center text-sm text-gray-600">
                     <MapPin className="w-4 h-4 mr-1" />
                     {userLocation}
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleLocationDetect}
+                      className="ml-2 h-6 px-2 text-xs hover:bg-emerald-100"
+                    >
+                      <Navigation className="w-3 h-3 mr-1" />
+                      Update
+                    </Button>
                   </div>
                 </div>
               </div>
@@ -324,6 +363,17 @@ const Index = () => {
           </div>
         </header>
 
+        {/* Location Permission Prompt */}
+        {showLocationPrompt && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <LocationPermissionPrompt
+              onLocationSet={handleLocationSet}
+              onManualEntry={handleManualLocationEntry}
+              onDismiss={handleLocationPromptDismiss}
+            />
+          </div>
+        )}
+
         {/* Main Content */}
         <main className="container mx-auto px-4 py-8">
           {/* Filters */}
@@ -332,6 +382,7 @@ const Index = () => {
             isVisible={showFilters && displayMode !== "swipe"}
           />
 
+          {/* Swipe Cards Area */}
           {displayMode === "swipe" && isMobile && (
             <>
               <div className="text-center mb-8">
@@ -344,7 +395,6 @@ const Index = () => {
                 </p>
               </div>
 
-              {/* Swipe Cards Area */}
               <div className="max-w-md mx-auto">
                 <div className="relative h-[600px] flex items-center justify-center">
                   {items.length > 0 && currentItemIndex < items.length ? (
@@ -406,6 +456,7 @@ const Index = () => {
             </>
           )}
 
+          {/* Grid View */}
           {displayMode === "grid" && (
             <>
               <div className="text-center mb-8">
@@ -420,6 +471,7 @@ const Index = () => {
             </>
           )}
 
+          {/* List View */}
           {displayMode === "list" && (
             <>
               <div className="text-center mb-8">

@@ -7,14 +7,16 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useAuthStore } from "@/stores/authStore";
 import { useToast } from "@/components/ui/use-toast";
+import { useLocationDetection } from "@/hooks/useLocationDetection";
 import { PasswordChange } from "./PasswordChange";
 import { SubscriptionPayment } from "./SubscriptionPayment";
 import { LocationInput } from "./LocationInput";
-import { Save, Crown } from "lucide-react";
+import { Save, Crown, Navigation } from "lucide-react";
 
 export const ProfileEditor = () => {
   const { user, updateProfile } = useAuthStore();
   const { toast } = useToast();
+  const { isDetecting, requestLocationPermission } = useLocationDetection();
   
   const [formData, setFormData] = useState({
     firstName: '',
@@ -40,6 +42,13 @@ export const ProfileEditor = () => {
       title: "Profile Updated",
       description: "Your profile has been successfully updated.",
     });
+  };
+
+  const handleAutoDetectLocation = async () => {
+    const location = await requestLocationPermission();
+    if (location) {
+      setFormData(prev => ({ ...prev, location }));
+    }
   };
 
   if (!user) return null;
@@ -83,7 +92,20 @@ export const ProfileEditor = () => {
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="location">Location</Label>
+            <div className="flex items-center justify-between">
+              <Label htmlFor="location">Location</Label>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={handleAutoDetectLocation}
+                disabled={isDetecting}
+                className="text-xs"
+              >
+                <Navigation className="w-3 h-3 mr-1" />
+                {isDetecting ? 'Detecting...' : 'Auto-detect'}
+              </Button>
+            </div>
             <LocationInput
               value={formData.location}
               onChange={(value) => setFormData(prev => ({ ...prev, location: value }))}
