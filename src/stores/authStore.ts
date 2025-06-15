@@ -36,6 +36,7 @@ interface AuthState {
   processSubscriptionPayment: (planType: 'monthly' | 'yearly') => Promise<boolean>;
   initialize: () => Promise<void>;
   refreshUserProfile: () => Promise<void>;
+  handleAuthStateChange: (event: string, session: Session | null) => Promise<void>;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -82,59 +83,9 @@ export const useAuthStore = create<AuthState>()(
         }
       },
 
-      initialize: async () => {
-        console.log('Auth: Starting initialization...');
-        
-        if (get().isInitialized) {
-          console.log('Auth: Already initialized, skipping');
-          return;
-        }
-        
-        set({ isLoading: true });
-
-        try {
-          // Get initial session
-          const { data: { session: initialSession }, error } = await supabase.auth.getSession();
-          console.log('Initial session check:', initialSession?.user?.email, error);
-          
-          if (initialSession?.user) {
-            console.log('Found existing session, fetching profile...');
-            await get().handleAuthStateChange('SIGNED_IN', initialSession);
-          } else {
-            console.log('No existing session found');
-            set({ 
-              user: null,
-              session: null,
-              isAuthenticated: false,
-              isLoading: false,
-              isInitialized: true
-            });
-          }
-
-          // Set up auth state listener
-          supabase.auth.onAuthStateChange(async (event, session) => {
-            console.log('Auth state change:', event, session?.user?.email);
-            
-            if (event === 'INITIAL_SESSION') {
-              return; // Skip, already handled above
-            }
-            
-            await get().handleAuthStateChange(event, session);
-          });
-          
-        } catch (error) {
-          console.error('Auth initialization error:', error);
-          set({ 
-            user: null,
-            session: null,
-            isAuthenticated: false,
-            isLoading: false,
-            isInitialized: true
-          });
-        }
-      },
-
       handleAuthStateChange: async (event: string, session: Session | null) => {
+        console.log('Auth state change:', event, session?.user?.email);
+        
         if (event === 'SIGNED_IN' && session?.user) {
           console.log('User signed in, fetching profile...');
           
@@ -203,6 +154,56 @@ export const useAuthStore = create<AuthState>()(
         } else if (event === 'TOKEN_REFRESHED' && session) {
           console.log('Token refreshed');
           set({ session });
+        }
+      },
+
+      initialize: async () => {
+        console.log('Auth: Starting initialization...');
+        
+        if (get().isInitialized) {
+          console.log('Auth: Already initialized, skipping');
+          return;
+        }
+        
+        set({ isLoading: true });
+
+        try {
+          // Get initial session
+          const { data: { session: initialSession }, error } = await supabase.auth.getSession();
+          console.log('Initial session check:', initialSession?.user?.email, error);
+          
+          if (initialSession?.user) {
+            console.log('Found existing session, fetching profile...');
+            await get().handleAuthStateChange('SIGNED_IN', initialSession);
+          } else {
+            console.log('No existing session found');
+            set({ 
+              user: null,
+              session: null,
+              isAuthenticated: false,
+              isLoading: false,
+              isInitialized: true
+            });
+          }
+
+          // Set up auth state listener
+          supabase.auth.onAuthStateChange(async (event, session) => {
+            if (event === 'INITIAL_SESSION') {
+              return; // Skip, already handled above
+            }
+            
+            await get().handleAuthStateChange(event, session);
+          });
+          
+        } catch (error) {
+          console.error('Auth initialization error:', error);
+          set({ 
+            user: null,
+            session: null,
+            isAuthenticated: false,
+            isLoading: false,
+            isInitialized: true
+          });
         }
       },
 
