@@ -1,3 +1,4 @@
+
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { supabase } from '@/integrations/supabase/client';
@@ -144,6 +145,20 @@ export const useAuthStore = create<AuthState>()(
               isLoading: false,
               isInitialized: true
             });
+
+            // Force a re-render by triggering a state update
+            setTimeout(() => {
+              console.log('Forcing auth state refresh');
+              const currentState = get();
+              set({ 
+                user: currentState.user, 
+                session: currentState.session, 
+                isAuthenticated: true, 
+                isLoading: false,
+                isInitialized: true
+              });
+            }, 100);
+
           } catch (error) {
             console.error('Error fetching profile:', error);
             
@@ -185,6 +200,8 @@ export const useAuthStore = create<AuthState>()(
         } else if (event === 'TOKEN_REFRESHED' && session) {
           console.log('Token refreshed');
           set({ session });
+        } else {
+          console.log('Other auth event:', event, 'with session:', !!session);
         }
       },
 
@@ -252,7 +269,14 @@ export const useAuthStore = create<AuthState>()(
           }
 
           console.log('Login successful for:', email);
-          // Don't set isLoading to false here, let the auth state change handler do it
+          console.log('Login data:', data);
+          
+          // Manually trigger auth state change if it doesn't happen automatically
+          if (data.session) {
+            console.log('Manually triggering auth state change with session');
+            await get().handleAuthStateChange('SIGNED_IN', data.session);
+          }
+          
           return true;
         } catch (error) {
           console.error('Login error:', error);
