@@ -33,7 +33,6 @@ interface MessageStore {
   isLoading: boolean;
   totalUnreadCount: number;
   error: string | null;
-  itemsWithActiveMessages: Set<string>;
   
   setSelectedConversation: (id: string | null) => void;
   sendMessage: (conversationId: string, text: string) => Promise<void>;
@@ -45,9 +44,6 @@ interface MessageStore {
   rejectConversation: (conversationId: string) => Promise<void>;
   fetchConversations: () => Promise<void>;
   fetchMessages: (conversationId: string) => Promise<void>;
-  getSelectedConversation: () => Conversation | null;
-  hasActiveMessage: (itemId: string) => boolean;
-  completeSwap: (conversationId: string, itemTitle: string, partnerUserId: string) => Promise<void>;
 }
 
 export const useMessageStore = create<MessageStore>((set, get) => ({
@@ -58,7 +54,6 @@ export const useMessageStore = create<MessageStore>((set, get) => ({
   isLoading: false,
   totalUnreadCount: 0,
   error: null,
-  itemsWithActiveMessages: new Set(),
   
   setSelectedConversation: (id) => {
     set({ selectedConversation: id });
@@ -171,10 +166,6 @@ export const useMessageStore = create<MessageStore>((set, get) => ({
 
       if (existingConversation) {
         console.log('Conversation already exists:', existingConversation.id);
-        // Add to active messages set
-        set(state => ({
-          itemsWithActiveMessages: new Set([...state.itemsWithActiveMessages, listingId])
-        }));
         return existingConversation.id;
       }
       
@@ -204,11 +195,6 @@ export const useMessageStore = create<MessageStore>((set, get) => ({
           content: `Hi! I'm interested in your ${itemTitle}.`
         });
 
-      // Add to active messages set
-      set(state => ({
-        itemsWithActiveMessages: new Set([...state.itemsWithActiveMessages, listingId])
-      }));
-
       // Refresh conversations
       get().fetchConversations();
       
@@ -216,55 +202,6 @@ export const useMessageStore = create<MessageStore>((set, get) => ({
     } catch (error) {
       console.error('Error creating conversation:', error);
       return '';
-    }
-  },
-
-  completeSwap: async (conversationId, itemTitle, partnerUserId) => {
-    const { session } = useAuthStore.getState();
-    if (!session?.user) {
-      console.error('User not authenticated');
-      return;
-    }
-
-    try {
-      // Create swap record
-      const { error: swapError } = await supabase
-        .from('swaps')
-        .insert({
-          user1_id: session.user.id,
-          user2_id: partnerUserId,
-          item1_title: itemTitle,
-          item2_title: 'Accepted swap', // This could be more specific if we track what the user offered
-          status: 'completed'
-        });
-
-      if (swapError) {
-        console.error('Error creating swap record:', swapError);
-        return;
-      }
-
-      // Update conversation status
-      set((state) => ({
-        conversations: state.conversations.map(conv =>
-          conv.id === conversationId
-            ? { ...conv, status: 'completed', lastMessage: 'Swap completed successfully!' }
-            : conv
-        )
-      }));
-
-      // Add completion message
-      await supabase
-        .from('messages')
-        .insert({
-          conversation_id: conversationId,
-          sender_id: session.user.id,
-          content: 'Swap completed! Thank you for trading.'
-        });
-
-      // Refresh conversations
-      get().fetchConversations();
-    } catch (error) {
-      console.error('Error completing swap:', error);
     }
   },
 
@@ -316,7 +253,7 @@ export const useMessageStore = create<MessageStore>((set, get) => ({
     const { session } = useAuthStore.getState();
     if (!session?.user) {
       console.log('No authenticated user, clearing conversations');
-      set({ conversations: [], isLoading: false, totalUnreadCount: 0, error: null, itemsWithActiveMessages: new Set() });
+      set({ conversations: [], isLoading: false, totalUnreadCount: 0, error: null });
       return;
     }
 
@@ -337,45 +274,15 @@ export const useMessageStore = create<MessageStore>((set, get) => ({
 
       if (!data || data.length === 0) {
         console.log('No conversations found');
-        set({ conversations: [], isLoading: false, totalUnreadCount: 0, error: null, itemsWithActiveMessages: new Set() });
+        set({ conversations: [], isLoading: false, totalUnreadCount: 0, error: null });
         return;
       }
-
-      // Create set of items with active messages
-      const activeItemTitles = new Set(data.map(conv => conv.item_title).filter(Boolean));
-
-      // Get all unique partner IDs
-      const partnerIds = data.map(conv => {
-        return conv.user1_id === session.user.id ? conv.user2_id : conv.user1_id;
-      }).filter(Boolean);
-
-      // Fetch profiles for all partners
-      const { data: profiles, error: profilesError } = await supabase
-        .from('profiles')
-        .select('id, first_name, last_name, username, avatar')
-        .in('id', partnerIds);
-
-      if (profilesError) {
-        console.error('Error fetching partner profiles:', profilesError);
-      }
-
-      console.log('Fetched partner profiles:', profiles);
 
       let totalUnread = 0;
       // Transform database conversations to UI format
       const conversations: Conversation[] = data.map(conv => {
         const partnerId = conv.user1_id === session.user.id ? conv.user2_id : conv.user1_id;
         const isOwner = conv.user2_id === session.user.id; // Item owner is user2
-        
-        // Find partner profile
-        const partnerProfile = profiles?.find(p => p.id === partnerId);
-        const partnerName = partnerProfile 
-          ? `${partnerProfile.first_name || ''} ${partnerProfile.last_name || ''}`.trim() || partnerProfile.username || 'User'
-          : 'Unknown User';
-        
-        const partnerAvatar = partnerProfile?.avatar || 
-          (partnerProfile?.first_name ? partnerProfile.first_name.charAt(0).toUpperCase() : 
-           partnerProfile?.username ? partnerProfile.username.charAt(0).toUpperCase() : 'U');
         
         let timeDisplay = new Date(conv.created_at).toLocaleDateString();
         if (conv.last_message_time) {
@@ -393,8 +300,8 @@ export const useMessageStore = create<MessageStore>((set, get) => ({
         
         return {
           id: conv.conv_id,
-          partner: partnerName,
-          avatar: partnerAvatar,
+          partner: 'Unknown User', // TODO: In real app, fetch from profiles using partnerId
+          avatar: 'U', // TODO: Fetch from profiles
           lastMessage: conv.last_message || 'No messages yet.',
           time: timeDisplay,
           unread: unreadCount,
@@ -405,13 +312,7 @@ export const useMessageStore = create<MessageStore>((set, get) => ({
       });
 
       console.log('Processed conversations:', conversations);
-      set({ 
-        conversations, 
-        isLoading: false, 
-        totalUnreadCount: totalUnread, 
-        error: null,
-        itemsWithActiveMessages: activeItemTitles
-      });
+      set({ conversations, isLoading: false, totalUnreadCount: totalUnread, error: null });
       
     } catch (error) {
       console.error('Error in fetchConversations:', error);
@@ -458,15 +359,5 @@ export const useMessageStore = create<MessageStore>((set, get) => ({
     } catch (error) {
       console.error('Error fetching messages:', error);
     }
-  },
-
-  getSelectedConversation: () => {
-    const { conversations, selectedConversation } = get();
-    return conversations.find(c => c.id === selectedConversation) || null;
-  },
-
-  hasActiveMessage: (itemId: string) => {
-    const { itemsWithActiveMessages } = get();
-    return itemsWithActiveMessages.has(itemId);
   }
 }));

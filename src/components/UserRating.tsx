@@ -6,7 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { useRatingStore } from "@/stores/ratingStore";
 import { useAuthStore } from "@/stores/authStore";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/components/ui/use-toast";
 import { Star } from "lucide-react";
 
 interface UserRatingProps {
@@ -32,38 +32,30 @@ export const UserRating = ({
   const [hoveredRating, setHoveredRating] = useState(0);
   const [comment, setComment] = useState('');
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!user || rating === 0) return;
 
-    try {
-      await addRating({
-        ratedUserId,
-        ratedUserName,
-        raterUserId: user.id,
-        raterUserName: user.firstName && user.lastName ? `${user.firstName} ${user.lastName}` : user.email || 'Anonymous',
-        rating,
-        comment,
-        itemTitle
-      });
+    addRating({
+      ratedUserId,
+      ratedUserName,
+      raterUserId: user.id,
+      raterUserName: `${user.firstName} ${user.lastName}`,
+      rating,
+      comment,
+      itemTitle
+    });
 
-      toast({
-        title: "Rating Submitted",
-        description: `Thank you for rating ${ratedUserName}!`,
-      });
+    toast({
+      title: "Rating Submitted",
+      description: `Thank you for rating ${ratedUserName}!`,
+    });
 
-      onOpenChange(false);
-      setRating(0);
-      setHoveredRating(0);
-      setComment('');
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to submit rating. Please try again.",
-        variant: "destructive"
-      });
-    }
+    onOpenChange(false);
+    setRating(0);
+    setHoveredRating(0);
+    setComment('');
   };
 
   return (
