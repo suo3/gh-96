@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -15,7 +14,7 @@ interface Item {
   condition: string;
   images?: string[]; // Made optional to match Listing type
   user_id?: string; // Made optional to match Listing type
-  location: string;
+  location?: string; // Made optional to match Listing type
   wanted_items: string[];
   status: string;
   views: number;
@@ -47,13 +46,8 @@ export const ItemGrid = ({ items, onItemClick }: ItemGridProps) => {
     
     if (hasActiveMessage(item.title)) return;
     
-    const userName = item.profiles 
-      ? `${item.profiles.first_name || ''} ${item.profiles.last_name || ''}`.trim() || item.profiles.username || 'Anonymous'
-      : 'Anonymous';
-      
     await createConversationFromSwipe(item.id, item.title, item.user_id || '');
-    setSelectedItem(item);
-    setShowRating(true);
+    // Removed the rating dialog trigger - ratings should only appear after swap completion
   };
 
   return (
@@ -98,7 +92,7 @@ export const ItemGrid = ({ items, onItemClick }: ItemGridProps) => {
                 
                 <div className="flex items-center text-sm text-gray-600 mb-3">
                   <MapPin className="w-4 h-4 mr-1" />
-                  {item.location}
+                  {item.location || 'Location not specified'}
                 </div>
                 
                 <div className="mb-3">
