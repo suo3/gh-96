@@ -1,3 +1,4 @@
+
 import { create } from 'zustand';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuthStore } from './authStore';
@@ -32,6 +33,7 @@ interface MessageStore {
   isLoading: boolean;
   totalUnreadCount: number;
   error: string | null;
+  itemsWithActiveMessages: Set<string>;
   
   setSelectedConversation: (id: string | null) => void;
   sendMessage: (conversationId: string, text: string) => Promise<void>;
@@ -44,6 +46,8 @@ interface MessageStore {
   fetchConversations: () => Promise<void>;
   fetchMessages: (conversationId: string) => Promise<void>;
   getSelectedConversation: () => Conversation | null;
+  hasActiveMessage: (itemId: string) => boolean;
+  completeSwap: (conversationId: string, itemTitle: string, partnerUserId: string) => Promise<void>;
 }
 
 export const useMessageStore = create<MessageStore>((set, get) => ({
@@ -54,6 +58,7 @@ export const useMessageStore = create<MessageStore>((set, get) => ({
   isLoading: false,
   totalUnreadCount: 0,
   error: null,
+  itemsWithActiveMessages: new Set(),
   
   setSelectedConversation: (id) => {
     set({ selectedConversation: id });
@@ -166,6 +171,10 @@ export const useMessageStore = create<MessageStore>((set, get) => ({
 
       if (existingConversation) {
         console.log('Conversation already exists:', existingConversation.id);
+        // Add to active messages set
+        set(state => ({
+          itemsWithActiveMessages: new Set([...state.itemsWithActiveMessages, listingId])
+        }));
         return existingConversation.id;
       }
       
@@ -195,6 +204,11 @@ export const useMessageStore = create<MessageStore>((set, get) => ({
           content: `Hi! I'm interested in your ${itemTitle}.`
         });
 
+      // Add to active messages set
+      set(state => ({
+        itemsWithActiveMessages: new Set([...state.itemsWithActiveMessages, listingId])
+      }));
+
       // Refresh conversations
       get().fetchConversations();
       
@@ -202,6 +216,55 @@ export const useMessageStore = create<MessageStore>((set, get) => ({
     } catch (error) {
       console.error('Error creating conversation:', error);
       return '';
+    }
+  },
+
+  completeSwap: async (conversationId, itemTitle, partnerUserId) => {
+    const { session } = useAuthStore.getState();
+    if (!session?.user) {
+      console.error('User not authenticated');
+      return;
+    }
+
+    try {
+      // Create swap record
+      const { error: swapError } = await supabase
+        .from('swaps')
+        .insert({
+          user1_id: session.user.id,
+          user2_id: partnerUserId,
+          item1_title: itemTitle,
+          item2_title: 'Accepted swap', // This could be more specific if we track what the user offered
+          status: 'completed'
+        });
+
+      if (swapError) {
+        console.error('Error creating swap record:', swapError);
+        return;
+      }
+
+      // Update conversation status
+      set((state) => ({
+        conversations: state.conversations.map(conv =>
+          conv.id === conversationId
+            ? { ...conv, status: 'completed', lastMessage: 'Swap completed successfully!' }
+            : conv
+        )
+      }));
+
+      // Add completion message
+      await supabase
+        .from('messages')
+        .insert({
+          conversation_id: conversationId,
+          sender_id: session.user.id,
+          content: 'Swap completed! Thank you for trading.'
+        });
+
+      // Refresh conversations
+      get().fetchConversations();
+    } catch (error) {
+      console.error('Error completing swap:', error);
     }
   },
 
@@ -253,7 +316,7 @@ export const useMessageStore = create<MessageStore>((set, get) => ({
     const { session } = useAuthStore.getState();
     if (!session?.user) {
       console.log('No authenticated user, clearing conversations');
-      set({ conversations: [], isLoading: false, totalUnreadCount: 0, error: null });
+      set({ conversations: [], isLoading: false, totalUnreadCount: 0, error: null, itemsWithActiveMessages: new Set() });
       return;
     }
 
@@ -274,9 +337,12 @@ export const useMessageStore = create<MessageStore>((set, get) => ({
 
       if (!data || data.length === 0) {
         console.log('No conversations found');
-        set({ conversations: [], isLoading: false, totalUnreadCount: 0, error: null });
+        set({ conversations: [], isLoading: false, totalUnreadCount: 0, error: null, itemsWithActiveMessages: new Set() });
         return;
       }
+
+      // Create set of items with active messages
+      const activeItemTitles = new Set(data.map(conv => conv.item_title).filter(Boolean));
 
       // Get all unique partner IDs
       const partnerIds = data.map(conv => {
@@ -339,7 +405,13 @@ export const useMessageStore = create<MessageStore>((set, get) => ({
       });
 
       console.log('Processed conversations:', conversations);
-      set({ conversations, isLoading: false, totalUnreadCount: totalUnread, error: null });
+      set({ 
+        conversations, 
+        isLoading: false, 
+        totalUnreadCount: totalUnread, 
+        error: null,
+        itemsWithActiveMessages: activeItemTitles
+      });
       
     } catch (error) {
       console.error('Error in fetchConversations:', error);
@@ -391,5 +463,10 @@ export const useMessageStore = create<MessageStore>((set, get) => ({
   getSelectedConversation: () => {
     const { conversations, selectedConversation } = get();
     return conversations.find(c => c.id === selectedConversation) || null;
+  },
+
+  hasActiveMessage: (itemId: string) => {
+    const { itemsWithActiveMessages } = get();
+    return itemsWithActiveMessages.has(itemId);
   }
 }));

@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -18,7 +19,7 @@ interface ItemGridProps {
 export const ItemGrid = ({ items, onItemLike }: ItemGridProps) => {
   const [selectedItem, setSelectedItem] = useState<Listing | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
-  const { createConversationFromSwipe } = useMessageStore();
+  const { createConversationFromSwipe, hasActiveMessage } = useMessageStore();
   const { user } = useAuthStore();
   const { fetchUserRatings, getAverageRating } = useRatingStore();
   const { minRating } = useListingStore();
@@ -66,7 +67,8 @@ export const ItemGrid = ({ items, onItemLike }: ItemGridProps) => {
       return;
     }
 
-    if (item.hasActiveMessage) {
+    const hasActiveMsg = hasActiveMessage(item.title);
+    if (hasActiveMsg) {
       return;
     }
 
@@ -78,7 +80,6 @@ export const ItemGrid = ({ items, onItemLike }: ItemGridProps) => {
       );
 
       if (conversationId) {
-        // Update the item to show it has an active message
         onItemLike(item);
         
         toast({
@@ -150,12 +151,13 @@ export const ItemGrid = ({ items, onItemLike }: ItemGridProps) => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {filteredByRating.map((item) => {
           const userRating = getUserRating(item.user_id);
+          const hasActiveMsg = hasActiveMessage(item.title);
           
           return (
             <Card 
               key={item.id} 
               className={`group hover:shadow-xl transition-all duration-300 hover:scale-105 border-emerald-200 ${
-                item.hasActiveMessage ? 'ring-2 ring-blue-200 bg-blue-50/30' : ''
+                hasActiveMsg ? 'ring-2 ring-blue-200 bg-blue-50/30' : ''
               }`}
             >
               <div className="relative overflow-hidden">
@@ -171,7 +173,7 @@ export const ItemGrid = ({ items, onItemLike }: ItemGridProps) => {
                   <Badge className="bg-emerald-600/90 backdrop-blur-sm">
                     {item.category}
                   </Badge>
-                  {item.hasActiveMessage && (
+                  {hasActiveMsg && (
                     <Badge className="bg-blue-600/90 backdrop-blur-sm text-white">
                       <MessageCircle className="w-3 h-3 mr-1" />
                       Sent
@@ -182,7 +184,7 @@ export const ItemGrid = ({ items, onItemLike }: ItemGridProps) => {
                   className="absolute top-2 left-2 w-10 h-10 rounded-full bg-white/90 hover:bg-white text-red-500 hover:text-red-600 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
                   variant="ghost"
                   onClick={() => handleSwapClick(item)}
-                  disabled={item.hasActiveMessage}
+                  disabled={hasActiveMsg}
                 >
                   <Heart className="w-5 h-5" />
                 </Button>
@@ -232,14 +234,14 @@ export const ItemGrid = ({ items, onItemLike }: ItemGridProps) => {
                     <Button
                       size="sm"
                       className={`${
-                        item.hasActiveMessage 
+                        hasActiveMsg 
                           ? 'bg-gray-400 cursor-not-allowed' 
                           : 'bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600'
                       }`}
                       onClick={() => handleSwapClick(item)}
-                      disabled={item.hasActiveMessage}
+                      disabled={hasActiveMsg}
                     >
-                      {item.hasActiveMessage ? (
+                      {hasActiveMsg ? (
                         <>
                           <MessageCircle className="w-4 h-4 mr-1" />
                           Sent

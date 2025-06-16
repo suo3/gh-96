@@ -2,7 +2,8 @@
 import { useState, useRef } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, Heart, X, Star } from "lucide-react";
+import { MapPin, Heart, X, Star, MessageCircle } from "lucide-react";
+import { useMessageStore } from "@/stores/messageStore";
 
 interface SwipeCardProps {
   item: {
@@ -35,14 +36,18 @@ export const SwipeCard = ({ item, nextItem, onSwipe }: SwipeCardProps) => {
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const [startPos, setStartPos] = useState({ x: 0, y: 0 });
   const cardRef = useRef<HTMLDivElement>(null);
+  const { hasActiveMessage } = useMessageStore();
+
+  const hasActiveSwap = hasActiveMessage(item.title);
 
   const handleMouseDown = (e: React.MouseEvent) => {
+    if (hasActiveSwap) return;
     setIsDragging(true);
     setStartPos({ x: e.clientX, y: e.clientY });
   };
 
   const handleMouseMove = (e: React.MouseEvent) => {
-    if (!isDragging) return;
+    if (!isDragging || hasActiveSwap) return;
     
     const deltaX = e.clientX - startPos.x;
     const deltaY = e.clientY - startPos.y;
@@ -50,7 +55,7 @@ export const SwipeCard = ({ item, nextItem, onSwipe }: SwipeCardProps) => {
   };
 
   const handleMouseUp = () => {
-    if (!isDragging) return;
+    if (!isDragging || hasActiveSwap) return;
     
     const threshold = 100;
     if (Math.abs(dragOffset.x) > threshold) {
@@ -63,13 +68,14 @@ export const SwipeCard = ({ item, nextItem, onSwipe }: SwipeCardProps) => {
   };
 
   const handleTouchStart = (e: React.TouchEvent) => {
+    if (hasActiveSwap) return;
     const touch = e.touches[0];
     setIsDragging(true);
     setStartPos({ x: touch.clientX, y: touch.clientY });
   };
 
   const handleTouchMove = (e: React.TouchEvent) => {
-    if (!isDragging) return;
+    if (!isDragging || hasActiveSwap) return;
     
     const touch = e.touches[0];
     const deltaX = touch.clientX - startPos.x;
@@ -78,7 +84,7 @@ export const SwipeCard = ({ item, nextItem, onSwipe }: SwipeCardProps) => {
   };
 
   const handleTouchEnd = () => {
-    if (!isDragging) return;
+    if (!isDragging || hasActiveSwap) return;
     
     const threshold = 100;
     if (Math.abs(dragOffset.x) > threshold) {
@@ -117,12 +123,16 @@ export const SwipeCard = ({ item, nextItem, onSwipe }: SwipeCardProps) => {
       {/* Current Item */}
       <Card
         ref={cardRef}
-        className={`w-full cursor-grab active:cursor-grabbing transition-all duration-200 border-emerald-200 ${
-          isDragging ? 'scale-105 shadow-2xl' : 'shadow-lg hover:shadow-xl'
+        className={`w-full transition-all duration-200 border-emerald-200 ${
+          hasActiveSwap 
+            ? 'opacity-60 cursor-not-allowed' 
+            : isDragging 
+              ? 'scale-105 shadow-2xl cursor-grabbing' 
+              : 'shadow-lg hover:shadow-xl cursor-grab'
         }`}
         style={{
-          transform: `translateX(${dragOffset.x}px) translateY(${dragOffset.y}px) rotate(${rotation}deg)`,
-          opacity,
+          transform: hasActiveSwap ? 'none' : `translateX(${dragOffset.x}px) translateY(${dragOffset.y}px) rotate(${rotation}deg)`,
+          opacity: hasActiveSwap ? 0.6 : opacity,
         }}
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
@@ -140,8 +150,18 @@ export const SwipeCard = ({ item, nextItem, onSwipe }: SwipeCardProps) => {
             draggable={false}
           />
           
+          {/* Already Swapped Indicator */}
+          {hasActiveSwap && (
+            <div className="absolute inset-0 bg-gray-500/60 rounded-t-lg flex items-center justify-center">
+              <div className="bg-gray-700 text-white px-6 py-3 rounded-full font-bold text-lg flex items-center shadow-lg">
+                <MessageCircle className="w-6 h-6 mr-2" />
+                ALREADY CONTACTED
+              </div>
+            </div>
+          )}
+          
           {/* Swipe Indicators */}
-          {isDragging && (
+          {isDragging && !hasActiveSwap && (
             <>
               <div
                 className={`absolute inset-0 bg-emerald-500/20 rounded-t-lg flex items-center justify-center transition-opacity ${
@@ -212,6 +232,11 @@ export const SwipeCard = ({ item, nextItem, onSwipe }: SwipeCardProps) => {
                 </div>
               </div>
             </div>
+            {hasActiveSwap && (
+              <Badge className="bg-blue-600 text-white">
+                Already Contacted
+              </Badge>
+            )}
           </div>
         </CardContent>
       </Card>
