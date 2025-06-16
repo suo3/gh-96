@@ -14,7 +14,7 @@ interface Item {
   category: string;
   condition: string;
   images?: string[]; // Made optional to match Listing type
-  user_id: string;
+  user_id?: string; // Made optional to match Listing type
   location: string;
   wanted_items: string[];
   status: string;
@@ -51,7 +51,7 @@ export const ItemList = ({ items, onItemClick }: ItemListProps) => {
       ? `${item.profiles.first_name || ''} ${item.profiles.last_name || ''}`.trim() || item.profiles.username || 'Anonymous'
       : 'Anonymous';
       
-    await createConversationFromSwipe(item.id, item.title, item.user_id);
+    await createConversationFromSwipe(item.id, item.title, item.user_id || '');
     setSelectedItem(item);
     setShowRating(true);
   };
@@ -75,7 +75,7 @@ export const ItemList = ({ items, onItemClick }: ItemListProps) => {
                 <div className="flex">
                   <div className="w-48 h-32 relative flex-shrink-0">
                     <img
-                      src={item.images[0] || "/placeholder.svg"}
+                      src={item.images?.[0] || "/placeholder.svg"}
                       alt={item.title}
                       className="w-full h-full object-cover rounded-l-lg"
                     />
@@ -166,7 +166,7 @@ export const ItemList = ({ items, onItemClick }: ItemListProps) => {
         <UserRating
           open={showRating}
           onOpenChange={setShowRating}
-          ratedUserId={selectedItem.user_id}
+          ratedUserId={selectedItem.user_id || ''}
           ratedUserName={selectedItem.profiles 
             ? `${selectedItem.profiles.first_name || ''} ${selectedItem.profiles.last_name || ''}`.trim() || selectedItem.profiles.username || 'Anonymous'
             : 'Anonymous'}
