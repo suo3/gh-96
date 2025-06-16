@@ -40,7 +40,7 @@ export const SwipeCard = ({ item, nextItem, onSwipe }: SwipeCardProps) => {
   const [startPos, setStartPos] = useState({ x: 0, y: 0 });
   const [showRating, setShowRating] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
-  const { hasActiveMessage, createConversation } = useMessageStore();
+  const { hasActiveMessage, createConversationFromSwipe } = useMessageStore();
 
   const hasActiveSwap = hasActiveMessage(item.title);
   const ratedUserId = item.user_id || item.userId || '';
@@ -104,7 +104,7 @@ export const SwipeCard = ({ item, nextItem, onSwipe }: SwipeCardProps) => {
   const handleSwipe = async (direction: 'left' | 'right') => {
     if (direction === 'right') {
       // Create conversation when swiping right
-      await createConversation(ratedUserId, item.user, item.title);
+      await createConversationFromSwipe(ratedUserId, item.title, ratedUserId);
       setShowRating(true);
     }
     onSwipe(direction);

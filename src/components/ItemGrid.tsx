@@ -10,7 +10,7 @@ import { UserRating } from "./UserRating";
 interface Item {
   id: string;
   title: string;
-  description: string;
+  description?: string; // Made optional to match Listing type
   category: string;
   condition: string;
   images: string[];
@@ -40,7 +40,7 @@ interface ItemGridProps {
 export const ItemGrid = ({ items, onItemClick }: ItemGridProps) => {
   const [showRating, setShowRating] = useState(false);
   const [selectedItem, setSelectedItem] = useState<Item | null>(null);
-  const { hasActiveMessage, createConversation } = useMessageStore();
+  const { hasActiveMessage, createConversationFromSwipe } = useMessageStore();
 
   const handleSwapClick = async (e: React.MouseEvent, item: Item) => {
     e.stopPropagation();
@@ -51,7 +51,7 @@ export const ItemGrid = ({ items, onItemClick }: ItemGridProps) => {
       ? `${item.profiles.first_name || ''} ${item.profiles.last_name || ''}`.trim() || item.profiles.username || 'Anonymous'
       : 'Anonymous';
       
-    await createConversation(item.user_id, userName, item.title);
+    await createConversationFromSwipe(item.id, item.title, item.user_id);
     setSelectedItem(item);
     setShowRating(true);
   };
@@ -93,7 +93,7 @@ export const ItemGrid = ({ items, onItemClick }: ItemGridProps) => {
                 </div>
                 
                 <p className="text-gray-600 text-sm mb-3 line-clamp-2">
-                  {item.description}
+                  {item.description || 'No description available'}
                 </p>
                 
                 <div className="flex items-center text-sm text-gray-600 mb-3">
