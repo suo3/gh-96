@@ -1,259 +1,151 @@
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { MapPin, Heart, Star, MessageCircle, Eye } from "lucide-react";
-import { ItemDetailModal } from "./ItemDetailModal";
-import { Listing, useListingStore } from "@/stores/listingStore";
+import { MapPin, Heart, Star } from "lucide-react";
 import { useMessageStore } from "@/stores/messageStore";
-import { useAuthStore } from "@/stores/authStore";
-import { useRatingStore } from "@/stores/ratingStore";
-import { useToast } from "@/hooks/use-toast";
+import { UserRating } from "./UserRating";
 
-interface ItemGridProps {
-  items: Listing[];
-  onItemLike: (item: Listing) => void;
+interface Item {
+  id: string;
+  title: string;
+  description: string;
+  category: string;
+  condition: string;
+  images: string[];
+  user_id: string;
+  location: string;
+  wanted_items: string[];
+  status: string;
+  views: number;
+  likes: number;
+  created_at: string;
+  updated_at: string;
+  profiles?: {
+    id: string;
+    username: string;
+    first_name: string;
+    last_name: string;
+    avatar: string;
+  };
+  distance?: number;
 }
 
-export const ItemGrid = ({ items, onItemLike }: ItemGridProps) => {
-  const [selectedItem, setSelectedItem] = useState<Listing | null>(null);
-  const [modalOpen, setModalOpen] = useState(false);
-  const { createConversationFromSwipe, hasActiveMessage } = useMessageStore();
-  const { user } = useAuthStore();
-  const { fetchUserRatings, getAverageRating } = useRatingStore();
-  const { minRating } = useListingStore();
-  const { toast } = useToast();
+interface ItemGridProps {
+  items: Item[];
+  onItemClick: (item: Item) => void;
+}
 
-  // Fetch ratings for all users when items change
-  useEffect(() => {
-    const userIds = [...new Set(items.map(item => item.user_id).filter(Boolean))];
-    userIds.forEach(userId => {
-      if (userId) {
-        fetchUserRatings(userId);
-      }
-    });
-  }, [items, fetchUserRatings]);
+export const ItemGrid = ({ items, onItemClick }: ItemGridProps) => {
+  const [showRating, setShowRating] = useState(false);
+  const [selectedItem, setSelectedItem] = useState<Item | null>(null);
+  const { hasActiveMessage, createConversation } = useMessageStore();
 
-  // Apply rating filter at component level
-  const filteredByRating = items.filter((item) => {
-    if (minRating <= 0) return true;
-    if (!item.user_id) return true; // Keep items without user_id
-    const userRating = getAverageRating(item.user_id);
-    return userRating >= minRating;
-  });
-
-  const handleDetailsClick = (item: Listing) => {
+  const handleSwapClick = async (e: React.MouseEvent, item: Item) => {
+    e.stopPropagation();
+    
+    if (hasActiveMessage(item.title)) return;
+    
+    const userName = item.profiles 
+      ? `${item.profiles.first_name || ''} ${item.profiles.last_name || ''}`.trim() || item.profiles.username || 'Anonymous'
+      : 'Anonymous';
+      
+    await createConversation(item.user_id, userName, item.title);
     setSelectedItem(item);
-    setModalOpen(true);
-  };
-
-  const handleSwapClick = async (item: Listing) => {
-    if (!user) {
-      toast({
-        title: "Login Required",
-        description: "Please log in to start a conversation.",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    if (item.user_id === user.id) {
-      toast({
-        title: "Cannot swap with yourself",
-        description: "You cannot start a conversation about your own listing.",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    const hasActiveMsg = hasActiveMessage(item.title);
-    if (hasActiveMsg) {
-      return;
-    }
-
-    try {
-      const conversationId = await createConversationFromSwipe(
-        item.id,
-        item.title,
-        item.user_id || ''
-      );
-
-      if (conversationId) {
-        onItemLike(item);
-        
-        toast({
-          title: "Conversation Started!",
-          description: `Started a conversation about "${item.title}".`,
-        });
-      } else {
-        toast({
-          title: "Failed to start conversation",
-          description: "Please try again later.",
-          variant: "destructive"
-        });
-      }
-    } catch (error) {
-      console.error('Error starting conversation:', error);
-      toast({
-        title: "Error",
-        description: "Failed to start conversation. Please try again.",
-        variant: "destructive"
-      });
-    }
-  };
-
-  const getItemImage = (item: Listing) => {
-    if (item.images && item.images.length > 0 && item.images[0]) {
-      return item.images[0];
-    }
-    return "https://images.unsplash.com/photo-1649972904349-6e44c42644a7?w=400&h=300&fit=crop";
-  };
-
-  const getUserDisplayName = (item: Listing) => {
-    return item.profiles?.first_name || item.profiles?.username || 'User';
-  };
-
-  const getUserAvatar = (item: Listing) => {
-    if (item.profiles?.first_name) {
-      return item.profiles.first_name.charAt(0).toUpperCase();
-    }
-    if (item.profiles?.username) {
-      return item.profiles.username.charAt(0).toUpperCase();
-    }
-    return 'U';
-  };
-
-  const getUserRating = (userId: string | undefined) => {
-    if (!userId) return 0;
-    return getAverageRating(userId);
-  };
-
-  const renderStars = (rating: number) => {
-    const stars = [];
-    const fullStars = Math.floor(rating);
-    const hasHalfStar = rating % 1 >= 0.5;
-
-    for (let i = 0; i < 5; i++) {
-      if (i < fullStars) {
-        stars.push(<Star key={i} className="w-4 h-4 text-yellow-400 fill-current" />);
-      } else if (i === fullStars && hasHalfStar) {
-        stars.push(<Star key={i} className="w-4 h-4 text-yellow-400 fill-current opacity-50" />);
-      } else {
-        stars.push(<Star key={i} className="w-4 h-4 text-gray-300" />);
-      }
-    }
-    return stars;
+    setShowRating(true);
   };
 
   return (
     <>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {filteredByRating.map((item) => {
-          const userRating = getUserRating(item.user_id);
-          const hasActiveMsg = hasActiveMessage(item.title);
-          
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {items.map((item) => {
+          const isDisabled = hasActiveMessage(item.title);
+          const userName = item.profiles 
+            ? `${item.profiles.first_name || ''} ${item.profiles.last_name || ''}`.trim() || item.profiles.username || 'Anonymous'
+            : 'Anonymous';
+
           return (
-            <Card 
-              key={item.id} 
-              className={`group hover:shadow-xl transition-all duration-300 hover:scale-105 border-emerald-200 ${
-                hasActiveMsg ? 'ring-2 ring-blue-200 bg-blue-50/30' : ''
-              }`}
+            <Card
+              key={item.id}
+              className="cursor-pointer hover:shadow-lg transition-shadow border-emerald-200"
+              onClick={() => onItemClick(item)}
             >
-              <div className="relative overflow-hidden">
+              <div className="relative">
                 <img
-                  src={getItemImage(item)}
+                  src={item.images[0] || "/placeholder.svg"}
                   alt={item.title}
-                  className="w-full h-48 object-cover transition-transform duration-300 group-hover:scale-110"
-                  onError={(e) => {
-                    e.currentTarget.src = "https://images.unsplash.com/photo-1649972904349-6e44c42644a7?w=400&h=300&fit=crop";
-                  }}
+                  className="w-full h-48 object-cover rounded-t-lg"
                 />
-                <div className="absolute top-2 right-2 flex gap-2">
-                  <Badge className="bg-emerald-600/90 backdrop-blur-sm">
-                    {item.category}
+                {item.distance && (
+                  <Badge className="absolute top-2 left-2 bg-white/90 text-gray-700">
+                    {item.distance.toFixed(1)} mi
                   </Badge>
-                  {hasActiveMsg && (
-                    <Badge className="bg-blue-600/90 backdrop-blur-sm text-white">
-                      <MessageCircle className="w-3 h-3 mr-1" />
-                      Sent
-                    </Badge>
-                  )}
-                </div>
-                <Button
-                  className="absolute top-2 left-2 w-10 h-10 rounded-full bg-white/90 hover:bg-white text-red-500 hover:text-red-600 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
-                  variant="ghost"
-                  onClick={() => handleSwapClick(item)}
-                  disabled={hasActiveMsg}
-                >
-                  <Heart className="w-5 h-5" />
-                </Button>
+                )}
               </div>
+              
               <CardContent className="p-4">
                 <div className="flex items-start justify-between mb-2">
-                  <h3 className="font-semibold text-gray-900 line-clamp-1">{item.title}</h3>
-                  <Badge variant="outline" className="text-xs border-emerald-200">
-                    {item.condition}
+                  <h3 className="font-semibold text-lg text-gray-900">{item.title}</h3>
+                  <Badge className="bg-gradient-to-r from-emerald-500 to-teal-500 text-white">
+                    {item.category}
                   </Badge>
                 </div>
-                <p className="text-sm text-gray-600 mb-3 line-clamp-2">
+                
+                <p className="text-gray-600 text-sm mb-3 line-clamp-2">
                   {item.description}
                 </p>
-                <div className="flex items-center text-sm text-gray-600 mb-2">
+                
+                <div className="flex items-center text-sm text-gray-600 mb-3">
                   <MapPin className="w-4 h-4 mr-1" />
-                  {item.location || "Location not specified"}
+                  {item.location}
                 </div>
-                <div className="flex items-center mb-3">
-                  {renderStars(userRating)}
-                  <span className="text-sm text-gray-600 ml-1">
-                    {userRating > 0 ? `(${userRating})` : '(No ratings)'}
-                  </span>
-                  <div className="flex items-center ml-4 text-sm text-gray-600">
-                    <Eye className="w-4 h-4 mr-1" />
-                    {item.views || 0}
+                
+                <div className="mb-3">
+                  <div className="text-xs font-medium text-gray-900 mb-1">Looking for:</div>
+                  <div className="flex flex-wrap gap-1">
+                    {item.wanted_items.slice(0, 3).map((wanted, index) => (
+                      <Badge key={index} variant="outline" className="text-xs border-emerald-200">
+                        {wanted}
+                      </Badge>
+                    ))}
+                    {item.wanted_items.length > 3 && (
+                      <Badge variant="outline" className="text-xs border-emerald-200">
+                        +{item.wanted_items.length - 3} more
+                      </Badge>
+                    )}
                   </div>
                 </div>
+                
                 <div className="flex items-center justify-between">
                   <div className="flex items-center">
                     <div className="w-6 h-6 bg-gradient-to-br from-emerald-400 to-teal-400 rounded-full flex items-center justify-center text-white font-semibold text-xs mr-2">
-                      {getUserAvatar(item)}
+                      {userName.charAt(0)}
                     </div>
-                    <div className="text-sm text-gray-900">
-                      {getUserDisplayName(item)}
+                    <div>
+                      <div className="text-xs font-medium text-gray-900">{userName}</div>
+                      <div className="flex items-center">
+                        {[...Array(5)].map((_, i) => (
+                          <Star key={i} className={`w-2 h-2 ${i < 4 ? 'text-yellow-400 fill-current' : 'text-gray-300'}`} />
+                        ))}
+                        <span className="text-xs text-gray-600 ml-1">(4.0)</span>
+                      </div>
                     </div>
                   </div>
-                  <div className="flex gap-2">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => handleDetailsClick(item)}
-                      className="border-emerald-200"
-                    >
-                      Details
-                    </Button>
-                    <Button
-                      size="sm"
-                      className={`${
-                        hasActiveMsg 
-                          ? 'bg-gray-400 cursor-not-allowed' 
-                          : 'bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600'
-                      }`}
-                      onClick={() => handleSwapClick(item)}
-                      disabled={hasActiveMsg}
-                    >
-                      {hasActiveMsg ? (
-                        <>
-                          <MessageCircle className="w-4 h-4 mr-1" />
-                          Sent
-                        </>
-                      ) : (
-                        <>
-                          <Heart className="w-4 h-4 mr-1" />
-                          Swap
-                        </>
-                      )}
-                    </Button>
-                  </div>
+                  
+                  <Button
+                    size="sm"
+                    onClick={(e) => handleSwapClick(e, item)}
+                    disabled={isDisabled}
+                    className={`${
+                      isDisabled 
+                        ? 'bg-gray-400 cursor-not-allowed' 
+                        : 'bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600'
+                    } text-white`}
+                  >
+                    <Heart className="w-4 h-4 mr-1" />
+                    {isDisabled ? 'Contacted' : 'Swap'}
+                  </Button>
                 </div>
               </CardContent>
             </Card>
@@ -261,12 +153,17 @@ export const ItemGrid = ({ items, onItemLike }: ItemGridProps) => {
         })}
       </div>
 
-      <ItemDetailModal
-        item={selectedItem}
-        open={modalOpen}
-        onOpenChange={setModalOpen}
-        onItemLike={handleSwapClick}
-      />
+      {selectedItem && (
+        <UserRating
+          open={showRating}
+          onOpenChange={setShowRating}
+          ratedUserId={selectedItem.user_id}
+          ratedUserName={selectedItem.profiles 
+            ? `${selectedItem.profiles.first_name || ''} ${selectedItem.profiles.last_name || ''}`.trim() || selectedItem.profiles.username || 'Anonymous'
+            : 'Anonymous'}
+          itemTitle={selectedItem.title}
+        />
+      )}
     </>
   );
 };
