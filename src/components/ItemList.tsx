@@ -13,7 +13,7 @@ interface Item {
   description?: string; // Made optional to match Listing type
   category: string;
   condition: string;
-  images: string[];
+  images?: string[]; // Made optional to match Listing type
   user_id: string;
   location: string;
   wanted_items: string[];
