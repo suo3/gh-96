@@ -4,10 +4,9 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowLeft, Award, MapPin, Calendar, Star, User, MessageSquare, List, Crown } from "lucide-react";
+import { ArrowLeft, Award, MapPin, Calendar, Star, User, List, Crown } from "lucide-react";
 import { ProfileEditor } from "./ProfileEditor";
 import { ListingManager } from "./ListingManager";
-import { ConversationManager } from "./ConversationManager";
 import { HistoryTab } from "./HistoryTab";
 import { useAuthStore } from "@/stores/authStore";
 
@@ -114,7 +113,7 @@ export const UserProfile = ({ onBack }: UserProfileProps) => {
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="profile" className="flex items-center">
               <User className="w-4 h-4 mr-2" />
               Profile
@@ -122,10 +121,6 @@ export const UserProfile = ({ onBack }: UserProfileProps) => {
             <TabsTrigger value="listings" className="flex items-center">
               <List className="w-4 h-4 mr-2" />
               Listings
-            </TabsTrigger>
-            <TabsTrigger value="conversations" className="flex items-center">
-              <MessageSquare className="w-4 h-4 mr-2" />
-              Conversations
             </TabsTrigger>
             <TabsTrigger value="history" className="flex items-center">
               <Award className="w-4 h-4 mr-2" />
@@ -139,10 +134,6 @@ export const UserProfile = ({ onBack }: UserProfileProps) => {
 
           <TabsContent value="listings" className="mt-6">
             <ListingManager />
-          </TabsContent>
-
-          <TabsContent value="conversations" className="mt-6">
-            <ConversationManager />
           </TabsContent>
 
           <TabsContent value="history" className="mt-6">
