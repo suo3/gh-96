@@ -1,3 +1,4 @@
+
 import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -36,7 +37,7 @@ export const ConversationManager = () => {
       description: `Your swap with ${partner} has been marked as complete.`,
     });
     
-    // Show rating dialog immediately after marking complete
+    // Show rating dialog
     const conversation = conversations.find(c => c.id === conversationId);
     if (conversation) {
       setSelectedConversation(conversation);
@@ -153,29 +154,6 @@ export const ConversationManager = () => {
                   Reject Swap
                 </Button>
               )}
-            </div>
-          )}
-
-          {conversation.status === 'completed' && (
-            <div className="space-y-2">
-              <div className="bg-green-50 border border-green-200 rounded-lg p-3">
-                <div className="flex items-center text-green-700">
-                  <CheckCircle className="w-4 h-4 mr-2" />
-                  <span className="text-sm font-medium">Swap completed successfully!</span>
-                </div>
-              </div>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  setSelectedConversation(conversation);
-                  setShowRating(true);
-                }}
-                className="w-full"
-              >
-                <Star className="w-4 h-4 mr-2" />
-                Rate {conversation.partner}
-              </Button>
             </div>
           )}
 
