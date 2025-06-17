@@ -1,4 +1,3 @@
-
 import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -30,8 +29,12 @@ export const ConversationManager = () => {
     fetchConversations();
   }, [fetchConversations]);
 
-  const handleMarkComplete = (conversationId: string, partner: string, item: string) => {
-    markConversationComplete(conversationId);
+  const handleMarkComplete = async (conversationId: string, partner: string, item: string) => {
+    await markConversationComplete(conversationId);
+    
+    // Refresh conversations to get updated status
+    await fetchConversations();
+    
     toast({
       title: "Conversation Completed",
       description: `Your swap with ${partner} has been marked as complete.`,
@@ -47,6 +50,10 @@ export const ConversationManager = () => {
 
   const handleRejectSwap = async (conversationId: string, partner: string, item: string) => {
     await rejectConversation(conversationId);
+    
+    // Refresh conversations to get updated status
+    await fetchConversations();
+    
     toast({
       title: "Swap Request Rejected",
       description: `You have rejected the swap request from ${partner} for "${item}".`,
@@ -102,6 +109,12 @@ export const ConversationManager = () => {
                 Owner
               </Badge>
             )}
+            {conversation.status === 'completed' && (
+              <div className="ml-2 flex items-center text-green-600">
+                <CheckCircle className="w-4 h-4 mr-1" />
+                <span className="text-xs font-medium">Completed</span>
+              </div>
+            )}
           </CardTitle>
           <Badge 
             variant={
@@ -109,8 +122,13 @@ export const ConversationManager = () => {
               conversation.status === 'rejected' ? 'destructive' :
               conversation.status === 'matched' ? 'default' : 'outline'
             }
+            className={
+              conversation.status === 'completed' ? 'bg-green-100 text-green-800' : ''
+            }
           >
-            {conversation.status === 'rejected' ? 'REJECTED' : conversation.status}
+            {conversation.status === 'rejected' ? 'REJECTED' : 
+             conversation.status === 'completed' ? 'COMPLETED' : 
+             conversation.status}
           </Badge>
         </div>
       </CardHeader>
@@ -131,6 +149,15 @@ export const ConversationManager = () => {
             <Badge variant="destructive" className="text-xs">
               {conversation.unread} unread messages
             </Badge>
+          )}
+
+          {conversation.status === 'completed' && (
+            <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+              <div className="flex items-center text-green-700">
+                <CheckCircle className="w-4 h-4 mr-2" />
+                <span className="text-sm font-medium">This swap has been completed successfully!</span>
+              </div>
+            </div>
           )}
 
           {conversation.status === 'matched' && (

@@ -1,11 +1,10 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { ArrowLeft, Send, MessageCircle } from "lucide-react";
+import { ArrowLeft, Send, MessageCircle, CheckCircle } from "lucide-react";
 import { ConversationList } from "./ConversationList";
 import { MessageBubble } from "./MessageBubble";
 import { TypingIndicator } from "./TypingIndicator";
@@ -121,6 +120,7 @@ export const MessagesPanel = ({ onBack, onLogin }: MessagesPanelProps) => {
 
   // Get messages for the selected conversation
   const currentMessages = selectedChat ? messages[selectedChat] || [] : [];
+  const selectedConversation = conversations.find(c => c.id === selectedChat);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50">
@@ -179,9 +179,27 @@ export const MessagesPanel = ({ onBack, onLogin }: MessagesPanelProps) => {
             {selectedChat ? (
               <>
                 <CardHeader className="border-b">
-                  <CardTitle className="text-lg">
-                    {conversations.find(c => c.id === selectedChat)?.partner || 'Chat'}
-                  </CardTitle>
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-lg flex items-center">
+                      {selectedConversation?.partner || 'Chat'}
+                      {selectedConversation?.status === 'completed' && (
+                        <div className="ml-3 flex items-center text-green-600">
+                          <CheckCircle className="w-5 h-5 mr-1" />
+                          <span className="text-sm font-medium">Swap Completed</span>
+                        </div>
+                      )}
+                    </CardTitle>
+                    {selectedConversation?.status === 'completed' && (
+                      <Badge variant="secondary" className="bg-green-100 text-green-800">
+                        Completed
+                      </Badge>
+                    )}
+                  </div>
+                  {selectedConversation?.item && (
+                    <p className="text-sm text-gray-600">
+                      Item: {selectedConversation.item}
+                    </p>
+                  )}
                 </CardHeader>
                 <CardContent className="p-0 flex flex-col h-[500px]">
                   {/* Messages Area */}
@@ -190,6 +208,16 @@ export const MessagesPanel = ({ onBack, onLogin }: MessagesPanelProps) => {
                       {currentMessages.map((message) => (
                         <MessageBubble key={message.id} message={message} />
                       ))}
+                      {selectedConversation?.status === 'completed' && (
+                        <div className="flex justify-center">
+                          <div className="bg-green-50 border border-green-200 rounded-lg px-4 py-3 flex items-center text-green-700">
+                            <CheckCircle className="w-5 h-5 mr-2" />
+                            <span className="text-sm font-medium">
+                              This swap has been completed successfully!
+                            </span>
+                          </div>
+                        </div>
+                      )}
                       {isTyping && <TypingIndicator />}
                     </div>
                   </ScrollArea>
@@ -202,12 +230,14 @@ export const MessagesPanel = ({ onBack, onLogin }: MessagesPanelProps) => {
                         onChange={(e) => setNewMessage(e.target.value)}
                         onKeyPress={handleKeyPress}
                         placeholder={
-                          isAuthenticated
+                          selectedConversation?.status === 'completed'
+                            ? "This swap is completed"
+                            : isAuthenticated
                             ? "Type your message..."
                             : "Login to send messages"
                         }
                         className="flex-1"
-                        disabled={!isAuthenticated || isTyping}
+                        disabled={!isAuthenticated || isTyping || selectedConversation?.status === 'completed'}
                       />
                       <Button
                         onClick={
@@ -215,15 +245,25 @@ export const MessagesPanel = ({ onBack, onLogin }: MessagesPanelProps) => {
                             ? handleSendMessage
                             : onLogin
                         }
-                        disabled={!isAuthenticated || !newMessage.trim() || isTyping}
+                        disabled={!isAuthenticated || !newMessage.trim() || isTyping || selectedConversation?.status === 'completed'}
                         className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600"
                         type="button"
-                        title={!isAuthenticated ? "You need to login to send" : ""}
+                        title={
+                          selectedConversation?.status === 'completed' 
+                            ? "This swap is completed" 
+                            : !isAuthenticated 
+                            ? "You need to login to send" 
+                            : ""
+                        }
                       >
                         <Send className="w-4 h-4" />
                       </Button>
                     </div>
-                    {!isAuthenticated && (
+                    {selectedConversation?.status === 'completed' ? (
+                      <div className="text-xs text-gray-500 mt-2">
+                        This conversation is completed. No more messages can be sent.
+                      </div>
+                    ) : !isAuthenticated && (
                       <div className="text-xs text-gray-500 mt-2">
                         <span>
                           <Button

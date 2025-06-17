@@ -1,4 +1,3 @@
-
 import { create } from 'zustand';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuthStore } from './authStore';
@@ -43,7 +42,7 @@ interface MessageStore {
   setTyping: (conversationId: string, isTyping: boolean) => void;
   addConversation: (conversation: Conversation) => void;
   createConversationFromSwipe: (listingId: string, itemTitle: string, listingOwnerId: string) => Promise<string>;
-  markConversationComplete: (conversationId: string) => void;
+  markConversationComplete: (conversationId: string) => Promise<void>;
   rejectConversation: (conversationId: string) => Promise<void>;
   fetchConversations: () => Promise<void>;
   fetchMessages: (conversationId: string) => Promise<void>;
@@ -296,14 +295,40 @@ export const useMessageStore = create<MessageStore>((set, get) => ({
     }
   },
 
-  markConversationComplete: (conversationId) => {
-    set((state) => ({
-      conversations: state.conversations.map(conv =>
-        conv.id === conversationId
-          ? { ...conv, status: 'completed', lastMessage: 'Swap completed successfully!' }
-          : conv
-      )
-    }));
+  markConversationComplete: async (conversationId) => {
+    const { session } = useAuthStore.getState();
+    if (!session?.user) {
+      console.error('User not authenticated');
+      return;
+    }
+
+    try {
+      // Add completion message to the conversation
+      const { error: messageError } = await supabase
+        .from('messages')
+        .insert({
+          conversation_id: conversationId,
+          sender_id: session.user.id,
+          content: 'This swap has been marked as complete!'
+        });
+
+      if (messageError) {
+        console.error('Error adding completion message:', messageError);
+      }
+
+      // Update local state immediately
+      set((state) => ({
+        conversations: state.conversations.map(conv =>
+          conv.id === conversationId
+            ? { ...conv, status: 'completed', lastMessage: 'This swap has been marked as complete!' }
+            : conv
+        )
+      }));
+
+      console.log('Conversation marked as complete:', conversationId);
+    } catch (error) {
+      console.error('Error marking conversation complete:', error);
+    }
   },
 
   rejectConversation: async (conversationId) => {
@@ -314,16 +339,6 @@ export const useMessageStore = create<MessageStore>((set, get) => ({
     }
 
     try {
-      // Update conversation status in database if needed
-      // For now, we'll just update local state
-      set((state) => ({
-        conversations: state.conversations.map(conv =>
-          conv.id === conversationId
-            ? { ...conv, status: 'rejected', lastMessage: 'Swap request rejected' }
-            : conv
-        )
-      }));
-
       // Add rejection message
       await supabase
         .from('messages')
@@ -333,8 +348,15 @@ export const useMessageStore = create<MessageStore>((set, get) => ({
           content: 'I have declined this swap request.'
         });
 
-      // Refresh conversations
-      get().fetchConversations();
+      // Update local state
+      set((state) => ({
+        conversations: state.conversations.map(conv =>
+          conv.id === conversationId
+            ? { ...conv, status: 'rejected', lastMessage: 'Swap request rejected' }
+            : conv
+        )
+      }));
+
     } catch (error) {
       console.error('Error rejecting conversation:', error);
     }
