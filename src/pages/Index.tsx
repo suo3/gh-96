@@ -123,7 +123,7 @@ const Index = () => {
   };
 
   // Get filtered items
-  const items = filteredListings();
+  const items = filteredListings;
   const [currentItemIndex, setCurrentItemIndex] = useState(0);
 
   const handleSwipe = async (direction: 'left' | 'right') => {

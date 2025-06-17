@@ -70,30 +70,34 @@ export const PostItemDialog = ({ open, onOpenChange }: PostItemDialogProps) => {
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     console.log('Form submitted with values:', values);
+    setIsPending(true);
     
-    const success = await addListing({
-      title: values.title,
-      description: values.description,
-      category: values.category,
-      condition: values.condition,
-      location: values.location,
-      wanted_items: values.wantedItems ? [values.wantedItems] : [],
-      images: []
-    });
+    try {
+      await addListing({
+        title: values.title,
+        description: values.description,
+        category: values.category,
+        condition: values.condition,
+        location: values.location,
+        wanted_items: values.wantedItems ? [values.wantedItems] : [],
+        images: []
+      });
 
-    if (success) {
       toast({
         title: "Item Posted!",
         description: "Your item has been successfully posted to the marketplace.",
       });
       form.reset();
       onOpenChange(false);
-    } else {
+    } catch (error) {
+      console.error('Error posting item:', error);
       toast({
         title: "Error",
         description: "Failed to post your item. Please try again.",
         variant: "destructive"
       });
+    } finally {
+      setIsPending(false);
     }
   };
 
