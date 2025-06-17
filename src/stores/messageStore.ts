@@ -103,17 +103,20 @@ export const useMessageStore = create<MessageStore>((set, get) => ({
     }
 
     try {
+      console.log('Attempting to delete message:', messageId);
+      
       // Delete message from database
       const { error } = await supabase
         .from('messages')
         .delete()
-        .eq('id', messageId)
-        .eq('sender_id', session.user.id); // Only allow deleting own messages
+        .eq('id', messageId);
 
       if (error) {
         console.error('Error deleting message:', error);
         return;
       }
+
+      console.log('Message deleted successfully:', messageId);
 
       // Refresh messages and conversations to get latest state
       get().fetchMessages(conversationId);
@@ -132,6 +135,8 @@ export const useMessageStore = create<MessageStore>((set, get) => ({
     }
 
     try {
+      console.log('Attempting to delete conversation:', conversationId);
+      
       // First delete all messages in the conversation
       const { error: messagesError } = await supabase
         .from('messages')
@@ -143,17 +148,20 @@ export const useMessageStore = create<MessageStore>((set, get) => ({
         return;
       }
 
+      console.log('Messages deleted successfully for conversation:', conversationId);
+
       // Then delete the conversation
       const { error: conversationError } = await supabase
         .from('conversations')
         .delete()
-        .eq('id', conversationId)
-        .or(`user1_id.eq.${session.user.id},user2_id.eq.${session.user.id}`); // Only allow deleting own conversations
+        .eq('id', conversationId);
 
       if (conversationError) {
         console.error('Error deleting conversation:', conversationError);
         return;
       }
+
+      console.log('Conversation deleted successfully:', conversationId);
 
       // Update local state - remove the conversation and its messages
       set(state => {
