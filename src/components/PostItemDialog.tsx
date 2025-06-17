@@ -28,6 +28,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/components/ui/use-toast";
 import { useListingStore } from "@/stores/listingStore";
+import { useLocationDetection } from "@/hooks/useLocationDetection";
+import { ImageUpload } from "./ImageUpload";
+import { MapPin, Loader2 } from "lucide-react";
 
 const formSchema = z.object({
   title: z.string().min(2, {
@@ -44,6 +47,9 @@ const formSchema = z.object({
     message: "Location must be at least 2 characters.",
   }),
   wantedItems: z.string().optional(),
+  images: z.array(z.string()).max(4, {
+    message: "You can upload up to 4 images.",
+  }).optional(),
 });
 
 interface PostItemDialogProps {
@@ -55,6 +61,7 @@ export const PostItemDialog = ({ open, onOpenChange }: PostItemDialogProps) => {
   const { addListing } = useListingStore();
   const { toast } = useToast();
   const [isPending, setIsPending] = useState(false);
+  const { detectLocation, isDetecting, detectedLocation } = useLocationDetection();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -65,8 +72,20 @@ export const PostItemDialog = ({ open, onOpenChange }: PostItemDialogProps) => {
       condition: "",
       location: "",
       wantedItems: "",
+      images: [],
     },
   });
+
+  const handleDetectLocation = async () => {
+    const location = await detectLocation();
+    if (location) {
+      form.setValue("location", location);
+    }
+  };
+
+  const handleImageUpload = (imageUrls: string[]) => {
+    form.setValue("images", imageUrls);
+  };
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     console.log('Form submitted with values:', values);
@@ -80,7 +99,7 @@ export const PostItemDialog = ({ open, onOpenChange }: PostItemDialogProps) => {
         condition: values.condition,
         location: values.location,
         wanted_items: values.wantedItems ? [values.wantedItems] : [],
-        images: []
+        images: values.images || []
       });
 
       toast({
@@ -106,7 +125,7 @@ export const PostItemDialog = ({ open, onOpenChange }: PostItemDialogProps) => {
       <DialogTrigger asChild>
         <Button variant="outline">Post Item</Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Post a New Item</DialogTitle>
           <DialogDescription>
@@ -128,6 +147,7 @@ export const PostItemDialog = ({ open, onOpenChange }: PostItemDialogProps) => {
                 </FormItem>
               )}
             />
+            
             <FormField
               control={form.control}
               name="description"
@@ -145,6 +165,28 @@ export const PostItemDialog = ({ open, onOpenChange }: PostItemDialogProps) => {
                 </FormItem>
               )}
             />
+            
+            <FormField
+              control={form.control}
+              name="images"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Images (Up to 4)</FormLabel>
+                  <FormControl>
+                    <ImageUpload
+                      onImagesUploaded={handleImageUpload}
+                      maxImages={4}
+                      currentImages={field.value || []}
+                    />
+                  </FormControl>
+                  <FormDescription>
+                    Upload up to 4 images of your item
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
             <FormField
               control={form.control}
               name="category"
@@ -170,6 +212,7 @@ export const PostItemDialog = ({ open, onOpenChange }: PostItemDialogProps) => {
                 </FormItem>
               )}
             />
+            
             <FormField
               control={form.control}
               name="condition"
@@ -193,19 +236,41 @@ export const PostItemDialog = ({ open, onOpenChange }: PostItemDialogProps) => {
                 </FormItem>
               )}
             />
+            
             <FormField
               control={form.control}
               name="location"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Location</FormLabel>
-                  <FormControl>
-                    <Input placeholder="City, State" {...field} />
-                  </FormControl>
+                  <div className="flex gap-2">
+                    <FormControl>
+                      <Input placeholder="City, State" {...field} />
+                    </FormControl>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      onClick={handleDetectLocation}
+                      disabled={isDetecting}
+                    >
+                      {isDetecting ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <MapPin className="w-4 h-4" />
+                      )}
+                    </Button>
+                  </div>
+                  {detectedLocation && (
+                    <FormDescription className="text-green-600">
+                      Location detected: {detectedLocation}
+                    </FormDescription>
+                  )}
                   <FormMessage />
                 </FormItem>
               )}
             />
+            
             <FormField
               control={form.control}
               name="wantedItems"
@@ -219,6 +284,7 @@ export const PostItemDialog = ({ open, onOpenChange }: PostItemDialogProps) => {
                 </FormItem>
               )}
             />
+            
             <DialogFooter>
               <Button type="submit" disabled={isPending}>
                 {isPending ? "Posting..." : "Post Item"}

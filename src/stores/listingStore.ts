@@ -122,16 +122,25 @@ export const useListingStore = create<ListingStore>((set, get) => ({
     set({ isLoading: true, error: null });
     
     try {
+      console.log('Adding listing with data:', listing);
+      
       const { data, error } = await supabase
         .from('listings')
         .insert({
           ...listing,
-          user_id: session.user.id
+          user_id: session.user.id,
+          images: listing.images || [],
+          wanted_items: listing.wanted_items || []
         })
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase error:', error);
+        throw error;
+      }
+
+      console.log('Listing created successfully:', data);
 
       set(state => ({
         listings: [data, ...state.listings],
