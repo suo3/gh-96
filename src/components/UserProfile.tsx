@@ -9,6 +9,7 @@ import { ProfileEditor } from "./ProfileEditor";
 import { ListingManager } from "./ListingManager";
 import { HistoryTab } from "./HistoryTab";
 import { UserRatingDisplay } from "./UserRatingDisplay";
+import { AllRatingsModal } from "./AllRatingsModal";
 import { useAuthStore } from "@/stores/authStore";
 import { useRatingStore } from "@/stores/ratingStore";
 import { useEffect } from "react";
@@ -21,6 +22,7 @@ export const UserProfile = ({ onBack }: UserProfileProps) => {
   const { user } = useAuthStore();
   const { userRatings, fetchUserRatings } = useRatingStore();
   const [activeTab, setActiveTab] = useState("profile");
+  const [showAllRatings, setShowAllRatings] = useState(false);
 
   useEffect(() => {
     if (user?.id) {
@@ -161,7 +163,11 @@ export const UserProfile = ({ onBack }: UserProfileProps) => {
                 ))}
                 {ratings.length > 3 && (
                   <div className="text-center">
-                    <Button variant="outline" size="sm">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => setShowAllRatings(true)}
+                    >
                       View All {ratings.length} Ratings
                     </Button>
                   </div>
@@ -201,6 +207,12 @@ export const UserProfile = ({ onBack }: UserProfileProps) => {
           </TabsContent>
         </Tabs>
       </main>
+
+      <AllRatingsModal
+        userId={user.id}
+        open={showAllRatings}
+        onOpenChange={setShowAllRatings}
+      />
     </div>
   );
 };
