@@ -399,7 +399,7 @@ export const useMessageStore = create<MessageStore>((set, get) => ({
           item: conv.item_title || 'Unknown Item',
           status: 'matched' as const,
           isOwner,
-          listingId: conv.listing_id
+          listingId: (conv as any).listing_id // Cast to access listing_id if it exists
         };
       });
 

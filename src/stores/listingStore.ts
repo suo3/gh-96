@@ -42,6 +42,13 @@ interface ListingStore {
   isLoading: boolean;
   error: string | null;
   
+  // New properties needed by FilterPanel and other components
+  swapFilter: string;
+  maxDistance: number;
+  searchTerm: string;
+  userLocation: { lat: number; lng: number } | null;
+  filteredListings: Listing[];
+  
   // Actions
   setListings: (listings: Listing[]) => void;
   addListing: (listing: Omit<Listing, 'id' | 'created_at' | 'updated_at'>) => Promise<void>;
@@ -49,6 +56,8 @@ interface ListingStore {
   deleteListing: (id: string) => Promise<void>;
   fetchListings: () => Promise<void>;
   fetchUserListings: () => Promise<void>;
+  getUserListings: (userId: string) => Promise<Listing[]>;
+  markAsCompleted: (id: string) => Promise<void>;
   incrementViews: (id: string) => Promise<void>;
   incrementLikes: (id: string) => Promise<void>;
   
@@ -63,6 +72,15 @@ interface ListingStore {
   setMinRating: (rating: number) => void;
   clearFilters: () => void;
   
+  // New methods needed by components
+  setSwapFilter: (filter: string) => void;
+  setMaxDistance: (distance: number) => void;
+  setSearchTerm: (term: string) => void;
+  setUserLocation: (location: { lat: number; lng: number } | null) => void;
+  setCurrentUserId: (userId: string) => void;
+  geocodeLocation: (address: string) => Promise<{ lat: number; lng: number } | null>;
+  markItemAsMessaged: (itemId: string) => void;
+  
   // Computed
   getFilteredListings: () => Listing[];
   
@@ -75,18 +93,25 @@ export const useListingStore = create<ListingStore>((set, get) => ({
   listings: [],
   userListings: [],
   categories: ['Electronics', 'Clothing', 'Books', 'Home & Garden', 'Sports', 'Music', 'Vehicles', 'Other'],
-  selectedCategory: '',
+  selectedCategory: 'all',
   searchQuery: '',
   selectedLocation: '',
-  selectedCondition: '',
+  selectedCondition: 'all',
   priceRange: [0, 1000],
-  sortBy: 'recent',
+  sortBy: 'newest',
   viewMode: 'grid',
   minRating: 0,
   isLoading: false,
   error: null,
+  
+  // New properties
+  swapFilter: 'all',
+  maxDistance: 25,
+  searchTerm: '',
+  userLocation: null,
+  filteredListings: [],
 
-  setListings: (listings) => set({ listings }),
+  setListings: (listings) => set({ listings, filteredListings: listings }),
 
   addListing: async (listing) => {
     const { session } = useAuthStore.getState();
@@ -111,6 +136,7 @@ export const useListingStore = create<ListingStore>((set, get) => ({
       set(state => ({
         listings: [data, ...state.listings],
         userListings: [data, ...state.userListings],
+        filteredListings: [data, ...state.filteredListings],
         isLoading: false
       }));
     } catch (error) {
@@ -140,6 +166,9 @@ export const useListingStore = create<ListingStore>((set, get) => ({
         userListings: state.userListings.map(listing => 
           listing.id === id ? { ...listing, ...data } : listing
         ),
+        filteredListings: state.filteredListings.map(listing => 
+          listing.id === id ? { ...listing, ...data } : listing
+        ),
         isLoading: false
       }));
     } catch (error) {
@@ -163,6 +192,7 @@ export const useListingStore = create<ListingStore>((set, get) => ({
       set(state => ({
         listings: state.listings.filter(listing => listing.id !== id),
         userListings: state.userListings.filter(listing => listing.id !== id),
+        filteredListings: state.filteredListings.filter(listing => listing.id !== id),
         isLoading: false
       }));
     } catch (error) {
@@ -172,21 +202,34 @@ export const useListingStore = create<ListingStore>((set, get) => ({
     }
   },
 
+  getUserListings: async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('listings')
+        .select('*')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      return data || [];
+    } catch (error) {
+      console.error('Error fetching user listings:', error);
+      return [];
+    }
+  },
+
+  markAsCompleted: async (id: string) => {
+    await get().updateListing(id, { status: 'completed' });
+  },
+
   fetchListings: async () => {
     set({ isLoading: true, error: null });
     
     try {
+      // First fetch listings without profiles to avoid the relation error
       const { data, error } = await supabase
         .from('listings')
-        .select(`
-          *,
-          profiles!listings_user_id_fkey (
-            first_name,
-            last_name,
-            username,
-            avatar
-          )
-        `)
+        .select('*')
         .eq('status', 'active')
         .order('created_at', { ascending: false });
 
@@ -215,6 +258,7 @@ export const useListingStore = create<ListingStore>((set, get) => ({
 
       set({ 
         listings: listingsWithConversationStatus,
+        filteredListings: listingsWithConversationStatus,
         isLoading: false 
       });
     } catch (error) {
@@ -256,16 +300,15 @@ export const useListingStore = create<ListingStore>((set, get) => ({
 
   incrementViews: async (id) => {
     try {
-      const { error } = await supabase.rpc('increment_listing_views', { listing_id: id });
-      
-      if (error) {
-        console.error('Error incrementing views:', error);
-        return;
-      }
-
-      // Update local state
+      // For now, just update locally since the RPC function doesn't exist
+      // TODO: Create increment_listing_views RPC function in database
       set(state => ({
         listings: state.listings.map(listing =>
+          listing.id === id 
+            ? { ...listing, views: (listing.views || 0) + 1 }
+            : listing
+        ),
+        filteredListings: state.filteredListings.map(listing =>
           listing.id === id 
             ? { ...listing, views: (listing.views || 0) + 1 }
             : listing
@@ -278,16 +321,15 @@ export const useListingStore = create<ListingStore>((set, get) => ({
 
   incrementLikes: async (id) => {
     try {
-      const { error } = await supabase.rpc('increment_listing_likes', { listing_id: id });
-      
-      if (error) {
-        console.error('Error incrementing likes:', error);
-        return;
-      }
-
-      // Update local state
+      // For now, just update locally since the RPC function doesn't exist
+      // TODO: Create increment_listing_likes RPC function in database
       set(state => ({
         listings: state.listings.map(listing =>
+          listing.id === id 
+            ? { ...listing, likes: (listing.likes || 0) + 1 }
+            : listing
+        ),
+        filteredListings: state.filteredListings.map(listing =>
           listing.id === id 
             ? { ...listing, likes: (listing.likes || 0) + 1 }
             : listing
@@ -308,14 +350,52 @@ export const useListingStore = create<ListingStore>((set, get) => ({
   setViewMode: (mode) => set({ viewMode: mode }),
   setMinRating: (rating) => set({ minRating: rating }),
 
+  // New setters
+  setSwapFilter: (filter) => set({ swapFilter: filter }),
+  setMaxDistance: (distance) => set({ maxDistance: distance }),
+  setSearchTerm: (term) => set({ searchTerm: term }),
+  setUserLocation: (location) => set({ userLocation: location }),
+  setCurrentUserId: (userId) => {
+    // This might be handled differently depending on your auth system
+    console.log('Setting current user ID:', userId);
+  },
+
+  geocodeLocation: async (address: string) => {
+    // Mock geocoding for now - in production you'd use a real geocoding service
+    try {
+      // Return mock coordinates for now
+      return { lat: 37.7749, lng: -122.4194 }; // San Francisco coordinates
+    } catch (error) {
+      console.error('Error geocoding location:', error);
+      return null;
+    }
+  },
+
+  markItemAsMessaged: (itemId: string) => {
+    set(state => ({
+      listings: state.listings.map(listing =>
+        listing.id === itemId 
+          ? { ...listing, hasActiveMessage: true }
+          : listing
+      ),
+      filteredListings: state.filteredListings.map(listing =>
+        listing.id === itemId 
+          ? { ...listing, hasActiveMessage: true }
+          : listing
+      )
+    }));
+  },
+
   clearFilters: () => set({
-    selectedCategory: '',
+    selectedCategory: 'all',
     searchQuery: '',
     selectedLocation: '',
-    selectedCondition: '',
+    selectedCondition: 'all',
     priceRange: [0, 1000],
-    sortBy: 'recent',
-    minRating: 0
+    sortBy: 'newest',
+    minRating: 0,
+    swapFilter: 'all',
+    searchTerm: ''
   }),
 
   getFilteredListings: () => {
@@ -323,7 +403,7 @@ export const useListingStore = create<ListingStore>((set, get) => ({
     let filtered = [...state.listings];
 
     // Apply filters
-    if (state.selectedCategory) {
+    if (state.selectedCategory && state.selectedCategory !== 'all') {
       filtered = filtered.filter(item => item.category === state.selectedCategory);
     }
 
@@ -331,7 +411,18 @@ export const useListingStore = create<ListingStore>((set, get) => ({
       const query = state.searchQuery.toLowerCase();
       filtered = filtered.filter(item => 
         item.title.toLowerCase().includes(query) ||
-        item.description.toLowerCase().includes(query) ||
+        item.description?.toLowerCase().includes(query) ||
+        (item.wanted_items && item.wanted_items.some(wanted => 
+          wanted.toLowerCase().includes(query)
+        ))
+      );
+    }
+
+    if (state.searchTerm) {
+      const query = state.searchTerm.toLowerCase();
+      filtered = filtered.filter(item => 
+        item.title.toLowerCase().includes(query) ||
+        item.description?.toLowerCase().includes(query) ||
         (item.wanted_items && item.wanted_items.some(wanted => 
           wanted.toLowerCase().includes(query)
         ))
@@ -344,8 +435,14 @@ export const useListingStore = create<ListingStore>((set, get) => ({
       );
     }
 
-    if (state.selectedCondition) {
+    if (state.selectedCondition && state.selectedCondition !== 'all') {
       filtered = filtered.filter(item => item.condition === state.selectedCondition);
+    }
+
+    if (state.swapFilter === 'unswapped') {
+      filtered = filtered.filter(item => !item.hasActiveMessage);
+    } else if (state.swapFilter === 'swapped') {
+      filtered = filtered.filter(item => item.hasActiveMessage);
     }
 
     // Apply sorting
@@ -356,7 +453,15 @@ export const useListingStore = create<ListingStore>((set, get) => ({
       case 'views':
         filtered.sort((a, b) => (b.views || 0) - (a.views || 0));
         break;
-      case 'recent':
+      case 'title':
+        filtered.sort((a, b) => a.title.localeCompare(b.title));
+        break;
+      case 'oldest':
+        filtered.sort((a, b) => 
+          new Date(a.created_at || '').getTime() - new Date(b.created_at || '').getTime()
+        );
+        break;
+      case 'newest':
       default:
         filtered.sort((a, b) => 
           new Date(b.created_at || '').getTime() - new Date(a.created_at || '').getTime()
@@ -370,6 +475,11 @@ export const useListingStore = create<ListingStore>((set, get) => ({
   updateListingConversationStatus: (listingId, hasActiveMessage) => {
     set(state => ({
       listings: state.listings.map(listing =>
+        listing.id === listingId 
+          ? { ...listing, hasActiveMessage }
+          : listing
+      ),
+      filteredListings: state.filteredListings.map(listing =>
         listing.id === listingId 
           ? { ...listing, hasActiveMessage }
           : listing
@@ -398,7 +508,10 @@ export const useListingStore = create<ListingStore>((set, get) => ({
         })
       );
 
-      set({ listings: updatedListings });
+      set({ 
+        listings: updatedListings,
+        filteredListings: updatedListings
+      });
     } catch (error) {
       console.error('Error updating conversation statuses:', error);
     }
