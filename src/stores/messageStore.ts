@@ -1,4 +1,3 @@
-
 import { create } from 'zustand';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuthStore } from './authStore';
@@ -36,6 +35,7 @@ interface MessageStore {
   
   setSelectedConversation: (id: string | null) => void;
   sendMessage: (conversationId: string, text: string) => Promise<void>;
+  deleteMessage: (messageId: string, conversationId: string) => Promise<void>;
   markAsRead: (conversationId: string) => Promise<void>;
   setTyping: (conversationId: string, isTyping: boolean) => void;
   addConversation: (conversation: Conversation) => void;
@@ -91,6 +91,35 @@ export const useMessageStore = create<MessageStore>((set, get) => ({
 
     } catch (error) {
       console.error('Error sending message:', error);
+    }
+  },
+  
+  deleteMessage: async (messageId, conversationId) => {
+    const { session } = useAuthStore.getState();
+    if (!session?.user) {
+      console.error('User not authenticated');
+      return;
+    }
+
+    try {
+      // Delete message from database
+      const { error } = await supabase
+        .from('messages')
+        .delete()
+        .eq('id', messageId)
+        .eq('sender_id', session.user.id); // Only allow deleting own messages
+
+      if (error) {
+        console.error('Error deleting message:', error);
+        return;
+      }
+
+      // Refresh messages and conversations to get latest state
+      get().fetchMessages(conversationId);
+      get().fetchConversations();
+
+    } catch (error) {
+      console.error('Error deleting message:', error);
     }
   },
   
