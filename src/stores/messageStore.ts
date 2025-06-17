@@ -36,6 +36,7 @@ interface MessageStore {
   setSelectedConversation: (id: string | null) => void;
   sendMessage: (conversationId: string, text: string) => Promise<void>;
   deleteMessage: (messageId: string, conversationId: string) => Promise<void>;
+  deleteConversation: (conversationId: string) => Promise<void>;
   markAsRead: (conversationId: string) => Promise<void>;
   setTyping: (conversationId: string, isTyping: boolean) => void;
   addConversation: (conversation: Conversation) => void;
@@ -120,6 +121,55 @@ export const useMessageStore = create<MessageStore>((set, get) => ({
 
     } catch (error) {
       console.error('Error deleting message:', error);
+    }
+  },
+  
+  deleteConversation: async (conversationId) => {
+    const { session } = useAuthStore.getState();
+    if (!session?.user) {
+      console.error('User not authenticated');
+      return;
+    }
+
+    try {
+      // First delete all messages in the conversation
+      const { error: messagesError } = await supabase
+        .from('messages')
+        .delete()
+        .eq('conversation_id', conversationId);
+
+      if (messagesError) {
+        console.error('Error deleting messages:', messagesError);
+        return;
+      }
+
+      // Then delete the conversation
+      const { error: conversationError } = await supabase
+        .from('conversations')
+        .delete()
+        .eq('id', conversationId)
+        .or(`user1_id.eq.${session.user.id},user2_id.eq.${session.user.id}`); // Only allow deleting own conversations
+
+      if (conversationError) {
+        console.error('Error deleting conversation:', conversationError);
+        return;
+      }
+
+      // Update local state - remove the conversation and its messages
+      set(state => {
+        const updatedConversations = state.conversations.filter(c => c.id !== conversationId);
+        const updatedMessages = { ...state.messages };
+        delete updatedMessages[conversationId];
+        
+        return {
+          conversations: updatedConversations,
+          messages: updatedMessages,
+          selectedConversation: state.selectedConversation === conversationId ? null : state.selectedConversation
+        };
+      });
+
+    } catch (error) {
+      console.error('Error deleting conversation:', error);
     }
   },
   
