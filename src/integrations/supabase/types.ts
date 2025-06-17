@@ -14,6 +14,7 @@ export type Database = {
           created_at: string | null
           id: string
           item_title: string | null
+          listing_id: string | null
           updated_at: string | null
           user1_id: string
           user2_id: string
@@ -22,6 +23,7 @@ export type Database = {
           created_at?: string | null
           id?: string
           item_title?: string | null
+          listing_id?: string | null
           updated_at?: string | null
           user1_id: string
           user2_id: string
@@ -30,11 +32,20 @@ export type Database = {
           created_at?: string | null
           id?: string
           item_title?: string | null
+          listing_id?: string | null
           updated_at?: string | null
           user1_id?: string
           user2_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "conversations_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       listings: {
         Row: {
@@ -329,6 +340,10 @@ export type Database = {
           last_message_time: string
           unread_count: number
         }[]
+      }
+      listing_has_active_conversation: {
+        Args: { listing_uuid: string }
+        Returns: boolean
       }
     }
     Enums: {

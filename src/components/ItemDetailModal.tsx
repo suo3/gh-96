@@ -1,4 +1,3 @@
-
 import { useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
@@ -20,10 +19,10 @@ interface ItemDetailModalProps {
 }
 
 export const ItemDetailModal = ({ item, open, onOpenChange, onItemLike }: ItemDetailModalProps) => {
-  const { createConversationFromSwipe } = useMessageStore();
+  const { createConversationFromSwipe, checkListingHasActiveConversation } = useMessageStore();
   const { user } = useAuthStore();
   const { fetchUserRatings, getAverageRating } = useRatingStore();
-  const { incrementViews } = useListingStore();
+  const { incrementViews, updateListingConversationStatus } = useListingStore();
   const { toast } = useToast();
 
   // Fetch ratings when item changes
@@ -62,7 +61,14 @@ export const ItemDetailModal = ({ item, open, onOpenChange, onItemLike }: ItemDe
       return;
     }
 
-    if (item.hasActiveMessage) {
+    // Check if listing already has an active conversation
+    const hasActiveConversation = await checkListingHasActiveConversation(item.id);
+    if (hasActiveConversation) {
+      toast({
+        title: "Conversation already exists",
+        description: "This item already has an active conversation.",
+        variant: "destructive"
+      });
       return;
     }
 
@@ -74,8 +80,11 @@ export const ItemDetailModal = ({ item, open, onOpenChange, onItemLike }: ItemDe
       );
 
       if (conversationId) {
+        // Update the conversation status for this listing
+        updateListingConversationStatus(item.id, true);
+        
         // Update the item to show it has an active message
-        onItemLike(item);
+        onItemLike({ ...item, hasActiveMessage: true });
         
         toast({
           title: "Conversation Started!",
@@ -210,7 +219,7 @@ export const ItemDetailModal = ({ item, open, onOpenChange, onItemLike }: ItemDe
               {item.hasActiveMessage && (
                 <Badge variant="secondary" className="bg-blue-100 text-blue-800">
                   <MessageCircle className="w-3 h-3 mr-1" />
-                  Message Sent
+                  Active Conversation
                 </Badge>
               )}
             </div>
@@ -283,7 +292,7 @@ export const ItemDetailModal = ({ item, open, onOpenChange, onItemLike }: ItemDe
                 {item.hasActiveMessage ? (
                   <>
                     <MessageCircle className="w-4 h-4 mr-2" />
-                    Message Sent
+                    Active Conversation
                   </>
                 ) : (
                   <>

@@ -1,3 +1,4 @@
+
 import { create } from 'zustand';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuthStore } from './authStore';
@@ -22,6 +23,7 @@ export interface Conversation {
   status: 'matched' | 'pending' | 'completed' | 'rejected';
   isTyping?: boolean;
   isOwner?: boolean;
+  listingId?: string;
 }
 
 interface MessageStore {
@@ -45,6 +47,7 @@ interface MessageStore {
   rejectConversation: (conversationId: string) => Promise<void>;
   fetchConversations: () => Promise<void>;
   fetchMessages: (conversationId: string) => Promise<void>;
+  checkListingHasActiveConversation: (listingId: string) => Promise<boolean>;
 }
 
 export const useMessageStore = create<MessageStore>((set, get) => ({
@@ -239,11 +242,11 @@ export const useMessageStore = create<MessageStore>((set, get) => ({
     try {
       console.log('Creating conversation for listing:', { listingId, itemTitle, listingOwnerId });
       
-      // Check if conversation already exists between these users for this item
+      // Check if conversation already exists for this listing
       const { data: existingConversation, error: checkError } = await supabase
         .from('conversations')
         .select('id')
-        .eq('item_title', itemTitle)
+        .eq('listing_id', listingId)
         .or(`and(user1_id.eq.${session.user.id},user2_id.eq.${listingOwnerId}),and(user1_id.eq.${listingOwnerId},user2_id.eq.${session.user.id})`)
         .maybeSingle();
 
@@ -261,7 +264,8 @@ export const useMessageStore = create<MessageStore>((set, get) => ({
         .insert({
           user1_id: session.user.id,
           user2_id: listingOwnerId,
-          item_title: itemTitle
+          item_title: itemTitle,
+          listing_id: listingId
         })
         .select()
         .single();
@@ -394,7 +398,8 @@ export const useMessageStore = create<MessageStore>((set, get) => ({
           unread: unreadCount,
           item: conv.item_title || 'Unknown Item',
           status: 'matched' as const,
-          isOwner
+          isOwner,
+          listingId: conv.listing_id
         };
       });
 
@@ -445,6 +450,23 @@ export const useMessageStore = create<MessageStore>((set, get) => ({
 
     } catch (error) {
       console.error('Error fetching messages:', error);
+    }
+  },
+
+  checkListingHasActiveConversation: async (listingId) => {
+    try {
+      const { data, error } = await supabase
+        .rpc('listing_has_active_conversation', { listing_uuid: listingId });
+
+      if (error) {
+        console.error('Error checking listing conversation:', error);
+        return false;
+      }
+
+      return data || false;
+    } catch (error) {
+      console.error('Error in checkListingHasActiveConversation:', error);
+      return false;
     }
   }
 }));

@@ -1,723 +1,406 @@
+
 import { create } from 'zustand';
 import { supabase } from '@/integrations/supabase/client';
-import { persist } from 'zustand/middleware';
-import { useAuthStore } from '@/stores/authStore';
+import { useAuthStore } from './authStore';
 
 export interface Listing {
   id: string;
   title: string;
-  description?: string;
+  description: string;
   category: string;
   condition: string;
-  images?: string[];
+  location: string;
+  images: string[];
+  wanted_items: string[];
   user_id?: string;
-  location?: string;
-  wanted_items?: string[];
-  status?: string;
-  views?: number;
-  likes?: number;
   created_at?: string;
   updated_at?: string;
+  likes?: number;
+  views?: number;
+  status?: string;
   profiles?: {
-    username?: string;
-    avatar?: string;
     first_name?: string;
     last_name?: string;
+    username?: string;
+    avatar?: string;
   };
   hasActiveMessage?: boolean;
-  coordinates?: {
-    lat: number;
-    lng: number;
-  };
-  distance?: number; // Distance from user in miles
-  isOwnItem?: boolean; // Flag to indicate if this is user's own item
 }
 
-interface ListingState {
+interface ListingStore {
   listings: Listing[];
-  loading: boolean;
-  error: string | null;
-  searchTerm: string;
+  userListings: Listing[];
+  categories: string[];
   selectedCategory: string;
+  searchQuery: string;
+  selectedLocation: string;
   selectedCondition: string;
+  priceRange: [number, number];
   sortBy: string;
-  swapFilter: 'all' | 'swapped' | 'unswapped';
-  maxDistance: number;
+  viewMode: 'grid' | 'list';
   minRating: number;
-  userLocation: { lat: number; lng: number } | null;
-  currentUserId: string | null;
+  isLoading: boolean;
+  error: string | null;
   
-  setSearchTerm: (term: string) => void;
-  setSelectedCategory: (category: string) => void;
-  setSelectedCondition: (condition: string) => void;
-  setSortBy: (sort: string) => void;
-  setSwapFilter: (filter: 'all' | 'swapped' | 'unswapped') => void;
-  setMaxDistance: (distance: number) => void;
-  setMinRating: (rating: number) => void;
-  setCurrentUserId: (userId: string | null) => void;
-  setUserLocation: (location: { lat: number; lng: number } | null) => void;
-  fetchListings: () => Promise<void>;
-  fetchUserListings: (userId: string) => Promise<void>;
-  getUserListings: (userId: string) => Promise<Listing[]>;
-  createListing: (listing: Omit<Listing, 'id' | 'created_at' | 'updated_at'>) => Promise<Listing>;
-  updateListing: (id: string, updates: Partial<Listing>) => Promise<void>;
+  // Actions
+  setListings: (listings: Listing[]) => void;
+  addListing: (listing: Omit<Listing, 'id' | 'created_at' | 'updated_at'>) => Promise<void>;
+  updateListing: (id: string, listing: Partial<Listing>) => Promise<void>;
   deleteListing: (id: string) => Promise<void>;
-  markAsCompleted: (id: string) => Promise<void>;
-  markItemAsMessaged: (itemId: string) => void;
-  filteredListings: () => Listing[];
-  geocodeLocation: (location: string) => Promise<{ lat: number; lng: number } | null>;
-  calculateDistance: (lat1: number, lng1: number, lat2: number, lng2: number) => number;
+  fetchListings: () => Promise<void>;
+  fetchUserListings: () => Promise<void>;
   incrementViews: (id: string) => Promise<void>;
-  addListing: (listingData: Omit<Listing, 'id' | 'createdAt' | 'updatedAt' | 'views' | 'likes'>) => Promise<boolean>;
-  incrementSwapCount: () => Promise<boolean>;
+  incrementLikes: (id: string) => Promise<void>;
+  
+  // Filters
+  setSelectedCategory: (category: string) => void;
+  setSearchQuery: (query: string) => void;
+  setSelectedLocation: (location: string) => void;
+  setSelectedCondition: (condition: string) => void;
+  setPriceRange: (range: [number, number]) => void;
+  setSortBy: (sortBy: string) => void;
+  setViewMode: (mode: 'grid' | 'list') => void;
+  setMinRating: (rating: number) => void;
+  clearFilters: () => void;
+  
+  // Computed
+  getFilteredListings: () => Listing[];
+  
+  // New method for conversation tracking
+  updateListingConversationStatus: (listingId: string, hasActiveMessage: boolean) => void;
+  checkAndUpdateConversationStatuses: () => Promise<void>;
 }
 
-export const useListingStore = create<ListingState>()(
-  persist(
-    (set, get) => ({
-      listings: [],
-      loading: false,
-      error: null,
-      searchTerm: '',
-      selectedCategory: 'all',
-      selectedCondition: 'all',
-      sortBy: 'distance', // Default to distance sorting
-      swapFilter: 'all',
-      maxDistance: 25, // Default to 25 miles
-      minRating: 0, // Default to 0 (no minimum rating)
-      userLocation: null,
-      currentUserId: null,
+export const useListingStore = create<ListingStore>((set, get) => ({
+  listings: [],
+  userListings: [],
+  categories: ['Electronics', 'Clothing', 'Books', 'Home & Garden', 'Sports', 'Music', 'Vehicles', 'Other'],
+  selectedCategory: '',
+  searchQuery: '',
+  selectedLocation: '',
+  selectedCondition: '',
+  priceRange: [0, 1000],
+  sortBy: 'recent',
+  viewMode: 'grid',
+  minRating: 0,
+  isLoading: false,
+  error: null,
 
-      setSearchTerm: (term) => set({ searchTerm: term }),
-      setSelectedCategory: (category) => set({ selectedCategory: category }),
-      setSelectedCondition: (condition) => set({ selectedCondition: condition }),
-      setSortBy: (sort) => set({ sortBy: sort }),
-      setSwapFilter: (filter) => set({ swapFilter: filter }),
-      setMaxDistance: (distance) => set({ maxDistance: distance }),
-      setMinRating: (rating) => set({ minRating: rating }),
-      setCurrentUserId: (userId) => set({ currentUserId: userId }),
-      setUserLocation: (location) => {
-        set({ userLocation: location });
-        // If user location is set and we don't have a specific sort preference, default to distance
-        const { sortBy } = get();
-        if (location && sortBy === 'newest') {
-          set({ sortBy: 'distance' });
-        }
-        // Refresh listings when user location changes to update distances
-        if (location) {
-          get().fetchListings();
-        }
-      },
+  setListings: (listings) => set({ listings }),
 
-      geocodeLocation: async (location: string) => {
-        try {
-          // Using a simple geocoding approach - in production, you'd want to use a proper geocoding service
-          // For now, we'll use some mock coordinates for common cities
-          const cityCoords: { [key: string]: { lat: number; lng: number } } = {
-            'seattle, wa': { lat: 47.6062, lng: -122.3321 },
-            'new york, ny': { lat: 40.7128, lng: -74.0060 },
-            'los angeles, ca': { lat: 34.0522, lng: -118.2437 },
-            'chicago, il': { lat: 41.8781, lng: -87.6298 },
-            'houston, tx': { lat: 29.7604, lng: -95.3698 },
-            'phoenix, az': { lat: 33.4484, lng: -112.0740 },
-            'philadelphia, pa': { lat: 39.9526, lng: -75.1652 },
-            'san antonio, tx': { lat: 29.4241, lng: -98.4936 },
-            'san diego, ca': { lat: 32.7157, lng: -117.1611 },
-            'dallas, tx': { lat: 32.7767, lng: -96.7970 }
-          };
+  addListing: async (listing) => {
+    const { session } = useAuthStore.getState();
+    if (!session?.user) {
+      throw new Error('User not authenticated');
+    }
 
-          const normalizedLocation = location.toLowerCase().trim();
-          return cityCoords[normalizedLocation] || null;
-        } catch (error) {
-          console.error('Error geocoding location:', error);
-          return null;
-        }
-      },
+    set({ isLoading: true, error: null });
+    
+    try {
+      const { data, error } = await supabase
+        .from('listings')
+        .insert({
+          ...listing,
+          user_id: session.user.id
+        })
+        .select()
+        .single();
 
-      calculateDistance: (lat1: number, lng1: number, lat2: number, lng2: number) => {
-        const R = 3959; // Radius of the Earth in miles
-        const dLat = (lat2 - lat1) * Math.PI / 180;
-        const dLng = (lng2 - lng1) * Math.PI / 180;
-        const a = 
-          Math.sin(dLat/2) * Math.sin(dLat/2) +
-          Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
-          Math.sin(dLng/2) * Math.sin(dLng/2);
-        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-        return R * c; // Distance in miles
-      },
+      if (error) throw error;
 
-      fetchListings: async () => {
-        console.log('=== FETCH LISTINGS START ===');
-        set({ loading: true, error: null });
-        
-        try {
-          // Fetch only active listings (exclude completed items)
-          const { data: listingsData, error: listingsError } = await supabase
-            .from('listings')
-            .select('*')
-            .eq('status', 'active')
-            .order('created_at', { ascending: false });
+      set(state => ({
+        listings: [data, ...state.listings],
+        userListings: [data, ...state.userListings],
+        isLoading: false
+      }));
+    } catch (error) {
+      console.error('Error adding listing:', error);
+      set({ error: error instanceof Error ? error.message : 'Failed to add listing', isLoading: false });
+      throw error;
+    }
+  },
 
-          console.log('Raw listings data:', listingsData);
-          console.log('Listings error:', listingsError);
+  updateListing: async (id, updatedListing) => {
+    set({ isLoading: true, error: null });
+    
+    try {
+      const { data, error } = await supabase
+        .from('listings')
+        .update(updatedListing)
+        .eq('id', id)
+        .select()
+        .single();
 
-          if (listingsError) {
-            console.error('Supabase error:', listingsError);
-            throw listingsError;
-          }
+      if (error) throw error;
 
-          // Get unique user IDs from listings
-          const userIds = [...new Set(listingsData?.map(listing => listing.user_id).filter(Boolean) || [])];
-          
-          // Fetch profiles for all user IDs
-          const { data: profilesData, error: profilesError } = await supabase
-            .from('profiles')
-            .select('id, username, first_name, last_name, avatar')
-            .in('id', userIds);
+      set(state => ({
+        listings: state.listings.map(listing => 
+          listing.id === id ? { ...listing, ...data } : listing
+        ),
+        userListings: state.userListings.map(listing => 
+          listing.id === id ? { ...listing, ...data } : listing
+        ),
+        isLoading: false
+      }));
+    } catch (error) {
+      console.error('Error updating listing:', error);
+      set({ error: error instanceof Error ? error.message : 'Failed to update listing', isLoading: false });
+      throw error;
+    }
+  },
 
-          console.log('Profiles data:', profilesData);
-          console.log('Profiles error:', profilesError);
+  deleteListing: async (id) => {
+    set({ isLoading: true, error: null });
+    
+    try {
+      const { error } = await supabase
+        .from('listings')
+        .delete()
+        .eq('id', id);
 
-          if (profilesError) {
-            console.error('Profiles error:', profilesError);
-            // Don't throw, just log and continue with empty profiles
-          }
+      if (error) throw error;
 
-          // Create a map of user profiles for quick lookup
-          const profilesMap = new Map();
-          (profilesData || []).forEach(profile => {
-            profilesMap.set(profile.id, profile);
-          });
+      set(state => ({
+        listings: state.listings.filter(listing => listing.id !== id),
+        userListings: state.userListings.filter(listing => listing.id !== id),
+        isLoading: false
+      }));
+    } catch (error) {
+      console.error('Error deleting listing:', error);
+      set({ error: error instanceof Error ? error.message : 'Failed to delete listing', isLoading: false });
+      throw error;
+    }
+  },
 
-          console.log('Fetched listings from database:', listingsData);
-          
-          const { geocodeLocation, calculateDistance, userLocation, currentUserId } = get();
-          
-          // Transform the data and add coordinates/distance
-          const transformedListings = await Promise.all((listingsData || []).map(async (listing) => {
-            const coordinates = listing.location ? await geocodeLocation(listing.location) : null;
-            let distance = undefined;
+  fetchListings: async () => {
+    set({ isLoading: true, error: null });
+    
+    try {
+      const { data, error } = await supabase
+        .from('listings')
+        .select(`
+          *,
+          profiles!listings_user_id_fkey (
+            first_name,
+            last_name,
+            username,
+            avatar
+          )
+        `)
+        .eq('status', 'active')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      // Check conversation status for each listing
+      const listingsWithConversationStatus = await Promise.all(
+        (data || []).map(async (listing) => {
+          try {
+            const { data: hasConversation } = await supabase
+              .rpc('listing_has_active_conversation', { listing_uuid: listing.id });
             
-            if (coordinates && userLocation) {
-              distance = calculateDistance(
-                userLocation.lat, 
-                userLocation.lng, 
-                coordinates.lat, 
-                coordinates.lng
-              );
-              console.log(`Distance for ${listing.title}: ${distance} miles`);
-            }
-
-            // Check if this is the user's own item
-            const isOwnItem = currentUserId ? listing.user_id === currentUserId : false;
-
-            // Get profile for this listing
-            const profile = listing.user_id ? profilesMap.get(listing.user_id) : null;
-
             return {
               ...listing,
-              profiles: profile || {
-                username: 'Anonymous User',
-                first_name: 'Anonymous',
-                last_name: 'User',
-                avatar: 'A'
-              },
-              coordinates,
-              distance,
-              isOwnItem
+              hasActiveMessage: hasConversation || false
             };
-          }));
-
-          console.log('Transformed listings:', transformedListings);
-          set({ listings: transformedListings, loading: false });
-        } catch (error) {
-          console.error('Error fetching listings:', error);
-          set({ error: 'Failed to fetch listings', loading: false });
-        }
-        
-        console.log('=== FETCH LISTINGS END ===');
-      },
-
-      fetchUserListings: async (userId: string) => {
-        set({ loading: true, error: null });
-        
-        try {
-          const { data, error } = await supabase
-            .from('listings')
-            .select('*')
-            .eq('user_id', userId)
-            .order('created_at', { ascending: false });
-
-          if (error) throw error;
-
-          const transformedListings = (data || []).map(listing => ({
-            ...listing,
-            profiles: {
-              username: 'Your Profile',
-              first_name: 'Your',
-              last_name: 'Profile',
-              avatar: 'Y'
-            }
-          }));
-
-          set({ listings: transformedListings, loading: false });
-        } catch (error) {
-          console.error('Error fetching user listings:', error);
-          set({ error: 'Failed to fetch user listings', loading: false });
-        }
-      },
-
-      getUserListings: async (userId: string) => {
-        try {
-          const { data, error } = await supabase
-            .from('listings')
-            .select('*')
-            .eq('user_id', userId)
-            .order('created_at', { ascending: false });
-
-          if (error) throw error;
-          
-          return (data || []).map(listing => ({
-            ...listing,
-            profiles: {
-              username: 'Your Profile',
-              first_name: 'Your',
-              last_name: 'Profile',
-              avatar: 'Y'
-            }
-          }));
-        } catch (error) {
-          console.error('Error getting user listings:', error);
-          return [];
-        }
-      },
-
-      createListing: async (listing) => {
-        console.log('=== CREATELIST FUNCTION START ===');
-        console.log('Input listing data:', listing);
-        
-        set({ loading: true, error: null });
-        
-        try {
-          console.log('About to call supabase.from("listings").insert()...');
-          console.log('Supabase client:', supabase);
-          
-          const insertData = {
-            ...listing,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-          };
-          
-          console.log('Insert data being sent:', insertData);
-          
-          const { data, error } = await supabase
-            .from('listings')
-            .insert([insertData])
-            .select()
-            .single();
-          
-          console.log('Insert with select result - data:', data, 'error:', error);
-
-          if (error) {
-            console.error('Insert error:', error);
-            console.error('Error code:', error.code);
-            console.error('Error message:', error.message);
-            console.error('Error details:', error.details);
-            console.error('Error hint:', error.hint);
-            throw error;
+          } catch (error) {
+            console.error(`Error checking conversation for listing ${listing.id}:`, error);
+            return {
+              ...listing,
+              hasActiveMessage: false
+            };
           }
+        })
+      );
 
-          console.log('Successfully created listing:', data);
-
-          // Add the new listing to the store
-          set((state) => ({
-            listings: [data, ...state.listings],
-            loading: false
-          }));
-
-          console.log('Updated state with new listing');
-          console.log('=== CREATELIST FUNCTION END SUCCESS ===');
-          return data;
-        } catch (error) {
-          console.error('=== CREATELIST FUNCTION ERROR ===');
-          console.error('Error details:', error);
-          console.error('Error message:', error?.message);
-          console.error('Error code:', error?.code);
-          console.error('Error hint:', error?.hint);
-          console.error('Error details field:', error?.details);
-          set({ error: 'Failed to create listing', loading: false });
-          throw error;
-        }
-      },
-
-      updateListing: async (id, updates) => {
-        set({ loading: true, error: null });
-        
-        try {
-          const { data, error } = await supabase
-            .from('listings')
-            .update(updates)
-            .eq('id', id)
-            .select()
-            .single();
-
-          if (error) throw error;
-
-          set((state) => ({
-            listings: state.listings.map((listing) =>
-              listing.id === id ? { ...listing, ...data } : listing
-            ),
-            loading: false
-          }));
-        } catch (error) {
-          console.error('Error updating listing:', error);
-          set({ error: 'Failed to update listing', loading: false });
-        }
-      },
-
-      deleteListing: async (id) => {
-        set({ loading: true, error: null });
-        
-        try {
-          const { error } = await supabase
-            .from('listings')
-            .delete()
-            .eq('id', id);
-
-          if (error) throw error;
-
-          set((state) => ({
-            listings: state.listings.filter((listing) => listing.id !== id),
-            loading: false
-          }));
-        } catch (error) {
-          console.error('Error deleting listing:', error);
-          set({ error: 'Failed to delete listing', loading: false });
-        }
-      },
-
-      markAsCompleted: async (id) => {
-        set({ loading: true, error: null });
-        
-        try {
-          const { error } = await supabase
-            .from('listings')
-            .update({ status: 'completed' })
-            .eq('id', id);
-
-          if (error) throw error;
-
-          // Remove the completed item from the store since we don't want to show completed items
-          set((state) => ({
-            listings: state.listings.filter((listing) => listing.id !== id),
-            loading: false
-          }));
-        } catch (error) {
-          console.error('Error marking listing as completed:', error);
-          set({ error: 'Failed to mark listing as completed', loading: false });
-        }
-      },
-
-      markItemAsMessaged: (itemId: string) => {
-        set((state) => ({
-          listings: state.listings.map((listing) =>
-            listing.id === itemId ? { ...listing, hasActiveMessage: true } : listing
-          )
-        }));
-      },
-
-      incrementViews: async (id: string) => {
-        try {
-          // First get the current view count
-          const { data: currentListing, error: fetchError } = await supabase
-            .from('listings')
-            .select('views')
-            .eq('id', id)
-            .single();
-
-          if (fetchError) {
-            console.error('Error fetching current views:', fetchError);
-            return;
-          }
-
-          const currentViews = currentListing?.views || 0;
-
-          // Increment views in the database
-          const { error } = await supabase
-            .from('listings')
-            .update({ views: currentViews + 1 })
-            .eq('id', id);
-
-          if (error) {
-            console.error('Error incrementing views:', error);
-            return;
-          }
-
-          // Update the local state
-          set((state) => ({
-            listings: state.listings.map((listing) =>
-              listing.id === id ? { ...listing, views: currentViews + 1 } : listing
-            )
-          }));
-        } catch (error) {
-          console.error('Error incrementing views:', error);
-        }
-      },
-
-      addListing: async (listingData: Omit<Listing, 'id' | 'createdAt' | 'updatedAt' | 'views' | 'likes'>) => {
-        const { user } = useAuthStore.getState();
-        if (!user) {
-          console.error('No authenticated user');
-          return false;
-        }
-
-        try {
-          const newListing = {
-            ...listingData,
-            user_id: user.id,
-            views: 0,
-            likes: 0
-          };
-
-          const { data, error } = await supabase
-            .from('listings')
-            .insert([newListing])
-            .select()
-            .single();
-
-          if (error) {
-            console.error('Error adding listing:', error);
-            return false;
-          }
-
-          // Increment the user's monthly listings count
-          const { error: updateError } = await supabase
-            .from('profiles')
-            .update({ 
-              monthly_listings: (user.monthlyListings || 0) + 1 
-            })
-            .eq('id', user.id);
-
-          if (updateError) {
-            console.error('Error updating monthly listings count:', updateError);
-          } else {
-            // Update the auth store with the new count
-            useAuthStore.getState().updateProfile({ 
-              monthlyListings: (user.monthlyListings || 0) + 1 
-            });
-          }
-
-          // Add the new listing to the store
-          set((state) => ({
-            listings: [data, ...state.listings]
-          }));
-
-          return true;
-        } catch (error) {
-          console.error('Error in addListing:', error);
-          return false;
-        }
-      },
-
-      incrementSwapCount: async () => {
-        const { user } = useAuthStore.getState();
-        if (!user) return false;
-
-        try {
-          const { error } = await supabase
-            .from('profiles')
-            .update({ 
-              monthly_swaps: (user.monthlySwaps || 0) + 1,
-              total_swaps: (user.totalSwaps || 0) + 1
-            })
-            .eq('id', user.id);
-
-          if (error) {
-            console.error('Error updating swap counts:', error);
-            return false;
-          }
-
-          // Update the auth store with the new counts
-          useAuthStore.getState().updateProfile({ 
-            monthlySwaps: (user.monthlySwaps || 0) + 1,
-            totalSwaps: (user.totalSwaps || 0) + 1
-          });
-
-          return true;
-        } catch (error) {
-          console.error('Error in incrementSwapCount:', error);
-          return false;
-        }
-      },
-
-      filteredListings: () => {
-        const { 
-          listings, 
-          searchTerm, 
-          selectedCategory, 
-          selectedCondition, 
-          sortBy, 
-          swapFilter,
-          maxDistance,
-          minRating,
-          userLocation,
-          currentUserId
-        } = get();
-        
-        let filtered = [...listings];
-
-        console.log('Filtering listings:', {
-          totalListings: filtered.length,
-          maxDistance,
-          minRating,
-          userLocation,
-          hasUserLocation: !!userLocation,
-          currentUserId
-        });
-
-        // Filter out completed items (this should already be done at fetch level, but double-check)
-        filtered = filtered.filter((listing) => listing.status !== 'completed');
-
-        // Apply search filter
-        if (searchTerm) {
-          filtered = filtered.filter((listing) =>
-            listing.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            listing.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            listing.wanted_items?.some(item => 
-              item.toLowerCase().includes(searchTerm.toLowerCase())
-            )
-          );
-        }
-
-        // Apply category filter
-        if (selectedCategory && selectedCategory !== 'all') {
-          filtered = filtered.filter((listing) => listing.category === selectedCategory);
-        }
-
-        // Apply condition filter
-        if (selectedCondition && selectedCondition !== 'all') {
-          filtered = filtered.filter((listing) => listing.condition === selectedCondition);
-        }
-
-        // Apply swap filter
-        if (swapFilter === 'swapped') {
-          filtered = filtered.filter((listing) => listing.hasActiveMessage === true);
-        } else if (swapFilter === 'unswapped') {
-          filtered = filtered.filter((listing) => !listing.hasActiveMessage);
-        }
-
-        // Apply minimum rating filter - Note: This requires the rating store to be initialized
-        // For now, we'll skip the rating filter to avoid circular dependencies
-        // The rating filter will be handled at the component level instead
-        if (minRating > 0) {
-          console.log(`Rating filter requested: ${minRating} stars minimum`);
-          // Rating filtering will be handled by components that import both stores
-        }
-
-        // Apply distance filter if user location is available
-        let localItems: Listing[] = [];
-        let userOwnItems: Listing[] = [];
-        
-        if (currentUserId) {
-          // Separate user's own items
-          userOwnItems = filtered.filter((listing) => listing.user_id === currentUserId);
-          // Get items that are not user's own
-          filtered = filtered.filter((listing) => listing.user_id !== currentUserId);
-        }
-
-        if (userLocation && maxDistance > 0) {
-          const beforeDistanceFilter = filtered.length;
-          localItems = filtered.filter((listing) => {
-            // If listing has no distance data (no location), exclude it when distance filtering is active
-            if (listing.distance === undefined) {
-              console.log(`Excluding ${listing.title} - no location data`);
-              return false;
-            }
-            const withinDistance = listing.distance <= maxDistance;
-            if (!withinDistance) {
-              console.log(`Excluding ${listing.title} - distance: ${listing.distance} > ${maxDistance}`);
-            }
-            return withinDistance;
-          });
-          console.log(`Distance filter: ${beforeDistanceFilter} -> ${localItems.length} items (within ${maxDistance} miles)`);
-        } else {
-          localItems = filtered;
-        }
-
-        // If no local items found and user has items, show user's items
-        let finalItems: Listing[];
-        if (localItems.length === 0 && userOwnItems.length > 0) {
-          console.log('No local items found, showing user\'s own items');
-          finalItems = userOwnItems;
-        } else {
-          // Show local items (and optionally user's items if they want to see them)
-          finalItems = localItems;
-        }
-
-        // Apply sorting
-        switch (sortBy) {
-          case 'newest':
-            finalItems.sort((a, b) => new Date(b.created_at || '').getTime() - new Date(a.created_at || '').getTime());
-            break;
-          case 'oldest':
-            finalItems.sort((a, b) => new Date(a.created_at || '').getTime() - new Date(b.created_at || '').getTime());
-            break;
-          case 'title':
-            finalItems.sort((a, b) => a.title.localeCompare(b.title));
-            break;
-          case 'distance':
-            // Sort by distance, putting items with distance first (closest first), then items without distance
-            finalItems.sort((a, b) => {
-              if (a.distance !== undefined && b.distance !== undefined) {
-                return a.distance - b.distance;
-              }
-              if (a.distance !== undefined && b.distance === undefined) {
-                return -1; // a comes first (has distance)
-              }
-              if (a.distance === undefined && b.distance !== undefined) {
-                return 1; // b comes first (has distance)
-              }
-              // Both don't have distance, sort by newest
-              return new Date(b.created_at || '').getTime() - new Date(a.created_at || '').getTime();
-            });
-            break;
-          case 'views':
-            finalItems.sort((a, b) => (b.views || 0) - (a.views || 0));
-            break;
-          case 'likes':
-            finalItems.sort((a, b) => (b.likes || 0) - (a.likes || 0));
-            break;
-          default:
-            // Default to distance if user location is available, otherwise newest
-            if (userLocation) {
-              finalItems.sort((a, b) => {
-                if (a.distance !== undefined && b.distance !== undefined) {
-                  return a.distance - b.distance;
-                }
-                if (a.distance !== undefined && b.distance === undefined) {
-                  return -1;
-                }
-                if (a.distance === undefined && b.distance !== undefined) {
-                  return 1;
-                }
-                return new Date(b.created_at || '').getTime() - new Date(a.created_at || '').getTime();
-              });
-            } else {
-              finalItems.sort((a, b) => new Date(b.created_at || '').getTime() - new Date(a.created_at || '').getTime());
-            }
-            break;
-        }
-
-        console.log(`Final filtered results: ${finalItems.length} items`);
-        return finalItems;
-      }
-    }),
-    {
-      name: 'listing-storage',
-      partialize: (state) => ({
-        listings: state.listings,
-        userLocation: state.userLocation,
-      }),
+      set({ 
+        listings: listingsWithConversationStatus,
+        isLoading: false 
+      });
+    } catch (error) {
+      console.error('Error fetching listings:', error);
+      set({ 
+        error: error instanceof Error ? error.message : 'Failed to fetch listings', 
+        isLoading: false 
+      });
     }
-  )
-);
+  },
+
+  fetchUserListings: async () => {
+    const { session } = useAuthStore.getState();
+    if (!session?.user) return;
+
+    set({ isLoading: true, error: null });
+    
+    try {
+      const { data, error } = await supabase
+        .from('listings')
+        .select('*')
+        .eq('user_id', session.user.id)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      set({ 
+        userListings: data || [],
+        isLoading: false 
+      });
+    } catch (error) {
+      console.error('Error fetching user listings:', error);
+      set({ 
+        error: error instanceof Error ? error.message : 'Failed to fetch user listings', 
+        isLoading: false 
+      });
+    }
+  },
+
+  incrementViews: async (id) => {
+    try {
+      const { error } = await supabase.rpc('increment_listing_views', { listing_id: id });
+      
+      if (error) {
+        console.error('Error incrementing views:', error);
+        return;
+      }
+
+      // Update local state
+      set(state => ({
+        listings: state.listings.map(listing =>
+          listing.id === id 
+            ? { ...listing, views: (listing.views || 0) + 1 }
+            : listing
+        )
+      }));
+    } catch (error) {
+      console.error('Error incrementing views:', error);
+    }
+  },
+
+  incrementLikes: async (id) => {
+    try {
+      const { error } = await supabase.rpc('increment_listing_likes', { listing_id: id });
+      
+      if (error) {
+        console.error('Error incrementing likes:', error);
+        return;
+      }
+
+      // Update local state
+      set(state => ({
+        listings: state.listings.map(listing =>
+          listing.id === id 
+            ? { ...listing, likes: (listing.likes || 0) + 1 }
+            : listing
+        )
+      }));
+    } catch (error) {
+      console.error('Error incrementing likes:', error);
+    }
+  },
+
+  // Filter setters
+  setSelectedCategory: (category) => set({ selectedCategory: category }),
+  setSearchQuery: (query) => set({ searchQuery: query }),
+  setSelectedLocation: (location) => set({ selectedLocation: location }),
+  setSelectedCondition: (condition) => set({ selectedCondition: condition }),
+  setPriceRange: (range) => set({ priceRange: range }),
+  setSortBy: (sortBy) => set({ sortBy }),
+  setViewMode: (mode) => set({ viewMode: mode }),
+  setMinRating: (rating) => set({ minRating: rating }),
+
+  clearFilters: () => set({
+    selectedCategory: '',
+    searchQuery: '',
+    selectedLocation: '',
+    selectedCondition: '',
+    priceRange: [0, 1000],
+    sortBy: 'recent',
+    minRating: 0
+  }),
+
+  getFilteredListings: () => {
+    const state = get();
+    let filtered = [...state.listings];
+
+    // Apply filters
+    if (state.selectedCategory) {
+      filtered = filtered.filter(item => item.category === state.selectedCategory);
+    }
+
+    if (state.searchQuery) {
+      const query = state.searchQuery.toLowerCase();
+      filtered = filtered.filter(item => 
+        item.title.toLowerCase().includes(query) ||
+        item.description.toLowerCase().includes(query) ||
+        (item.wanted_items && item.wanted_items.some(wanted => 
+          wanted.toLowerCase().includes(query)
+        ))
+      );
+    }
+
+    if (state.selectedLocation) {
+      filtered = filtered.filter(item => 
+        item.location && item.location.toLowerCase().includes(state.selectedLocation.toLowerCase())
+      );
+    }
+
+    if (state.selectedCondition) {
+      filtered = filtered.filter(item => item.condition === state.selectedCondition);
+    }
+
+    // Apply sorting
+    switch (state.sortBy) {
+      case 'popular':
+        filtered.sort((a, b) => (b.likes || 0) - (a.likes || 0));
+        break;
+      case 'views':
+        filtered.sort((a, b) => (b.views || 0) - (a.views || 0));
+        break;
+      case 'recent':
+      default:
+        filtered.sort((a, b) => 
+          new Date(b.created_at || '').getTime() - new Date(a.created_at || '').getTime()
+        );
+        break;
+    }
+
+    return filtered;
+  },
+
+  updateListingConversationStatus: (listingId, hasActiveMessage) => {
+    set(state => ({
+      listings: state.listings.map(listing =>
+        listing.id === listingId 
+          ? { ...listing, hasActiveMessage }
+          : listing
+      )
+    }));
+  },
+
+  checkAndUpdateConversationStatuses: async () => {
+    const state = get();
+    
+    try {
+      const updatedListings = await Promise.all(
+        state.listings.map(async (listing) => {
+          try {
+            const { data: hasConversation } = await supabase
+              .rpc('listing_has_active_conversation', { listing_uuid: listing.id });
+            
+            return {
+              ...listing,
+              hasActiveMessage: hasConversation || false
+            };
+          } catch (error) {
+            console.error(`Error checking conversation for listing ${listing.id}:`, error);
+            return listing;
+          }
+        })
+      );
+
+      set({ listings: updatedListings });
+    } catch (error) {
+      console.error('Error updating conversation statuses:', error);
+    }
+  }
+}));

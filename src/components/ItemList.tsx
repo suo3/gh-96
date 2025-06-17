@@ -18,10 +18,10 @@ interface ItemListProps {
 export const ItemList = ({ items, onItemLike }: ItemListProps) => {
   const [selectedItem, setSelectedItem] = useState<Listing | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
-  const { createConversationFromSwipe } = useMessageStore();
+  const { createConversationFromSwipe, checkListingHasActiveConversation } = useMessageStore();
   const { user } = useAuthStore();
   const { fetchUserRatings, getAverageRating } = useRatingStore();
-  const { minRating } = useListingStore();
+  const { minRating, updateListingConversationStatus } = useListingStore();
   const { toast } = useToast();
 
   // Fetch ratings for all users when items change
@@ -66,7 +66,14 @@ export const ItemList = ({ items, onItemLike }: ItemListProps) => {
       return;
     }
 
-    if (item.hasActiveMessage) {
+    // Check if listing already has an active conversation
+    const hasActiveConversation = await checkListingHasActiveConversation(item.id);
+    if (hasActiveConversation) {
+      toast({
+        title: "Conversation already exists",
+        description: "This item already has an active conversation.",
+        variant: "destructive"
+      });
       return;
     }
 
@@ -78,8 +85,11 @@ export const ItemList = ({ items, onItemLike }: ItemListProps) => {
       );
 
       if (conversationId) {
+        // Update the conversation status for this listing
+        updateListingConversationStatus(item.id, true);
+        
         // Update the item to show it has an active message
-        onItemLike(item);
+        onItemLike({ ...item, hasActiveMessage: true });
         
         toast({
           title: "Conversation Started!",
@@ -187,7 +197,7 @@ export const ItemList = ({ items, onItemLike }: ItemListProps) => {
                         {item.hasActiveMessage && (
                           <Badge className="bg-blue-600 text-white">
                             <MessageCircle className="w-3 h-3 mr-1" />
-                            Sent
+                            Active Chat
                           </Badge>
                         )}
                       </div>
@@ -238,7 +248,7 @@ export const ItemList = ({ items, onItemLike }: ItemListProps) => {
                           {item.hasActiveMessage ? (
                             <>
                               <MessageCircle className="w-4 h-4 mr-1" />
-                              Sent
+                              Active Chat
                             </>
                           ) : (
                             <>
