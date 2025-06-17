@@ -341,6 +341,14 @@ export type Database = {
           unread_count: number
         }[]
       }
+      get_user_average_rating: {
+        Args: { user_uuid: string }
+        Returns: number
+      }
+      get_user_rating_count: {
+        Args: { user_uuid: string }
+        Returns: number
+      }
       listing_has_active_conversation: {
         Args: { listing_uuid: string }
         Returns: boolean

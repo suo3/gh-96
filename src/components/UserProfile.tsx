@@ -8,7 +8,10 @@ import { ArrowLeft, Award, MapPin, Calendar, Star, User, List, Crown } from "luc
 import { ProfileEditor } from "./ProfileEditor";
 import { ListingManager } from "./ListingManager";
 import { HistoryTab } from "./HistoryTab";
+import { UserRatingDisplay } from "./UserRatingDisplay";
 import { useAuthStore } from "@/stores/authStore";
+import { useRatingStore } from "@/stores/ratingStore";
+import { useEffect } from "react";
 
 interface UserProfileProps {
   onBack: () => void;
@@ -16,7 +19,14 @@ interface UserProfileProps {
 
 export const UserProfile = ({ onBack }: UserProfileProps) => {
   const { user } = useAuthStore();
+  const { userRatings, fetchUserRatings } = useRatingStore();
   const [activeTab, setActiveTab] = useState("profile");
+
+  useEffect(() => {
+    if (user?.id) {
+      fetchUserRatings(user.id);
+    }
+  }, [user?.id, fetchUserRatings]);
 
   if (!user) return null;
 
@@ -36,6 +46,9 @@ export const UserProfile = ({ onBack }: UserProfileProps) => {
   // Define limits based on membership type
   const listingLimit = user.membershipType === 'premium' ? 'Unlimited' : 50;
   const swapLimit = user.membershipType === 'premium' ? 'Unlimited' : 50;
+
+  // Get user's ratings
+  const ratings = userRatings[user.id] || [];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50">
@@ -85,10 +98,7 @@ export const UserProfile = ({ onBack }: UserProfileProps) => {
                     <div className="text-sm text-gray-600">Successful Swaps</div>
                   </div>
                   <div className="text-center">
-                    <div className="flex items-center justify-center text-2xl font-bold text-yellow-500">
-                      {userStats.rating}
-                      <Star className="w-5 h-5 ml-1 fill-current" />
-                    </div>
+                    <UserRatingDisplay userId={user.id} showCount={true} size="lg" />
                     <div className="text-sm text-gray-600">Rating</div>
                   </div>
                   <div className="text-center">
@@ -110,6 +120,56 @@ export const UserProfile = ({ onBack }: UserProfileProps) => {
             </div>
           </CardContent>
         </Card>
+
+        {/* Ratings Summary */}
+        {ratings.length > 0 && (
+          <Card className="mb-8">
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <Star className="w-5 h-5 mr-2 text-yellow-500" />
+                Recent Ratings
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {ratings.slice(0, 3).map((rating) => (
+                  <div key={rating.id} className="border-b border-gray-100 pb-4 last:border-b-0">
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <div className="flex items-center space-x-2 mb-1">
+                          <span className="font-medium text-gray-900">{rating.raterUserName}</span>
+                          <div className="flex">
+                            {[...Array(5)].map((_, i) => (
+                              <Star
+                                key={i}
+                                className={`w-4 h-4 ${
+                                  i < rating.rating ? 'text-yellow-400 fill-current' : 'text-gray-300'
+                                }`}
+                              />
+                            ))}
+                          </div>
+                        </div>
+                        {rating.comment && (
+                          <p className="text-gray-600 text-sm">{rating.comment}</p>
+                        )}
+                        <div className="text-xs text-gray-400 mt-1">
+                          {rating.itemTitle} • {rating.createdAt.toLocaleDateString()}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+                {ratings.length > 3 && (
+                  <div className="text-center">
+                    <Button variant="outline" size="sm">
+                      View All {ratings.length} Ratings
+                    </Button>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
