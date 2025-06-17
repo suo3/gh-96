@@ -1,14 +1,16 @@
+
 import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { MapPin, Heart, Star, MessageCircle, Eye } from "lucide-react";
+import { MapPin, Heart, MessageCircle, Eye } from "lucide-react";
 import { ItemDetailModal } from "./ItemDetailModal";
 import { Listing, useListingStore } from "@/stores/listingStore";
 import { useMessageStore } from "@/stores/messageStore";
 import { useAuthStore } from "@/stores/authStore";
 import { useRatingStore } from "@/stores/ratingStore";
 import { useToast } from "@/hooks/use-toast";
+import { UserRatingDisplay } from "./UserRatingDisplay";
 
 interface ItemGridProps {
   items: Listing[];
@@ -133,34 +135,10 @@ export const ItemGrid = ({ items, onItemLike }: ItemGridProps) => {
     return 'U';
   };
 
-  const getUserRating = (userId: string | undefined) => {
-    if (!userId) return 0;
-    return getAverageRating(userId);
-  };
-
-  const renderStars = (rating: number) => {
-    const stars = [];
-    const fullStars = Math.floor(rating);
-    const hasHalfStar = rating % 1 >= 0.5;
-
-    for (let i = 0; i < 5; i++) {
-      if (i < fullStars) {
-        stars.push(<Star key={i} className="w-4 h-4 text-yellow-400 fill-current" />);
-      } else if (i === fullStars && hasHalfStar) {
-        stars.push(<Star key={i} className="w-4 h-4 text-yellow-400 fill-current opacity-50" />);
-      } else {
-        stars.push(<Star key={i} className="w-4 h-4 text-gray-300" />);
-      }
-    }
-    return stars;
-  };
-
   return (
     <>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {filteredByRating.map((item) => {
-          const userRating = getUserRating(item.user_id);
-          
           return (
             <Card 
               key={item.id} 
@@ -212,10 +190,9 @@ export const ItemGrid = ({ items, onItemLike }: ItemGridProps) => {
                   {item.location || "Location not specified"}
                 </div>
                 <div className="flex items-center mb-3">
-                  {renderStars(userRating)}
-                  <span className="text-sm text-gray-600 ml-1">
-                    {userRating > 0 ? `(${userRating})` : '(No ratings)'}
-                  </span>
+                  {item.user_id && (
+                    <UserRatingDisplay userId={item.user_id} size="sm" />
+                  )}
                   <div className="flex items-center ml-4 text-sm text-gray-600">
                     <Eye className="w-4 h-4 mr-1" />
                     {item.views || 0}
