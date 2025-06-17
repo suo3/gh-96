@@ -8,6 +8,7 @@ import { ArrowLeft, Award, MapPin, Calendar, Star, User, List, Crown } from "luc
 import { ProfileEditor } from "./ProfileEditor";
 import { ListingManager } from "./ListingManager";
 import { HistoryTab } from "./HistoryTab";
+import { UserRatingDisplay } from "./UserRatingDisplay";
 import { useAuthStore } from "@/stores/authStore";
 
 interface UserProfileProps {
@@ -79,17 +80,13 @@ export const UserProfile = ({ onBack }: UserProfileProps) => {
                     {user.membershipType}
                   </Badge>
                 </div>
-                <div className="flex items-center space-x-6">
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
                   <div className="text-center">
                     <div className="text-2xl font-bold text-emerald-600">{userStats.successfulSwaps}</div>
                     <div className="text-sm text-gray-600">Successful Swaps</div>
                   </div>
                   <div className="text-center">
-                    <div className="flex items-center justify-center text-2xl font-bold text-yellow-500">
-                      {userStats.rating}
-                      <Star className="w-5 h-5 ml-1 fill-current" />
-                    </div>
-                    <div className="text-sm text-gray-600">Rating</div>
+                    <UserRatingDisplay userId={user.id} compact />
                   </div>
                   <div className="text-center">
                     <div className="text-2xl font-bold text-blue-600">{userStats.activeListings}</div>
@@ -113,7 +110,7 @@ export const UserProfile = ({ onBack }: UserProfileProps) => {
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="profile" className="flex items-center">
               <User className="w-4 h-4 mr-2" />
               Profile
@@ -125,6 +122,10 @@ export const UserProfile = ({ onBack }: UserProfileProps) => {
             <TabsTrigger value="history" className="flex items-center">
               <Award className="w-4 h-4 mr-2" />
               History
+            </TabsTrigger>
+            <TabsTrigger value="ratings" className="flex items-center">
+              <Star className="w-4 h-4 mr-2" />
+              Ratings
             </TabsTrigger>
           </TabsList>
 
@@ -138,6 +139,10 @@ export const UserProfile = ({ onBack }: UserProfileProps) => {
 
           <TabsContent value="history" className="mt-6">
             <HistoryTab />
+          </TabsContent>
+
+          <TabsContent value="ratings" className="mt-6">
+            <UserRatingDisplay userId={user.id} showDetailed />
           </TabsContent>
         </Tabs>
       </main>
