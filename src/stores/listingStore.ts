@@ -1,4 +1,3 @@
-
 import { create } from 'zustand';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuthStore } from './authStore';
@@ -56,6 +55,7 @@ interface ListingStore {
   deleteListing: (id: string) => Promise<void>;
   fetchListings: () => Promise<void>;
   fetchUserListings: () => Promise<void>;
+  fetchCategories: () => Promise<void>;
   getUserListings: (userId: string) => Promise<Listing[]>;
   markAsCompleted: (id: string) => Promise<void>;
   incrementViews: (id: string) => Promise<void>;
@@ -92,7 +92,7 @@ interface ListingStore {
 export const useListingStore = create<ListingStore>((set, get) => ({
   listings: [],
   userListings: [],
-  categories: ['Electronics', 'Clothing', 'Books', 'Home & Garden', 'Sports', 'Music', 'Vehicles', 'Other'],
+  categories: [],
   selectedCategory: 'all',
   searchQuery: '',
   selectedLocation: '',
@@ -112,6 +112,23 @@ export const useListingStore = create<ListingStore>((set, get) => ({
   filteredListings: [],
 
   setListings: (listings) => set({ listings, filteredListings: listings }),
+
+  fetchCategories: async () => {
+    try {
+      const { data, error } = await supabase
+        .from('categories')
+        .select('name')
+        .eq('is_active', true)
+        .order('display_order');
+
+      if (error) throw error;
+
+      const categoryNames = data?.map(cat => cat.name) || [];
+      set({ categories: categoryNames });
+    } catch (error) {
+      console.error('Error fetching categories:', error);
+    }
+  },
 
   addListing: async (listing) => {
     const { session } = useAuthStore.getState();

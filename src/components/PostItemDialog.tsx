@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
@@ -31,6 +31,7 @@ import { useListingStore } from "@/stores/listingStore";
 import { useLocationDetection } from "@/hooks/useLocationDetection";
 import { ImageUpload } from "./ImageUpload";
 import { MapPin, Loader2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 const formSchema = z.object({
   title: z.string().min(2, {
@@ -57,10 +58,28 @@ interface PostItemDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
+interface Category {
+  id: string;
+  name: string;
+  display_order: number;
+  is_active: boolean;
+}
+
+interface Condition {
+  id: string;
+  name: string;
+  value: string;
+  display_order: number;
+  is_active: boolean;
+}
+
 export const PostItemDialog = ({ open, onOpenChange }: PostItemDialogProps) => {
   const { addListing } = useListingStore();
   const { toast } = useToast();
   const [isPending, setIsPending] = useState(false);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [conditions, setConditions] = useState<Condition[]>([]);
+  const [isLoadingOptions, setIsLoadingOptions] = useState(true);
   const { detectLocation, isDetecting, detectedLocation } = useLocationDetection();
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -75,6 +94,45 @@ export const PostItemDialog = ({ open, onOpenChange }: PostItemDialogProps) => {
       images: [],
     },
   });
+
+  useEffect(() => {
+    const fetchOptions = async () => {
+      setIsLoadingOptions(true);
+      try {
+        // Fetch categories
+        const { data: categoriesData, error: categoriesError } = await supabase
+          .from('categories')
+          .select('*')
+          .eq('is_active', true)
+          .order('display_order');
+
+        if (categoriesError) {
+          console.error('Error fetching categories:', categoriesError);
+        } else {
+          setCategories(categoriesData || []);
+        }
+
+        // Fetch conditions
+        const { data: conditionsData, error: conditionsError } = await supabase
+          .from('conditions')
+          .select('*')
+          .eq('is_active', true)
+          .order('display_order');
+
+        if (conditionsError) {
+          console.error('Error fetching conditions:', conditionsError);
+        } else {
+          setConditions(conditionsData || []);
+        }
+      } catch (error) {
+        console.error('Error fetching options:', error);
+      } finally {
+        setIsLoadingOptions(false);
+      }
+    };
+
+    fetchOptions();
+  }, []);
 
   const handleDetectLocation = async () => {
     const location = await detectLocation();
@@ -193,19 +251,18 @@ export const PostItemDialog = ({ open, onOpenChange }: PostItemDialogProps) => {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Category</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select onValueChange={field.onChange} defaultValue={field.value} disabled={isLoadingOptions}>
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Select a category" />
+                        <SelectValue placeholder={isLoadingOptions ? "Loading categories..." : "Select a category"} />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="electronics">Electronics</SelectItem>
-                      <SelectItem value="clothing">Clothing</SelectItem>
-                      <SelectItem value="books">Books</SelectItem>
-                      <SelectItem value="furniture">Furniture</SelectItem>
-                      <SelectItem value="sports">Sports Equipment</SelectItem>
-                      <SelectItem value="other">Other</SelectItem>
+                      {categories.map((category) => (
+                        <SelectItem key={category.id} value={category.name}>
+                          {category.name}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                   <FormMessage />
@@ -219,17 +276,18 @@ export const PostItemDialog = ({ open, onOpenChange }: PostItemDialogProps) => {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Condition</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select onValueChange={field.onChange} defaultValue={field.value} disabled={isLoadingOptions}>
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Select item condition" />
+                        <SelectValue placeholder={isLoadingOptions ? "Loading conditions..." : "Select item condition"} />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="new">New</SelectItem>
-                      <SelectItem value="like_new">Like New</SelectItem>
-                      <SelectItem value="used_good">Used - Good</SelectItem>
-                      <SelectItem value="used_fair">Used - Fair</SelectItem>
+                      {conditions.map((condition) => (
+                        <SelectItem key={condition.id} value={condition.value}>
+                          {condition.name}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                   <FormMessage />
@@ -286,7 +344,7 @@ export const PostItemDialog = ({ open, onOpenChange }: PostItemDialogProps) => {
             />
             
             <DialogFooter>
-              <Button type="submit" disabled={isPending}>
+              <Button type="submit" disabled={isPending || isLoadingOptions}>
                 {isPending ? "Posting..." : "Post Item"}
               </Button>
             </DialogFooter>

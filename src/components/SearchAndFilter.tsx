@@ -1,4 +1,5 @@
-import { useState } from "react";
+
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
@@ -7,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Search, Filter, MapPin, X, Heart } from "lucide-react";
 import { useMessageStore } from "@/stores/messageStore";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 interface SearchAndFilterProps {
   onSearch: (keyword: string) => void;
@@ -19,36 +21,69 @@ interface SearchAndFilterProps {
   onBack: () => void;
 }
 
+interface Category {
+  id: string;
+  name: string;
+  display_order: number;
+  is_active: boolean;
+}
+
+interface Condition {
+  id: string;
+  name: string;
+  value: string;
+  display_order: number;
+  is_active: boolean;
+}
+
 export const SearchAndFilter = ({ onSearch, onFilterChange, onBack }: SearchAndFilterProps) => {
   const [keyword, setKeyword] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [selectedCondition, setSelectedCondition] = useState("all");
   const [selectedLocation, setSelectedLocation] = useState("");
   const [selectedRadius, setSelectedRadius] = useState(5);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [conditions, setConditions] = useState<Condition[]>([]);
   const { createConversationFromSwipe } = useMessageStore();
   const { toast } = useToast();
 
-  const categories = [
-    { value: "all", label: "All Categories" },
-    { value: "Electronics", label: "Electronics" },
-    { value: "Books", label: "Books" },
-    { value: "Kitchen", label: "Kitchen" },
-    { value: "Fitness", label: "Fitness" },
-    { value: "Clothing", label: "Clothing" },
-    { value: "Home & Garden", label: "Home & Garden" },
-    { value: "Tools", label: "Tools" },
-    { value: "Sports", label: "Sports" }
-  ];
-
-  const conditions = [
-    { value: "all", label: "All Conditions" },
-    { value: "Like New", label: "Like New" },
-    { value: "Good", label: "Good" },
-    { value: "Fair", label: "Fair" },
-    { value: "Needs Repair", label: "Needs Repair" }
-  ];
-
   const radiusOptions = [1, 2, 5, 10, 15, 25, 50];
+
+  useEffect(() => {
+    const fetchOptions = async () => {
+      try {
+        // Fetch categories
+        const { data: categoriesData, error: categoriesError } = await supabase
+          .from('categories')
+          .select('*')
+          .eq('is_active', true)
+          .order('display_order');
+
+        if (categoriesError) {
+          console.error('Error fetching categories:', categoriesError);
+        } else {
+          setCategories(categoriesData || []);
+        }
+
+        // Fetch conditions
+        const { data: conditionsData, error: conditionsError } = await supabase
+          .from('conditions')
+          .select('*')
+          .eq('is_active', true)
+          .order('display_order');
+
+        if (conditionsError) {
+          console.error('Error fetching conditions:', conditionsError);
+        } else {
+          setConditions(conditionsData || []);
+        }
+      } catch (error) {
+        console.error('Error fetching options:', error);
+      }
+    };
+
+    fetchOptions();
+  }, []);
 
   // Mock data for demonstration
   const mockItems = [
@@ -59,7 +94,7 @@ export const SearchAndFilter = ({ onSearch, onFilterChange, onBack }: SearchAndF
       image: "https://images.unsplash.com/photo-1649972904349-6e44c42644a7?w=400&h=300&fit=crop",
       user: "Sarah M.",
       location: "0.8 miles away",
-      category: "Kitchen",
+      category: "Kitchen & Dining",
       condition: "Like New",
       wantedItems: ["Books", "Plants", "Open to offers"]
     },
@@ -81,7 +116,7 @@ export const SearchAndFilter = ({ onSearch, onFilterChange, onBack }: SearchAndF
       image: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=400&h=300&fit=crop",
       user: "Emma L.",
       location: "0.5 miles away",
-      category: "Fitness",
+      category: "Fitness Equipment",
       condition: "Like New",
       wantedItems: ["Home decor", "Books"]
     },
@@ -92,7 +127,7 @@ export const SearchAndFilter = ({ onSearch, onFilterChange, onBack }: SearchAndF
       image: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=300&fit=crop",
       user: "Jake R.",
       location: "2.1 miles away",
-      category: "Electronics",
+      category: "Musical Instruments",
       condition: "Good",
       wantedItems: ["Books", "Kitchen items"]
     },
@@ -223,9 +258,10 @@ export const SearchAndFilter = ({ onSearch, onFilterChange, onBack }: SearchAndF
                   <SelectValue placeholder="Category" />
                 </SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="all">All Categories</SelectItem>
                   {categories.map((category) => (
-                    <SelectItem key={category.value} value={category.value}>
-                      {category.label}
+                    <SelectItem key={category.id} value={category.name}>
+                      {category.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -239,9 +275,10 @@ export const SearchAndFilter = ({ onSearch, onFilterChange, onBack }: SearchAndF
                   <SelectValue placeholder="Condition" />
                 </SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="all">All Conditions</SelectItem>
                   {conditions.map((condition) => (
-                    <SelectItem key={condition.value} value={condition.value}>
-                      {condition.label}
+                    <SelectItem key={condition.id} value={condition.name}>
+                      {condition.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -277,12 +314,12 @@ export const SearchAndFilter = ({ onSearch, onFilterChange, onBack }: SearchAndF
                 )}
                 {selectedCategory !== "all" && (
                   <Badge variant="secondary">
-                    {categories.find(c => c.value === selectedCategory)?.label}
+                    {selectedCategory}
                   </Badge>
                 )}
                 {selectedCondition !== "all" && (
                   <Badge variant="secondary">
-                    {conditions.find(c => c.value === selectedCondition)?.label}
+                    {selectedCondition}
                   </Badge>
                 )}
                 {selectedLocation && (
