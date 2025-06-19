@@ -85,7 +85,7 @@ export const SearchAndFilter = ({ onSearch, onFilterChange, onBack }: SearchAndF
     fetchOptions();
   }, []);
 
-  // Mock data for demonstration
+  // Updated mock data with categories that exist in the database
   const mockItems = [
     {
       id: 1,
@@ -96,7 +96,7 @@ export const SearchAndFilter = ({ onSearch, onFilterChange, onBack }: SearchAndF
       location: "0.8 miles away",
       category: "Kitchen & Dining",
       condition: "Like New",
-      wantedItems: ["Books", "Plants", "Open to offers"]
+      wantedItems: ["Books", "Home & Garden", "Electronics"]
     },
     {
       id: 2,
@@ -106,8 +106,8 @@ export const SearchAndFilter = ({ onSearch, onFilterChange, onBack }: SearchAndF
       user: "Mike K.",
       location: "1.2 miles away",
       category: "Books",
-      condition: "Good",
-      wantedItems: ["Electronics", "Kitchen items"]
+      condition: "Used - Good",
+      wantedItems: ["Electronics", "Kitchen & Dining"]
     },
     {
       id: 3,
@@ -118,7 +118,7 @@ export const SearchAndFilter = ({ onSearch, onFilterChange, onBack }: SearchAndF
       location: "0.5 miles away",
       category: "Fitness Equipment",
       condition: "Like New",
-      wantedItems: ["Home decor", "Books"]
+      wantedItems: ["Home & Garden", "Books"]
     },
     {
       id: 4,
@@ -128,8 +128,8 @@ export const SearchAndFilter = ({ onSearch, onFilterChange, onBack }: SearchAndF
       user: "Jake R.",
       location: "2.1 miles away",
       category: "Musical Instruments",
-      condition: "Good",
-      wantedItems: ["Books", "Kitchen items"]
+      condition: "Used - Good",
+      wantedItems: ["Books", "Kitchen & Dining"]
     },
     {
       id: 5,
@@ -140,7 +140,7 @@ export const SearchAndFilter = ({ onSearch, onFilterChange, onBack }: SearchAndF
       location: "1.8 miles away",
       category: "Clothing",
       condition: "Like New",
-      wantedItems: ["Electronics", "Sports equipment"]
+      wantedItems: ["Electronics", "Sports"]
     }
   ];
 
