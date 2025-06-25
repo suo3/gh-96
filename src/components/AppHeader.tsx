@@ -1,6 +1,5 @@
-
 import { useState } from "react";
-import { MapPin, Plus, Bell, User, Shield } from "lucide-react";
+import { MapPin, Plus, Bell, User, Shield, Coins } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -99,9 +98,10 @@ export const AppHeader = ({ userLocation, onLocationDetect, onPostItem }: AppHea
             {isAuthenticated ? (
               <>
                 {/* Coins Display */}
-                <div className="hidden sm:flex items-center space-x-1 text-sm text-gray-700">
-                  <span className="font-medium">{user?.coins || 0}</span>
-                  <span className="text-gray-500">coins</span>
+                <div className="hidden sm:flex items-center space-x-1 bg-gradient-to-r from-yellow-50 to-amber-50 border border-yellow-200 rounded-full px-3 py-1.5">
+                  <Coins className="w-4 h-4 text-yellow-600" />
+                  <span className="font-semibold text-yellow-700">{user?.coins || 0}</span>
+                  <span className="text-yellow-600 text-xs font-medium">coins</span>
                 </div>
 
                 {/* Messages Button */}
@@ -152,9 +152,11 @@ export const AppHeader = ({ userLocation, onLocationDetect, onPostItem }: AppHea
                           @{user?.username}
                         </p>
                         <div className="flex items-center gap-2 sm:hidden">
-                          <Badge variant="outline" className="text-xs">
-                            {user?.coins || 0} coins
-                          </Badge>
+                          <div className="flex items-center gap-1 bg-gradient-to-r from-yellow-50 to-amber-50 border border-yellow-200 rounded-full px-2 py-1">
+                            <Coins className="w-3 h-3 text-yellow-600" />
+                            <span className="text-xs font-semibold text-yellow-700">{user?.coins || 0}</span>
+                            <span className="text-yellow-600 text-xs">coins</span>
+                          </div>
                         </div>
                       </div>
                     </div>
