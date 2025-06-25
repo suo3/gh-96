@@ -80,7 +80,7 @@ export const useSwapStore = create<SwapState>()((set, get) => ({
             item2_title: request.item2Title,
             user1_id: request.user1Id,
             user2_id: request.user2Id,
-            status: request.status,
+            status: request.status as 'pending' | 'accepted' | 'rejected' | 'completed',
           },
         ])
         .select()
@@ -100,7 +100,7 @@ export const useSwapStore = create<SwapState>()((set, get) => ({
         item2Title: data.item2_title,
         user1Id: data.user1_id,
         user2Id: data.user2_id,
-        status: data.status,
+        status: data.status as 'pending' | 'accepted' | 'rejected' | 'completed',
         createdAt: new Date(data.created_at),
         updatedAt: new Date(data.updated_at),
       };
@@ -142,7 +142,7 @@ export const useSwapStore = create<SwapState>()((set, get) => ({
         item2Title: swap.item2_title,
         user1Id: swap.user1_id,
         user2Id: swap.user2_id,
-        status: swap.status,
+        status: swap.status as 'pending' | 'accepted' | 'rejected' | 'completed',
         createdAt: new Date(swap.created_at),
         updatedAt: new Date(swap.updated_at),
       }));

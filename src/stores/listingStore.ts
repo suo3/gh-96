@@ -59,6 +59,12 @@ interface ListingState {
   setSortBy: (sort: string) => void;
   incrementViews: (listingId: string) => Promise<void>;
   updateListingConversationStatus: (listingId: string, hasActiveMessage: boolean) => void;
+  getUserListings: (userId: string) => Promise<Listing[]>;
+  markAsCompleted: (id: string) => Promise<boolean>;
+  updateListing: (id: string, updates: Partial<Listing>) => Promise<boolean>;
+  filteredListings: Listing[];
+  markItemAsMessaged: (itemId: string) => void;
+  setCurrentUserId: (userId: string) => void;
 }
 
 export const useListingStore = create<ListingState>()((set, get) => ({
@@ -73,6 +79,7 @@ export const useListingStore = create<ListingState>()((set, get) => ({
   minRating: 0,
   searchTerm: '',
   sortBy: 'newest',
+  filteredListings: [],
 
   setSelectedCategory: (category: string) => set({ selectedCategory: category }),
   setSelectedCondition: (condition: string) => set({ selectedCondition: condition }),
@@ -86,7 +93,7 @@ export const useListingStore = create<ListingState>()((set, get) => ({
     try {
       const { error } = await supabase
         .from('listings')
-        .update({ views: supabase.raw('views + 1') })
+        .update({ views: supabase.rpc('increment', { field: 'views' }) })
         .eq('id', listingId);
 
       if (error) {
@@ -114,6 +121,66 @@ export const useListingStore = create<ListingState>()((set, get) => ({
           : listing
       )
     }));
+  },
+
+  markItemAsMessaged: (itemId: string) => {
+    set(state => ({
+      listings: state.listings.map(listing => 
+        listing.id === itemId 
+          ? { ...listing, hasActiveMessage: true }
+          : listing
+      )
+    }));
+  },
+
+  setCurrentUserId: (userId: string) => {
+    // This is a placeholder method that doesn't need implementation
+    console.log('Setting current user ID:', userId);
+  },
+
+  getUserListings: async (userId: string) => {
+    return get().fetchUserListings(userId);
+  },
+
+  markAsCompleted: async (id: string) => {
+    return get().updateListing(id, { status: 'swapped' });
+  },
+
+  updateListing: async (id: string, updates: Partial<Listing>) => {
+    set({ isLoading: true, error: null });
+    try {
+      const { error } = await supabase
+        .from('listings')
+        .update({
+          title: updates.title,
+          description: updates.description,
+          category: updates.category,
+          condition: updates.condition,
+          images: updates.images,
+          wanted_items: updates.wantedItems,
+          location: updates.location,
+          status: updates.status,
+        })
+        .eq('id', id);
+
+      if (error) {
+        console.error('Error updating listing:', error);
+        set({ error: error.message, isLoading: false });
+        return false;
+      }
+
+      set(state => ({
+        listings: state.listings.map(listing => 
+          listing.id === id ? { ...listing, ...updates } : listing
+        ),
+        isLoading: false,
+      }));
+      return true;
+    } catch (error) {
+      console.error('Error in updateListing:', error);
+      set({ error: 'Failed to update listing', isLoading: false });
+      return false;
+    }
   },
 
   addListing: async (listing) => {
@@ -146,7 +213,7 @@ export const useListingStore = create<ListingState>()((set, get) => ({
             wanted_items: listing.wantedItems,
             user_id: listing.userId,
             location: listing.location,
-            status: listing.status,
+            status: listing.status || 'active',
           },
         ])
         .select()
@@ -173,7 +240,7 @@ export const useListingStore = create<ListingState>()((set, get) => ({
         createdAt: new Date(data.created_at),
         views: data.views || 0,
         likes: data.likes || 0,
-        status: data.status || 'active',
+        status: (data.status as 'active' | 'swapped' | 'inactive') || 'active',
       };
 
       set(state => ({
@@ -213,13 +280,13 @@ export const useListingStore = create<ListingState>()((set, get) => ({
         images: listing.images || [],
         wantedItems: listing.wanted_items || [],
         userId: listing.user_id,
-        userName: listing.user_name || 'Unknown',
-        userAvatar: listing.user_avatar || 'U',
+        userName: 'Unknown',
+        userAvatar: 'U',
         location: listing.location || '',
         createdAt: new Date(listing.created_at),
         views: listing.views || 0,
         likes: listing.likes || 0,
-        status: listing.status || 'active',
+        status: (listing.status as 'active' | 'swapped' | 'inactive') || 'active',
       }));
 
       set({ listings: listingsWithDate, isLoading: false });
@@ -253,13 +320,13 @@ export const useListingStore = create<ListingState>()((set, get) => ({
         images: listing.images || [],
         wantedItems: listing.wanted_items || [],
         userId: listing.user_id,
-        userName: listing.user_name || 'Unknown',
-        userAvatar: listing.user_avatar || 'U',
+        userName: 'Unknown',
+        userAvatar: 'U',
         location: listing.location || '',
         createdAt: new Date(listing.created_at),
         views: listing.views || 0,
         likes: listing.likes || 0,
-        status: listing.status || 'active',
+        status: (listing.status as 'active' | 'swapped' | 'inactive') || 'active',
       }));
 
       set({ isLoading: false });
@@ -304,7 +371,7 @@ export const useListingStore = create<ListingState>()((set, get) => ({
   geocodeLocation: async (address: string): Promise<LocationCoordinates | null> => {
     try {
       const response = await fetch(
-        `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(address)}&key=${Deno.env.get("GOOGLE_MAPS_API_KEY")}`
+        `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(address)}&key=${process.env.GOOGLE_MAPS_API_KEY}`
       );
       const data = await response.json();
 
