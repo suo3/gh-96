@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowLeft, Award, MapPin, Calendar, Star, User, List, Crown } from "lucide-react";
+import { ArrowLeft, Award, MapPin, Calendar, Star, User, List, Coins } from "lucide-react";
 import { ProfileEditor } from "./ProfileEditor";
 import { ListingManager } from "./ListingManager";
 import { HistoryTab } from "./HistoryTab";
@@ -42,12 +42,9 @@ export const UserProfile = ({ onBack }: UserProfileProps) => {
     successfulSwaps: user.totalSwaps,
     rating: user.rating,
     activeListings: 3,
-    totalViews: 156
+    totalViews: 156,
+    coins: user.coins
   };
-
-  // Define limits based on membership type
-  const listingLimit = user.membershipType === 'premium' ? 'Unlimited' : 50;
-  const swapLimit = user.membershipType === 'premium' ? 'Unlimited' : 50;
 
   // Get user's ratings
   const ratings = userRatings[user.id] || [];
@@ -77,9 +74,12 @@ export const UserProfile = ({ onBack }: UserProfileProps) => {
               <div className="flex-1">
                 <div className="flex items-center space-x-3 mb-2">
                   <h2 className="text-3xl font-bold text-gray-900">{userStats.name}</h2>
-                  {user.membershipType === 'premium' && (
-                    <Crown className="w-6 h-6 text-yellow-500" />
-                  )}
+                  <div className="flex items-center space-x-2">
+                    <Coins className="w-6 h-6 text-yellow-500" />
+                    <Badge className="bg-yellow-100 text-yellow-800 border-yellow-300">
+                      {userStats.coins} coins
+                    </Badge>
+                  </div>
                 </div>
                 <div className="flex items-center space-x-4 text-gray-600 mb-4">
                   <div className="flex items-center">
@@ -90,9 +90,6 @@ export const UserProfile = ({ onBack }: UserProfileProps) => {
                     <Calendar className="w-4 h-4 mr-1" />
                     Joined {userStats.joinDate}
                   </div>
-                  <Badge variant={user.membershipType === 'premium' ? 'default' : 'secondary'}>
-                    {user.membershipType}
-                  </Badge>
                 </div>
                 <div className="flex items-center space-x-6">
                   <div className="text-center">
@@ -107,17 +104,34 @@ export const UserProfile = ({ onBack }: UserProfileProps) => {
                     <div className="text-2xl font-bold text-blue-600">{userStats.activeListings}</div>
                     <div className="text-sm text-gray-600">Active Listings</div>
                   </div>
-                  {user.membershipType === 'free' && (
-                    <div className="text-center">
-                      <div className="text-sm text-gray-600">
-                        Listings: {user.monthlyListings || 0}/{listingLimit}
-                      </div>
-                      <div className="text-sm text-gray-600">
-                        Swaps: {user.monthlySwaps || 0}/{swapLimit}
-                      </div>
+                  <div className="text-center">
+                    <div className="text-sm text-gray-600">
+                      Monthly Usage
                     </div>
-                  )}
+                    <div className="text-xs text-gray-500">
+                      Listings: {user.monthlyListings || 0} | Swaps: {user.monthlySwaps || 0}
+                    </div>
+                  </div>
                 </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Coin Balance Card */}
+        <Card className="mb-8 border-yellow-200 bg-yellow-50">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <Coins className="w-8 h-8 text-yellow-600" />
+                <div>
+                  <h3 className="text-lg font-semibold text-yellow-800">Coin Balance</h3>
+                  <p className="text-yellow-700">You have {userStats.coins} coins remaining</p>
+                </div>
+              </div>
+              <div className="text-right text-sm text-yellow-600">
+                <p>• 1 coin = 1 listing post</p>
+                <p>• 2 coins = 1 swap opportunity</p>
               </div>
             </div>
           </CardContent>

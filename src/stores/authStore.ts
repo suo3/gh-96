@@ -1,3 +1,4 @@
+
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { supabase } from '@/integrations/supabase/client';
@@ -11,7 +12,7 @@ export interface UserProfile {
   firstName: string;
   lastName: string;
   location: string;
-  membershipType: 'free' | 'premium';
+  coins: number;
   joinedDate: Date;
   rating: number;
   totalSwaps: number;
@@ -31,8 +32,8 @@ interface AuthState {
   changePassword: (currentPassword: string, newPassword: string) => Promise<boolean>;
   canCreateListing: () => boolean;
   canMakeSwap: () => boolean;
-  upgradeToPremium: () => Promise<void>;
-  processSubscriptionPayment: (planType: 'monthly' | 'yearly') => Promise<boolean>;
+  spendCoins: (amount: number, description: string) => Promise<boolean>;
+  purchaseCoins: (amount: number, planType: string) => Promise<boolean>;
   initialize: () => Promise<void>;
   refreshUserProfile: () => Promise<void>;
 }
@@ -64,7 +65,7 @@ export const useAuthStore = create<AuthState>()(
               firstName: profile.first_name || '',
               lastName: profile.last_name || '',
               location: profile.location || '',
-              membershipType: profile.membership_type as 'free' | 'premium',
+              coins: profile.coins || 0,
               joinedDate: new Date(profile.joined_date),
               rating: parseFloat(profile.rating?.toString() || '0'),
               totalSwaps: profile.total_swaps || 0,
@@ -110,7 +111,7 @@ export const useAuthStore = create<AuthState>()(
                       firstName: profile.first_name || '',
                       lastName: profile.last_name || '',
                       location: profile.location || '',
-                      membershipType: profile.membership_type as 'free' | 'premium',
+                      coins: profile.coins || 0,
                       joinedDate: new Date(profile.joined_date),
                       rating: parseFloat(profile.rating?.toString() || '0'),
                       totalSwaps: profile.total_swaps || 0,
@@ -182,7 +183,7 @@ export const useAuthStore = create<AuthState>()(
                 firstName: profile.first_name || '',
                 lastName: profile.last_name || '',
                 location: profile.location || '',
-                membershipType: profile.membership_type as 'free' | 'premium',
+                coins: profile.coins || 0,
                 joinedDate: new Date(profile.joined_date),
                 rating: parseFloat(profile.rating?.toString() || '0'),
                 totalSwaps: profile.total_swaps || 0,
@@ -297,6 +298,7 @@ export const useAuthStore = create<AuthState>()(
               monthly_listings: updates.monthlyListings,
               monthly_swaps: updates.monthlySwaps,
               total_swaps: updates.totalSwaps,
+              coins: updates.coins,
             })
             .eq('id', user.id);
 
@@ -326,43 +328,49 @@ export const useAuthStore = create<AuthState>()(
       canCreateListing: () => {
         const { user } = get();
         if (!user) return false;
-        if (user.membershipType === 'premium') return true;
-        return user.monthlyListings < 50; // Updated to 50
+        return user.coins >= 1; // Costs 1 coin to create a listing
       },
 
       canMakeSwap: () => {
         const { user } = get();
         if (!user) return false;
-        if (user.membershipType === 'premium') return true;
-        return user.monthlySwaps < 50; // Updated to 50
+        return user.coins >= 2; // Costs 2 coins to make a swap
       },
 
-      upgradeToPremium: async () => {
-        const { user } = get();
-        if (!user) return;
-
-        try {
-          const { error } = await supabase
-            .from('profiles')
-            .update({ membership_type: 'premium' })
-            .eq('id', user.id);
-
-          if (!error) {
-            set({ user: { ...user, membershipType: 'premium' } });
-          }
-        } catch (error) {
-          console.error('Upgrade error:', error);
-        }
-      },
-
-      processSubscriptionPayment: async (planType: 'monthly' | 'yearly') => {
+      spendCoins: async (amount: number, description: string) => {
         const { user } = get();
         if (!user) return false;
 
         try {
-          // Call the Stripe checkout edge function
-          const { data, error } = await supabase.functions.invoke('create-stripe-checkout', {
+          const { data, error } = await supabase.rpc('spend_coins', {
+            coin_amount: amount,
+            description: description
+          });
+
+          if (!error && data) {
+            // Update local state
+            set({ user: { ...user, coins: user.coins - amount } });
+            // Refresh profile to get latest data
+            get().refreshUserProfile();
+            return true;
+          }
+
+          return false;
+        } catch (error) {
+          console.error('Error spending coins:', error);
+          return false;
+        }
+      },
+
+      purchaseCoins: async (amount: number, planType: string) => {
+        const { user } = get();
+        if (!user) return false;
+
+        try {
+          // Call the coin purchase edge function
+          const { data, error } = await supabase.functions.invoke('purchase-coins', {
             body: {
+              coinAmount: amount,
               planType,
               email: user.email,
               userId: user.id
@@ -370,7 +378,7 @@ export const useAuthStore = create<AuthState>()(
           });
 
           if (error) {
-            console.error('Stripe checkout error:', error);
+            console.error('Coin purchase error:', error);
             return false;
           }
 

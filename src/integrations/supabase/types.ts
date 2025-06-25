@@ -33,6 +33,36 @@ export type Database = {
         }
         Relationships: []
       }
+      coin_transactions: {
+        Row: {
+          amount: number
+          created_at: string
+          description: string | null
+          id: string
+          stripe_payment_intent_id: string | null
+          transaction_type: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          stripe_payment_intent_id?: string | null
+          transaction_type: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          stripe_payment_intent_id?: string | null
+          transaction_type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       conditions: {
         Row: {
           created_at: string
@@ -188,13 +218,13 @@ export type Database = {
         Row: {
           achievements: string[] | null
           avatar: string | null
+          coins: number
           created_at: string | null
           first_name: string | null
           id: string
           joined_date: string | null
           last_name: string | null
           location: string | null
-          membership_type: string | null
           monthly_listings: number | null
           monthly_swaps: number | null
           rating: number | null
@@ -205,13 +235,13 @@ export type Database = {
         Insert: {
           achievements?: string[] | null
           avatar?: string | null
+          coins?: number
           created_at?: string | null
           first_name?: string | null
           id: string
           joined_date?: string | null
           last_name?: string | null
           location?: string | null
-          membership_type?: string | null
           monthly_listings?: number | null
           monthly_swaps?: number | null
           rating?: number | null
@@ -222,13 +252,13 @@ export type Database = {
         Update: {
           achievements?: string[] | null
           avatar?: string | null
+          coins?: number
           created_at?: string | null
           first_name?: string | null
           id?: string
           joined_date?: string | null
           last_name?: string | null
           location?: string | null
-          membership_type?: string | null
           monthly_listings?: number | null
           monthly_swaps?: number | null
           rating?: number | null
@@ -378,6 +408,18 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      add_coins: {
+        Args: {
+          coin_amount: number
+          description: string
+          payment_intent_id?: string
+        }
+        Returns: undefined
+      }
+      check_user_coins: {
+        Args: { required_coins: number }
+        Returns: boolean
+      }
       get_conversations_with_unread: {
         Args: Record<PropertyKey, never>
         Returns: {
@@ -402,6 +444,10 @@ export type Database = {
       }
       listing_has_active_conversation: {
         Args: { listing_uuid: string }
+        Returns: boolean
+      }
+      spend_coins: {
+        Args: { coin_amount: number; description: string }
         Returns: boolean
       }
     }

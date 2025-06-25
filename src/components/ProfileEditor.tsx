@@ -10,9 +10,9 @@ import { useListingStore } from "@/stores/listingStore";
 import { useToast } from "@/components/ui/use-toast";
 import { useLocationDetection } from "@/hooks/useLocationDetection";
 import { PasswordChange } from "./PasswordChange";
-import { SubscriptionPayment } from "./SubscriptionPayment";
+import { CoinPurchase } from "./CoinPurchase";
 import { LocationInput } from "./LocationInput";
-import { Save, Crown, Navigation } from "lucide-react";
+import { Save, Coins, Navigation } from "lucide-react";
 
 export const ProfileEditor = () => {
   const { user, updateProfile } = useAuthStore();
@@ -71,9 +71,12 @@ export const ProfileEditor = () => {
         <CardHeader>
           <CardTitle className="flex items-center justify-between">
             Profile Information
-            <Badge variant={user.membershipType === 'premium' ? 'default' : 'secondary'}>
-              {user.membershipType}
-            </Badge>
+            <div className="flex items-center space-x-2">
+              <Coins className="w-5 h-5 text-yellow-500" />
+              <Badge variant="outline" className="text-yellow-700 border-yellow-300">
+                {user.coins} coins
+              </Badge>
+            </div>
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -133,7 +136,7 @@ export const ProfileEditor = () => {
 
       <PasswordChange />
 
-      <SubscriptionPayment />
+      <CoinPurchase />
     </div>
   );
 };
