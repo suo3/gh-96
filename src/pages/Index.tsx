@@ -1,16 +1,14 @@
 import { useState, useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, MessageCircle, Heart, X, RotateCcw, Plus, User, Filter, Navigation } from "lucide-react";
+import { MapPin, MessageCircle, Heart, X, RotateCcw, Plus, Filter, Navigation } from "lucide-react";
 import { SwipeCard } from "@/components/SwipeCard";
 import { ViewToggle } from "@/components/ViewToggle";
 import { FilterPanel } from "@/components/FilterPanel";
 import { ItemGrid } from "@/components/ItemGrid";
 import { ItemList } from "@/components/ItemList";
-import { PostItemDialog } from "@/components/PostItemDialog";
-import { UserProfile } from "@/components/UserProfile";
-import { MessagesPanel } from "@/components/MessagesPanel";
 import { AuthButton } from "@/components/AuthButton";
 import { LoginDialog } from "@/components/LoginDialog";
 import { LocationPermissionPrompt } from "@/components/LocationPermissionPrompt";
@@ -22,14 +20,15 @@ import { useToast } from "@/components/ui/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 const Index = () => {
-  const [currentView, setCurrentView] = useState("discover");
+  const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const isMobile = useIsMobile();
   const [displayMode, setDisplayMode] = useState<"swipe" | "grid" | "list">(isMobile ? "swipe" : "grid");
-  const [showPostDialog, setShowPostDialog] = useState(false);
   const [showLoginDialog, setShowLoginDialog] = useState(false);
   const [showFilters, setShowFilters] = useState(!isMobile);
   const [showLocationPrompt, setShowLocationPrompt] = useState(false);
   const [userLocation, setUserLocation] = useState("Seattle, WA");
+  
   const { createConversationFromSwipe, totalUnreadCount, fetchConversations } = useMessageStore();
   const { isAuthenticated, canCreateListing, canMakeSwap, user } = useAuthStore();
   const { 
@@ -43,7 +42,16 @@ const Index = () => {
   const { requestLocationPermission } = useLocationDetection();
   const { toast } = useToast();
 
-  // Set current user ID in the listing store when user changes
+  // Check for login parameter in URL
+  useEffect(() => {
+    if (searchParams.get('login') === 'true') {
+      setShowLoginDialog(true);
+      // Remove the login parameter from URL
+      searchParams.delete('login');
+      setSearchParams(searchParams);
+    }
+  }, [searchParams, setSearchParams]);
+
   useEffect(() => {
     if (user?.id) {
       setCurrentUserId(user.id);
@@ -52,22 +60,18 @@ const Index = () => {
     }
   }, [user?.id, setCurrentUserId]);
 
-  // Load listings on component mount and when user location changes
   useEffect(() => {
     fetchListings();
   }, [fetchListings]);
 
-  // Fetch unread messages count when authenticated
   useEffect(() => {
     if (isAuthenticated) {
       fetchConversations();
     }
   }, [isAuthenticated, fetchConversations]);
 
-  // Handle location initialization and prompt
   useEffect(() => {
     const initializeLocation = async () => {
-      // If user has location in profile, use it
       if (user?.location) {
         setUserLocation(user.location);
         const coords = await geocodeLocation(user.location);
@@ -78,7 +82,6 @@ const Index = () => {
         return;
       }
 
-      // Check if we should show location prompt
       const hasSeenLocationPrompt = localStorage.getItem('hasSeenLocationPrompt');
       if (!hasSeenLocationPrompt) {
         setShowLocationPrompt(true);
@@ -89,7 +92,6 @@ const Index = () => {
     initializeLocation();
   }, [user?.location, geocodeLocation, setStoreUserLocation, fetchListings]);
 
-  // Update display mode when mobile state changes
   useEffect(() => {
     if (!isMobile && displayMode === "swipe") {
       setDisplayMode("grid");
@@ -105,7 +107,7 @@ const Index = () => {
   const handleManualLocationEntry = () => {
     setShowLocationPrompt(false);
     if (isAuthenticated) {
-      setCurrentView("profile");
+      navigate("/profile");
     } else {
       setShowLoginDialog(true);
     }
@@ -244,7 +246,7 @@ const Index = () => {
       return;
     }
 
-    setShowPostDialog(true);
+    navigate("/post");
   };
 
   const handleFilterChange = (filters: any) => {
@@ -270,237 +272,210 @@ const Index = () => {
     };
   };
 
-  if (currentView === "messages") {
-    if (!isAuthenticated) {
-      setShowLoginDialog(true);
-      setCurrentView("discover");
-      return null;
-    }
-    return <MessagesPanel onBack={() => setCurrentView("discover")} onLogin={() => setShowLoginDialog(true)} />;
-  }
-
-  if (currentView === "profile") {
-    if (!isAuthenticated) {
-      setShowLoginDialog(true);
-      setCurrentView("discover");
-      return null;
-    }
-    return <UserProfile onBack={() => setCurrentView("discover")} />;
-  }
-
-  if (currentView === "discover") {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50">
-        {/* Header */}
-        <header className="bg-white/90 backdrop-blur-sm border-b border-emerald-100 sticky top-0 z-50 shadow-sm">
-          <div className="container mx-auto px-4 py-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-500 rounded-xl flex items-center justify-center shadow-lg">
-                  <RotateCcw className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <h1 className="text-xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">SwapBoard</h1>
-                  <div className="flex items-center text-sm text-gray-600">
-                    <MapPin className="w-4 h-4 mr-1" />
-                    {userLocation}
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={handleLocationDetect}
-                      className="ml-2 h-6 px-2 text-xs hover:bg-emerald-100"
-                    >
-                      <Navigation className="w-3 h-3 mr-1" />
-                      Update
-                    </Button>
-                  </div>
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50">
+      {/* Header */}
+      <header className="bg-white/90 backdrop-blur-sm border-b border-emerald-100 sticky top-0 z-50 shadow-sm">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-500 rounded-xl flex items-center justify-center shadow-lg">
+                <RotateCcw className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h1 className="text-xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">SwapBoard</h1>
+                <div className="flex items-center text-sm text-gray-600">
+                  <MapPin className="w-4 h-4 mr-1" />
+                  {userLocation}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleLocationDetect}
+                    className="ml-2 h-6 px-2 text-xs hover:bg-emerald-100"
+                  >
+                    <Navigation className="w-3 h-3 mr-1" />
+                    Update
+                  </Button>
                 </div>
               </div>
-              <div className="flex items-center space-x-3">
-                {/* View Toggle */}
-                <ViewToggle currentView={displayMode} onViewChange={setDisplayMode} />
-                
+            </div>
+            <div className="flex items-center space-x-3">
+              {/* View Toggle */}
+              <ViewToggle currentView={displayMode} onViewChange={setDisplayMode} />
+              
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setShowFilters(!showFilters)}
+                className={`${showFilters ? 'bg-emerald-100 text-emerald-600' : ''}`}
+              >
+                <Filter className="w-5 h-5" />
+              </Button>
+              
+              {/* Only show message icon for authenticated users */}
+              {isAuthenticated && (
                 <Button
                   variant="ghost"
                   size="icon"
-                  onClick={() => setShowFilters(!showFilters)}
-                  className={`${showFilters ? 'bg-emerald-100 text-emerald-600' : ''}`}
+                  onClick={() => navigate("/messages")}
+                  className="relative"
                 >
-                  <Filter className="w-5 h-5" />
+                  <MessageCircle className="w-5 h-5" />
+                  {totalUnreadCount > 0 && (
+                    <Badge className="absolute -top-1 -right-1 w-5 h-5 p-0 flex items-center justify-center bg-red-500 text-xs">
+                      {totalUnreadCount}
+                    </Badge>
+                  )}
                 </Button>
-                
-                {/* Only show message icon for authenticated users */}
-                {isAuthenticated && (
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => setCurrentView("messages")}
-                    className="relative"
-                  >
-                    <MessageCircle className="w-5 h-5" />
-                    {totalUnreadCount > 0 && (
-                      <Badge className="absolute -top-1 -right-1 w-5 h-5 p-0 flex items-center justify-center bg-red-500 text-xs">
-                        {totalUnreadCount}
-                      </Badge>
-                    )}
-                  </Button>
-                )}
-                
-                <AuthButton
-                  onLogin={() => setShowLoginDialog(true)}
-                  onProfile={() => setCurrentView("profile")}
-                />
-                
-                <Button
-                  onClick={handlePostItem}
-                  className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 shadow-lg"
-                >
-                  <Plus className="w-4 h-4 mr-2" />
-                  Post Item
-                </Button>
-              </div>
+              )}
+              
+              <AuthButton
+                onLogin={() => setShowLoginDialog(true)}
+                onProfile={() => navigate("/profile")}
+              />
+              
+              <Button
+                onClick={handlePostItem}
+                className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 shadow-lg"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Post Item
+              </Button>
             </div>
           </div>
-        </header>
+        </div>
+      </header>
 
-        {/* Location Permission Prompt */}
-        {showLocationPrompt && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-            <LocationPermissionPrompt
-              onLocationSet={handleLocationSet}
-              onManualEntry={handleManualLocationEntry}
-              onDismiss={handleLocationPromptDismiss}
-            />
-          </div>
+      {/* Location Permission Prompt */}
+      {showLocationPrompt && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <LocationPermissionPrompt
+            onLocationSet={handleLocationSet}
+            onManualEntry={handleManualLocationEntry}
+            onDismiss={handleLocationPromptDismiss}
+          />
+        </div>
+      )}
+
+      {/* Main Content */}
+      <main className="container mx-auto px-4 py-8">
+        {/* Filters */}
+        <FilterPanel 
+          onFilterChange={handleFilterChange}
+          isVisible={showFilters && displayMode !== "swipe"}
+        />
+
+        {/* Swipe Cards Area */}
+        {displayMode === "swipe" && isMobile && (
+          <>
+            <div className="text-center mb-8">
+              <h2 className="text-3xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent mb-2">
+                Discover Amazing Items Nearby
+              </h2>
+              <p className="text-gray-600 max-w-2xl mx-auto">
+                Swipe right on items you'd love to swap for, left to pass. 
+                When both users like each other's items, you'll be matched to chat!
+              </p>
+            </div>
+
+            <div className="max-w-md mx-auto">
+              <div className="relative h-[600px] flex items-center justify-center">
+                {items.length > 0 && currentItemIndex < items.length ? (
+                  <SwipeCard
+                    item={convertToSwipeFormat(items[currentItemIndex])}
+                    nextItem={currentItemIndex + 1 < items.length ? convertToSwipeFormat(items[currentItemIndex + 1]) : undefined}
+                    onSwipe={handleSwipe}
+                    key={`${items[currentItemIndex].id}-${currentItemIndex}`}
+                  />
+                ) : (
+                  <Card className="w-full h-96 flex items-center justify-center border-2 border-dashed border-emerald-300">
+                    <CardContent className="text-center">
+                      <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <RotateCcw className="w-8 h-8 text-emerald-500" />
+                      </div>
+                      <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                        That's all for now!
+                      </h3>
+                      <p className="text-gray-600 mb-4">
+                        You've seen all available items in your area.
+                      </p>
+                      <Button onClick={resetStack} variant="outline" className="border-emerald-200">
+                        <RotateCcw className="w-4 h-4 mr-2" />
+                        Start Over
+                      </Button>
+                    </CardContent>
+                  </Card>
+                )}
+              </div>
+
+              {/* Action Buttons */}
+              {items.length > 0 && currentItemIndex < items.length && (
+                <div className="flex justify-center space-x-6 mt-6">
+                  <Button
+                    variant="outline"
+                    size="lg"
+                    className="w-16 h-16 rounded-full border-red-200 hover:bg-red-50 hover:border-red-300 shadow-lg"
+                    onClick={() => handleSwipe('left')}
+                  >
+                    <X className="w-8 h-8 text-red-500" />
+                  </Button>
+                  <Button
+                    size="lg"
+                    className="w-16 h-16 rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 shadow-lg"
+                    onClick={() => handleSwipe('right')}
+                  >
+                    <Heart className="w-8 h-8 text-white" />
+                  </Button>
+                </div>
+              )}
+
+              {/* Swipe Counter */}
+              <div className="text-center mt-4">
+                <Badge variant="secondary" className="text-sm bg-emerald-100 text-emerald-800">
+                  {Math.max(0, items.length - currentItemIndex)} items remaining today
+                </Badge>
+              </div>
+            </div>
+          </>
         )}
 
-        {/* Main Content */}
-        <main className="container mx-auto px-4 py-8">
-          {/* Filters */}
-          <FilterPanel 
-            onFilterChange={handleFilterChange}
-            isVisible={showFilters && displayMode !== "swipe"}
-          />
+        {/* Grid View */}
+        {displayMode === "grid" && (
+          <>
+            <div className="text-center mb-8">
+              <h2 className="text-2xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent mb-2">
+                Browse Items
+              </h2>
+              <p className="text-gray-600">
+                {items.length} item{items.length !== 1 ? 's' : ''} found
+              </p>
+            </div>
+            <ItemGrid items={items} onItemLike={handleItemLike} />
+          </>
+        )}
 
-          {/* Swipe Cards Area */}
-          {displayMode === "swipe" && isMobile && (
-            <>
-              <div className="text-center mb-8">
-                <h2 className="text-3xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent mb-2">
-                  Discover Amazing Items Nearby
-                </h2>
-                <p className="text-gray-600 max-w-2xl mx-auto">
-                  Swipe right on items you'd love to swap for, left to pass. 
-                  When both users like each other's items, you'll be matched to chat!
-                </p>
-              </div>
+        {/* List View */}
+        {displayMode === "list" && (
+          <>
+            <div className="text-center mb-8">
+              <h2 className="text-2xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent mb-2">
+                Browse Items
+              </h2>
+              <p className="text-gray-600">
+                {items.length} item{items.length !== 1 ? 's' : ''} found
+              </p>
+            </div>
+            <ItemList items={items} onItemLike={handleItemLike} />
+          </>
+        )}
+      </main>
 
-              <div className="max-w-md mx-auto">
-                <div className="relative h-[600px] flex items-center justify-center">
-                  {items.length > 0 && currentItemIndex < items.length ? (
-                    <SwipeCard
-                      item={convertToSwipeFormat(items[currentItemIndex])}
-                      nextItem={currentItemIndex + 1 < items.length ? convertToSwipeFormat(items[currentItemIndex + 1]) : undefined}
-                      onSwipe={handleSwipe}
-                      key={`${items[currentItemIndex].id}-${currentItemIndex}`}
-                    />
-                  ) : (
-                    <Card className="w-full h-96 flex items-center justify-center border-2 border-dashed border-emerald-300">
-                      <CardContent className="text-center">
-                        <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                          <RotateCcw className="w-8 h-8 text-emerald-500" />
-                        </div>
-                        <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                          That's all for now!
-                        </h3>
-                        <p className="text-gray-600 mb-4">
-                          You've seen all available items in your area.
-                        </p>
-                        <Button onClick={resetStack} variant="outline" className="border-emerald-200">
-                          <RotateCcw className="w-4 h-4 mr-2" />
-                          Start Over
-                        </Button>
-                      </CardContent>
-                    </Card>
-                  )}
-                </div>
-
-                {/* Action Buttons */}
-                {items.length > 0 && currentItemIndex < items.length && (
-                  <div className="flex justify-center space-x-6 mt-6">
-                    <Button
-                      variant="outline"
-                      size="lg"
-                      className="w-16 h-16 rounded-full border-red-200 hover:bg-red-50 hover:border-red-300 shadow-lg"
-                      onClick={() => handleSwipe('left')}
-                    >
-                      <X className="w-8 h-8 text-red-500" />
-                    </Button>
-                    <Button
-                      size="lg"
-                      className="w-16 h-16 rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 shadow-lg"
-                      onClick={() => handleSwipe('right')}
-                    >
-                      <Heart className="w-8 h-8 text-white" />
-                    </Button>
-                  </div>
-                )}
-
-                {/* Swipe Counter */}
-                <div className="text-center mt-4">
-                  <Badge variant="secondary" className="text-sm bg-emerald-100 text-emerald-800">
-                    {Math.max(0, items.length - currentItemIndex)} items remaining today
-                  </Badge>
-                </div>
-              </div>
-            </>
-          )}
-
-          {/* Grid View */}
-          {displayMode === "grid" && (
-            <>
-              <div className="text-center mb-8">
-                <h2 className="text-2xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent mb-2">
-                  Browse Items
-                </h2>
-                <p className="text-gray-600">
-                  {items.length} item{items.length !== 1 ? 's' : ''} found
-                </p>
-              </div>
-              <ItemGrid items={items} onItemLike={handleItemLike} />
-            </>
-          )}
-
-          {/* List View */}
-          {displayMode === "list" && (
-            <>
-              <div className="text-center mb-8">
-                <h2 className="text-2xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent mb-2">
-                  Browse Items
-                </h2>
-                <p className="text-gray-600">
-                  {items.length} item{items.length !== 1 ? 's' : ''} found
-                </p>
-              </div>
-              <ItemList items={items} onItemLike={handleItemLike} />
-            </>
-          )}
-        </main>
-
-        <PostItemDialog 
-          open={showPostDialog} 
-          onOpenChange={setShowPostDialog} 
-        />
-
-        <LoginDialog
-          open={showLoginDialog}
-          onOpenChange={setShowLoginDialog}
-        />
-      </div>
-    );
-  }
-
-  return null;
+      <LoginDialog
+        open={showLoginDialog}
+        onOpenChange={setShowLoginDialog}
+      />
+    </div>
+  );
 };
 
 export default Index;
