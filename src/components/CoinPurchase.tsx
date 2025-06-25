@@ -1,16 +1,16 @@
 
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
+import { LoadingButton } from "@/components/ui/loading-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useAuthStore } from "@/stores/authStore";
 import { useToast } from "@/hooks/use-toast";
-import { Coins, Check, Loader2, Zap } from "lucide-react";
+import { Coins, Check, Zap } from "lucide-react";
 
 export const CoinPurchase = () => {
   const { user, purchaseCoins } = useAuthStore();
   const { toast } = useToast();
-  const [isProcessing, setIsProcessing] = useState(false);
+  const [processingPlan, setProcessingPlan] = useState<string | null>(null);
 
   const handlePurchase = async (coinAmount: number, price: string, planType: string) => {
     if (!user) {
@@ -22,7 +22,7 @@ export const CoinPurchase = () => {
       return;
     }
 
-    setIsProcessing(true);
+    setProcessingPlan(planType);
     
     try {
       const success = await purchaseCoins(coinAmount, planType);
@@ -46,7 +46,7 @@ export const CoinPurchase = () => {
         variant: "destructive",
       });
     } finally {
-      setIsProcessing(false);
+      setProcessingPlan(null);
     }
   };
 
@@ -104,14 +104,14 @@ export const CoinPurchase = () => {
                 <span className="text-sm">12 swap opportunities</span>
               </div>
             </div>
-            <Button 
+            <LoadingButton 
               onClick={() => handlePurchase(25, "$4.99", "starter")}
-              disabled={isProcessing}
+              loading={processingPlan === "starter"}
+              loadingText="Processing..."
               className="w-full"
             >
-              {isProcessing && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
               Purchase Starter Pack
-            </Button>
+            </LoadingButton>
           </CardContent>
         </Card>
 
@@ -145,14 +145,14 @@ export const CoinPurchase = () => {
                 <span className="text-sm font-medium text-emerald-600">Save 15%</span>
               </div>
             </div>
-            <Button 
+            <LoadingButton 
               onClick={() => handlePurchase(60, "$9.99", "value")}
-              disabled={isProcessing}
+              loading={processingPlan === "value"}
+              loadingText="Processing..."
               className="w-full bg-emerald-500 hover:bg-emerald-600"
             >
-              {isProcessing && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
               Purchase Value Pack
-            </Button>
+            </LoadingButton>
           </CardContent>
         </Card>
 
@@ -183,14 +183,14 @@ export const CoinPurchase = () => {
                 <span className="text-sm font-medium text-purple-600">Save 35%</span>
               </div>
             </div>
-            <Button 
+            <LoadingButton 
               onClick={() => handlePurchase(150, "$19.99", "power")}
-              disabled={isProcessing}
+              loading={processingPlan === "power"}
+              loadingText="Processing..."
               className="w-full bg-purple-500 hover:bg-purple-600"
             >
-              {isProcessing && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
               Purchase Power Pack
-            </Button>
+            </LoadingButton>
           </CardContent>
         </Card>
       </div>

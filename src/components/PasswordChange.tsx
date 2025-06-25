@@ -1,13 +1,13 @@
 
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
+import { LoadingButton } from "@/components/ui/loading-button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useAuthStore } from "@/stores/authStore";
 import { useToast } from "@/components/ui/use-toast";
-import { Lock, Loader2 } from "lucide-react";
+import { Lock } from "lucide-react";
 import { passwordChangeSchema, PasswordChangeFormData } from "@/lib/validations";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 
@@ -121,10 +121,14 @@ export const PasswordChange = () => {
               )}
             />
 
-            <Button type="submit" disabled={isLoading} className="w-full">
-              {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            <LoadingButton 
+              type="submit" 
+              loading={isLoading}
+              loadingText="Changing password..."
+              className="w-full"
+            >
               Change Password
-            </Button>
+            </LoadingButton>
           </form>
         </Form>
       </CardContent>

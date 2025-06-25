@@ -1,17 +1,15 @@
 
 import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
+import { LoadingButton } from "@/components/ui/loading-button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { useAuthStore } from "@/stores/authStore";
 import { useToast } from "@/hooks/use-toast";
-import { useLocationDetection } from "@/hooks/useLocationDetection";
-import { LocationInput } from "./LocationInput";
-import { Navigation, Loader2 } from "lucide-react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { loginSchema, signupSchema, LoginFormData, SignupFormData } from "@/lib/validations";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 
@@ -23,64 +21,65 @@ interface LoginDialogProps {
 export const LoginDialog = ({ open, onOpenChange }: LoginDialogProps) => {
   const { login, signup } = useAuthStore();
   const { toast } = useToast();
-  const { isDetecting, requestLocationPermission } = useLocationDetection();
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoginLoading, setIsLoginLoading] = useState(false);
+  const [isSignupLoading, setIsSignupLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState("login");
 
   const loginForm = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      email: "",
-      password: "",
+      email: '',
+      password: ''
     },
   });
 
   const signupForm = useForm<SignupFormData>({
     resolver: zodResolver(signupSchema),
     defaultValues: {
-      email: "",
-      password: "",
-      confirmPassword: "",
-      username: "",
-      firstName: "",
-      lastName: "",
-      location: "",
+      email: '',
+      password: '',
+      confirmPassword: '',
+      username: '',
+      firstName: '',
+      lastName: '',
+      location: ''
     },
   });
 
   const handleLogin = async (data: LoginFormData) => {
-    setIsLoading(true);
-
+    setIsLoginLoading(true);
+    
     try {
       const success = await login(data.email, data.password);
+      
       if (success) {
-        onOpenChange(false);
         toast({
-          title: "Login successful",
-          description: "Welcome back!",
+          title: "Welcome back!",
+          description: "You have successfully signed in.",
         });
+        onOpenChange(false);
         loginForm.reset();
       } else {
         toast({
-          title: "Login failed",
-          description: "Please check your email and password.",
+          title: "Sign in failed",
+          description: "Invalid email or password. Please try again.",
           variant: "destructive",
         });
       }
     } catch (error) {
-      console.error('Login error:', error);
       toast({
-        title: "Login error",
-        description: "An unexpected error occurred. Please try again.",
+        title: "Error",
+        description: "Something went wrong. Please try again.",
         variant: "destructive",
       });
     } finally {
-      setIsLoading(false);
+      setIsLoginLoading(false);
     }
   };
 
   const handleSignup = async (data: SignupFormData) => {
-    setIsLoading(true);
-
+    setIsSignupLoading(true);
+    
     try {
       const success = await signup(data.email, data.password, {
         username: data.username,
@@ -88,54 +87,49 @@ export const LoginDialog = ({ open, onOpenChange }: LoginDialogProps) => {
         lastName: data.lastName,
         location: data.location,
       });
-
+      
       if (success) {
         toast({
-          title: "Account created",
+          title: "Account created!",
           description: "Please check your email to verify your account.",
         });
         onOpenChange(false);
         signupForm.reset();
       } else {
         toast({
-          title: "Signup failed",
-          description: "This email may already be in use. Please try again.",
+          title: "Sign up failed",
+          description: "There was an error creating your account. Please try again.",
           variant: "destructive",
         });
       }
     } catch (error) {
-      console.error('Signup error:', error);
       toast({
-        title: "Signup error",
-        description: "An unexpected error occurred. Please try again.",
+        title: "Error",
+        description: "Something went wrong. Please try again.",
         variant: "destructive",
       });
     } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleAutoDetectLocation = async () => {
-    const location = await requestLocationPermission();
-    if (location) {
-      signupForm.setValue('location', location);
+      setIsSignupLoading(false);
     }
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Welcome to SwapSpace</DialogTitle>
+          <DialogTitle>Welcome to SwapConnect</DialogTitle>
+          <DialogDescription>
+            Sign in to your account or create a new one to start swapping items with your community.
+          </DialogDescription>
         </DialogHeader>
         
-        <Tabs defaultValue="login" className="w-full">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="login">Login</TabsTrigger>
+            <TabsTrigger value="login">Sign In</TabsTrigger>
             <TabsTrigger value="signup">Sign Up</TabsTrigger>
           </TabsList>
           
-          <TabsContent value="login">
+          <TabsContent value="login" className="space-y-4">
             <Form {...loginForm}>
               <form onSubmit={loginForm.handleSubmit(handleLogin)} className="space-y-4">
                 <FormField
@@ -174,15 +168,19 @@ export const LoginDialog = ({ open, onOpenChange }: LoginDialogProps) => {
                   )}
                 />
 
-                <Button type="submit" className="w-full" disabled={isLoading}>
-                  {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  {isLoading ? "Logging in..." : "Login"}
-                </Button>
+                <LoadingButton 
+                  type="submit" 
+                  className="w-full"
+                  loading={isLoginLoading}
+                  loadingText="Signing in..."
+                >
+                  Sign In
+                </LoadingButton>
               </form>
             </Form>
           </TabsContent>
           
-          <TabsContent value="signup">
+          <TabsContent value="signup" className="space-y-4">
             <Form {...signupForm}>
               <form onSubmit={signupForm.handleSubmit(handleSignup)} className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
@@ -193,7 +191,7 @@ export const LoginDialog = ({ open, onOpenChange }: LoginDialogProps) => {
                       <FormItem>
                         <FormLabel>First Name</FormLabel>
                         <FormControl>
-                          <Input placeholder="First name" {...field} />
+                          <Input placeholder="John" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -207,7 +205,7 @@ export const LoginDialog = ({ open, onOpenChange }: LoginDialogProps) => {
                       <FormItem>
                         <FormLabel>Last Name</FormLabel>
                         <FormControl>
-                          <Input placeholder="Last name" {...field} />
+                          <Input placeholder="Doe" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -222,7 +220,7 @@ export const LoginDialog = ({ open, onOpenChange }: LoginDialogProps) => {
                     <FormItem>
                       <FormLabel>Username</FormLabel>
                       <FormControl>
-                        <Input placeholder="Choose a username" {...field} />
+                        <Input placeholder="johndoe" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -238,7 +236,7 @@ export const LoginDialog = ({ open, onOpenChange }: LoginDialogProps) => {
                       <FormControl>
                         <Input
                           type="email"
-                          placeholder="Enter your email"
+                          placeholder="john@example.com"
                           {...field}
                         />
                       </FormControl>
@@ -252,26 +250,9 @@ export const LoginDialog = ({ open, onOpenChange }: LoginDialogProps) => {
                   name="location"
                   render={({ field }) => (
                     <FormItem>
-                      <div className="flex items-center justify-between">
-                        <FormLabel>Location</FormLabel>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={handleAutoDetectLocation}
-                          disabled={isDetecting}
-                          className="text-xs"
-                        >
-                          <Navigation className="w-3 h-3 mr-1" />
-                          {isDetecting ? 'Detecting...' : 'Auto-detect'}
-                        </Button>
-                      </div>
+                      <FormLabel>Location</FormLabel>
                       <FormControl>
-                        <LocationInput
-                          value={field.value}
-                          onChange={field.onChange}
-                          placeholder="Enter your city and state"
-                        />
+                        <Input placeholder="City, State" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -287,7 +268,7 @@ export const LoginDialog = ({ open, onOpenChange }: LoginDialogProps) => {
                       <FormControl>
                         <Input
                           type="password"
-                          placeholder="Create a password"
+                          placeholder="Choose a password"
                           {...field}
                         />
                       </FormControl>
@@ -313,11 +294,15 @@ export const LoginDialog = ({ open, onOpenChange }: LoginDialogProps) => {
                     </FormItem>
                   )}
                 />
-                
-                <Button type="submit" className="w-full" disabled={isLoading}>
-                  {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  {isLoading ? "Creating account..." : "Sign Up"}
-                </Button>
+
+                <LoadingButton 
+                  type="submit" 
+                  className="w-full"
+                  loading={isSignupLoading}
+                  loadingText="Creating account..."
+                >
+                  Create Account
+                </LoadingButton>
               </form>
             </Form>
           </TabsContent>
