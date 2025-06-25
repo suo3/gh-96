@@ -1,207 +1,136 @@
+
 import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { MapPin, MessageCircle, Heart, X, RotateCcw, Plus, User, Filter, Navigation } from "lucide-react";
-import { SwipeCard } from "@/components/SwipeCard";
-import { ViewToggle } from "@/components/ViewToggle";
-import { FilterPanel } from "@/components/FilterPanel";
 import { ItemGrid } from "@/components/ItemGrid";
 import { ItemList } from "@/components/ItemList";
+import { ViewToggle } from "@/components/ViewToggle";
+import { SearchAndFilter } from "@/components/SearchAndFilter";
 import { PostItemDialog } from "@/components/PostItemDialog";
-import { UserProfile } from "@/components/UserProfile";
-import { MessagesPanel } from "@/components/MessagesPanel";
-import { AuthButton } from "@/components/AuthButton";
-import { LoginDialog } from "@/components/LoginDialog";
-import { LocationPermissionPrompt } from "@/components/LocationPermissionPrompt";
+import { Button } from "@/components/ui/button";
+import { Plus } from "lucide-react";
+import { useListingStore } from "@/stores/listingStore";
 import { useMessageStore } from "@/stores/messageStore";
 import { useAuthStore } from "@/stores/authStore";
-import { useListingStore } from "@/stores/listingStore";
-import { useLocationDetection } from "@/hooks/useLocationDetection";
-import { useToast } from "@/components/ui/use-toast";
-import { useIsMobile } from "@/hooks/use-mobile";
+import { useToast } from "@/hooks/use-toast";
+import { Listing } from "@/stores/listingStore";
 
 const Index = () => {
-  const [currentView, setCurrentView] = useState("discover");
-  const isMobile = useIsMobile();
-  const [displayMode, setDisplayMode] = useState<"swipe" | "grid" | "list">(isMobile ? "swipe" : "grid");
+  const [viewType, setViewType] = useState<"grid" | "list">("grid");
   const [showPostDialog, setShowPostDialog] = useState(false);
-  const [showLoginDialog, setShowLoginDialog] = useState(false);
-  const [showFilters, setShowFilters] = useState(!isMobile);
-  const [showLocationPrompt, setShowLocationPrompt] = useState(false);
-  const [userLocation, setUserLocation] = useState("Seattle, WA");
-  const { createConversationFromSwipe, totalUnreadCount, fetchConversations } = useMessageStore();
-  const { isAuthenticated, canCreateListing, canMakeSwap, user } = useAuthStore();
-  const { 
-    filteredListings, 
-    markItemAsMessaged, 
+  
+  const {
+    listings,
+    isLoading,
     fetchListings,
-    setUserLocation: setStoreUserLocation,
+    selectedCategory,
+    selectedCondition,
+    searchTerm,
+    sortBy,
+    minRating,
+    maxDistance,
+    swapFilter,
+    filteredListings,
+    markItemAsMessaged,
+    setSelectedCategory,
+    setSelectedCondition,
+    setSearchTerm,
+    setSortBy,
+    setMinRating,
+    setMaxDistance,
+    setSwapFilter,
     setCurrentUserId,
-    geocodeLocation
   } = useListingStore();
-  const { requestLocationPermission } = useLocationDetection();
+
+  const { createConversationFromSwipe, checkListingHasActiveConversation } = useMessageStore();
+  const { user } = useAuthStore();
   const { toast } = useToast();
 
-  // Set current user ID in the listing store when user changes
-  useEffect(() => {
-    if (user?.id) {
-      setCurrentUserId(user.id);
-    } else {
-      setCurrentUserId(null);
-    }
-  }, [user?.id, setCurrentUserId]);
-
-  // Load listings on component mount and when user location changes
   useEffect(() => {
     fetchListings();
   }, [fetchListings]);
 
-  // Fetch unread messages count when authenticated
   useEffect(() => {
-    if (isAuthenticated) {
-      fetchConversations();
+    if (user?.id) {
+      setCurrentUserId(user.id);
     }
-  }, [isAuthenticated, fetchConversations]);
+  }, [user?.id, setCurrentUserId]);
 
-  // Handle location initialization and prompt
-  useEffect(() => {
-    const initializeLocation = async () => {
-      // If user has location in profile, use it
-      if (user?.location) {
-        setUserLocation(user.location);
-        const coords = await geocodeLocation(user.location);
-        if (coords) {
-          setStoreUserLocation(coords);
-          fetchListings();
-        }
-        return;
-      }
+  // Apply all filters
+  const getFilteredItems = () => {
+    let filtered = [...listings];
 
-      // Check if we should show location prompt
-      const hasSeenLocationPrompt = localStorage.getItem('hasSeenLocationPrompt');
-      if (!hasSeenLocationPrompt) {
-        setShowLocationPrompt(true);
-        localStorage.setItem('hasSeenLocationPrompt', 'true');
-      }
-    };
-    
-    initializeLocation();
-  }, [user?.location, geocodeLocation, setStoreUserLocation, fetchListings]);
-
-  // Update display mode when mobile state changes
-  useEffect(() => {
-    if (!isMobile && displayMode === "swipe") {
-      setDisplayMode("grid");
+    // Category filter
+    if (selectedCategory !== 'all') {
+      filtered = filtered.filter(item => item.category === selectedCategory);
     }
-    setShowFilters(!isMobile);
-  }, [isMobile, displayMode]);
 
-  const handleLocationSet = (location: string) => {
-    setUserLocation(location);
-    setShowLocationPrompt(false);
+    // Condition filter
+    if (selectedCondition !== 'all') {
+      filtered = filtered.filter(item => item.condition === selectedCondition);
+    }
+
+    // Search filter
+    if (searchTerm) {
+      const term = searchTerm.toLowerCase();
+      filtered = filtered.filter(item =>
+        item.title.toLowerCase().includes(term) ||
+        item.description.toLowerCase().includes(term) ||
+        item.location.toLowerCase().includes(term)
+      );
+    }
+
+    // Status filter
+    if (swapFilter === 'available') {
+      filtered = filtered.filter(item => !item.hasActiveMessage);
+    } else if (swapFilter === 'active') {
+      filtered = filtered.filter(item => item.hasActiveMessage);
+    }
+
+    // Sort
+    switch (sortBy) {
+      case 'newest':
+        filtered.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+        break;
+      case 'oldest':
+        filtered.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+        break;
+      case 'popular':
+        filtered.sort((a, b) => (b.views || 0) - (a.views || 0));
+        break;
+      case 'alphabetical':
+        filtered.sort((a, b) => a.title.localeCompare(b.title));
+        break;
+    }
+
+    return filtered;
   };
 
-  const handleManualLocationEntry = () => {
-    setShowLocationPrompt(false);
-    if (isAuthenticated) {
-      setCurrentView("profile");
-    } else {
-      setShowLoginDialog(true);
-    }
-  };
+  const filteredItems = getFilteredItems();
 
-  const handleLocationPromptDismiss = () => {
-    setShowLocationPrompt(false);
-  };
-
-  const handleLocationDetect = async () => {
-    const location = await requestLocationPermission();
-    if (location) {
-      setUserLocation(location);
-    }
-  };
-
-  // Get filtered items
-  const items = filteredListings;
-  const [currentItemIndex, setCurrentItemIndex] = useState(0);
-
-  const handleSwipe = async (direction: 'left' | 'right') => {
-    if (!isAuthenticated) {
-      setShowLoginDialog(true);
-      return;
-    }
-
-    if (!canMakeSwap()) {
+  const handleItemLike = async (item: Listing) => {
+    if (!user) {
       toast({
-        title: "Swap Limit Reached",
-        description: "You've reached your monthly swap limit. Upgrade to Premium for unlimited swaps!",
+        title: "Login Required",
+        description: "Please log in to start a conversation.",
         variant: "destructive"
       });
       return;
     }
 
-    const currentItem = items[currentItemIndex];
-    if (!currentItem) return;
-
-    if (direction === 'right' && currentItem.hasActiveMessage) {
+    if (item.userId === user.id) {
       toast({
-        title: "Already Interested",
-        description: `You've already shown interest in ${currentItem.title}.`,
+        title: "Cannot swap with yourself",
+        description: "You cannot start a conversation about your own listing.",
         variant: "destructive"
       });
       return;
     }
 
-    if (direction === 'right') {
-      try {
-        const conversationId = await createConversationFromSwipe(
-          currentItem.id, 
-          currentItem.title, 
-          currentItem.user_id || ''
-        );
-        markItemAsMessaged(currentItem.id);
-        
-        toast({
-          title: "Match Created!",
-          description: `You've shown interest in ${currentItem.title}! A conversation has been started.`,
-        });
-      } catch (error) {
-        console.error('Error creating conversation:', error);
-        toast({
-          title: "Error",
-          description: "Failed to start conversation. Please try again.",
-          variant: "destructive"
-        });
-      }
-    }
-    
-    if (currentItemIndex < items.length - 1) {
-      setCurrentItemIndex(currentItemIndex + 1);
-    } else {
-      setCurrentItemIndex(0);
-    }
-  };
-
-  const handleItemLike = async (item: any) => {
-    if (!isAuthenticated) {
-      setShowLoginDialog(true);
-      return;
-    }
-
-    if (!canMakeSwap()) {
+    // Check if listing already has an active conversation
+    const hasActiveConversation = await checkListingHasActiveConversation(item.id);
+    if (hasActiveConversation) {
       toast({
-        title: "Swap Limit Reached",
-        description: "You've reached your monthly swap limit. Upgrade to Premium for unlimited swaps!",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    if (item.hasActiveMessage) {
-      toast({
-        title: "Already Interested",
-        description: `You've already shown interest in ${item.title}.`,
+        title: "Conversation already exists",
+        description: "This item already has an active conversation.",
         variant: "destructive"
       });
       return;
@@ -209,18 +138,28 @@ const Index = () => {
 
     try {
       const conversationId = await createConversationFromSwipe(
-        item.id, 
-        item.title, 
-        item.user_id || ''
+        item.id,
+        item.title,
+        item.userId || ''
       );
-      markItemAsMessaged(item.id);
-      
-      toast({
-        title: "Interest Sent!",
-        description: `You've expressed interest in ${item.title}. A conversation has been started.`,
-      });
+
+      if (conversationId) {
+        // Mark the item as messaged
+        markItemAsMessaged(item.id);
+        
+        toast({
+          title: "Conversation Started!",
+          description: `Started a conversation about "${item.title}".`,
+        });
+      } else {
+        toast({
+          title: "Failed to start conversation",
+          description: "Please try again later.",
+          variant: "destructive"
+        });
+      }
     } catch (error) {
-      console.error('Error creating conversation:', error);
+      console.error('Error starting conversation:', error);
       toast({
         title: "Error",
         description: "Failed to start conversation. Please try again.",
@@ -229,278 +168,65 @@ const Index = () => {
     }
   };
 
-  const handlePostItem = () => {
-    if (!isAuthenticated) {
-      setShowLoginDialog(true);
-      return;
-    }
-
-    if (!canCreateListing()) {
-      toast({
-        title: "Listing Limit Reached",
-        description: "You've reached your monthly listing limit. Upgrade to Premium for unlimited listings!",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    setShowPostDialog(true);
-  };
-
-  const handleFilterChange = (filters: any) => {
-    console.log('Filters applied:', filters);
-  };
-
-  const resetStack = () => {
-    setCurrentItemIndex(0);
-  };
-
-  const convertToSwipeFormat = (listing: any) => {
-    return {
-      id: listing.id,
-      title: listing.title,
-      description: listing.description || '',
-      image: listing.images?.[0] || "https://images.unsplash.com/photo-1649972904349-6e44c42644a7?w=400&h=300&fit=crop",
-      user: listing.profiles?.first_name || listing.profiles?.username || 'User',
-      location: listing.location || 'Location not specified',
-      category: listing.category,
-      condition: listing.condition,
-      wantedItems: listing.wanted_items || [],
-      distance: listing.distance
-    };
-  };
-
-  if (currentView === "messages") {
-    if (!isAuthenticated) {
-      setShowLoginDialog(true);
-      setCurrentView("discover");
-      return null;
-    }
-    return <MessagesPanel onBack={() => setCurrentView("discover")} onLogin={() => setShowLoginDialog(true)} />;
-  }
-
-  if (currentView === "profile") {
-    if (!isAuthenticated) {
-      setShowLoginDialog(true);
-      setCurrentView("discover");
-      return null;
-    }
-    return <UserProfile onBack={() => setCurrentView("discover")} />;
-  }
-
-  if (currentView === "discover") {
+  if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50">
-        {/* Header */}
-        <header className="bg-white/90 backdrop-blur-sm border-b border-emerald-100 sticky top-0 z-50 shadow-sm">
-          <div className="container mx-auto px-4 py-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-500 rounded-xl flex items-center justify-center shadow-lg">
-                  <RotateCcw className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <h1 className="text-xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">SwapBoard</h1>
-                  <div className="flex items-center text-sm text-gray-600">
-                    <MapPin className="w-4 h-4 mr-1" />
-                    {userLocation}
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={handleLocationDetect}
-                      className="ml-2 h-6 px-2 text-xs hover:bg-emerald-100"
-                    >
-                      <Navigation className="w-3 h-3 mr-1" />
-                      Update
-                    </Button>
-                  </div>
-                </div>
-              </div>
-              <div className="flex items-center space-x-3">
-                {/* View Toggle */}
-                <ViewToggle currentView={displayMode} onViewChange={setDisplayMode} />
-                
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => setShowFilters(!showFilters)}
-                  className={`${showFilters ? 'bg-emerald-100 text-emerald-600' : ''}`}
-                >
-                  <Filter className="w-5 h-5" />
-                </Button>
-                
-                {/* Only show message icon for authenticated users */}
-                {isAuthenticated && (
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => setCurrentView("messages")}
-                    className="relative"
-                  >
-                    <MessageCircle className="w-5 h-5" />
-                    {totalUnreadCount > 0 && (
-                      <Badge className="absolute -top-1 -right-1 w-5 h-5 p-0 flex items-center justify-center bg-red-500 text-xs">
-                        {totalUnreadCount}
-                      </Badge>
-                    )}
-                  </Button>
-                )}
-                
-                <AuthButton
-                  onLogin={() => setShowLoginDialog(true)}
-                  onProfile={() => setCurrentView("profile")}
-                />
-                
-                <Button
-                  onClick={handlePostItem}
-                  className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 shadow-lg"
-                >
-                  <Plus className="w-4 h-4 mr-2" />
-                  Post Item
-                </Button>
-              </div>
-            </div>
-          </div>
-        </header>
-
-        {/* Location Permission Prompt */}
-        {showLocationPrompt && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-            <LocationPermissionPrompt
-              onLocationSet={handleLocationSet}
-              onManualEntry={handleManualLocationEntry}
-              onDismiss={handleLocationPromptDismiss}
-            />
-          </div>
-        )}
-
-        {/* Main Content */}
-        <main className="container mx-auto px-4 py-8">
-          {/* Filters */}
-          <FilterPanel 
-            onFilterChange={handleFilterChange}
-            isVisible={showFilters && displayMode !== "swipe"}
-          />
-
-          {/* Swipe Cards Area */}
-          {displayMode === "swipe" && isMobile && (
-            <>
-              <div className="text-center mb-8">
-                <h2 className="text-3xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent mb-2">
-                  Discover Amazing Items Nearby
-                </h2>
-                <p className="text-gray-600 max-w-2xl mx-auto">
-                  Swipe right on items you'd love to swap for, left to pass. 
-                  When both users like each other's items, you'll be matched to chat!
-                </p>
-              </div>
-
-              <div className="max-w-md mx-auto">
-                <div className="relative h-[600px] flex items-center justify-center">
-                  {items.length > 0 && currentItemIndex < items.length ? (
-                    <SwipeCard
-                      item={convertToSwipeFormat(items[currentItemIndex])}
-                      nextItem={currentItemIndex + 1 < items.length ? convertToSwipeFormat(items[currentItemIndex + 1]) : undefined}
-                      onSwipe={handleSwipe}
-                      key={`${items[currentItemIndex].id}-${currentItemIndex}`}
-                    />
-                  ) : (
-                    <Card className="w-full h-96 flex items-center justify-center border-2 border-dashed border-emerald-300">
-                      <CardContent className="text-center">
-                        <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                          <RotateCcw className="w-8 h-8 text-emerald-500" />
-                        </div>
-                        <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                          That's all for now!
-                        </h3>
-                        <p className="text-gray-600 mb-4">
-                          You've seen all available items in your area.
-                        </p>
-                        <Button onClick={resetStack} variant="outline" className="border-emerald-200">
-                          <RotateCcw className="w-4 h-4 mr-2" />
-                          Start Over
-                        </Button>
-                      </CardContent>
-                    </Card>
-                  )}
-                </div>
-
-                {/* Action Buttons */}
-                {items.length > 0 && currentItemIndex < items.length && (
-                  <div className="flex justify-center space-x-6 mt-6">
-                    <Button
-                      variant="outline"
-                      size="lg"
-                      className="w-16 h-16 rounded-full border-red-200 hover:bg-red-50 hover:border-red-300 shadow-lg"
-                      onClick={() => handleSwipe('left')}
-                    >
-                      <X className="w-8 h-8 text-red-500" />
-                    </Button>
-                    <Button
-                      size="lg"
-                      className="w-16 h-16 rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 shadow-lg"
-                      onClick={() => handleSwipe('right')}
-                    >
-                      <Heart className="w-8 h-8 text-white" />
-                    </Button>
-                  </div>
-                )}
-
-                {/* Swipe Counter */}
-                <div className="text-center mt-4">
-                  <Badge variant="secondary" className="text-sm bg-emerald-100 text-emerald-800">
-                    {Math.max(0, items.length - currentItemIndex)} items remaining today
-                  </Badge>
-                </div>
-              </div>
-            </>
-          )}
-
-          {/* Grid View */}
-          {displayMode === "grid" && (
-            <>
-              <div className="text-center mb-8">
-                <h2 className="text-2xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent mb-2">
-                  Browse Items
-                </h2>
-                <p className="text-gray-600">
-                  {items.length} item{items.length !== 1 ? 's' : ''} found
-                </p>
-              </div>
-              <ItemGrid items={items} onItemLike={handleItemLike} />
-            </>
-          )}
-
-          {/* List View */}
-          {displayMode === "list" && (
-            <>
-              <div className="text-center mb-8">
-                <h2 className="text-2xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent mb-2">
-                  Browse Items
-                </h2>
-                <p className="text-gray-600">
-                  {items.length} item{items.length !== 1 ? 's' : ''} found
-                </p>
-              </div>
-              <ItemList items={items} onItemLike={handleItemLike} />
-            </>
-          )}
-        </main>
-
-        <PostItemDialog 
-          open={showPostDialog} 
-          onOpenChange={setShowPostDialog} 
-        />
-
-        <LoginDialog
-          open={showLoginDialog}
-          onOpenChange={setShowLoginDialog}
-        />
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-lg">Loading items...</div>
       </div>
     );
   }
 
-  return null;
+  return (
+    <div className="container mx-auto px-4 py-8">
+      <div className="flex flex-col lg:flex-row gap-8">
+        {/* Filters Panel */}
+        <aside className="lg:w-80">
+          <SearchAndFilter />
+        </aside>
+
+        {/* Main Content */}
+        <main className="flex-1">
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center space-x-4">
+              <h1 className="text-2xl font-bold">Available Items</h1>
+              <ViewToggle viewType={viewType} onViewChange={setViewType} />
+            </div>
+            <Button 
+              onClick={() => setShowPostDialog(true)}
+              className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Post Item
+            </Button>
+          </div>
+
+          <div className="mb-4 text-sm text-gray-600">
+            Showing {filteredItems.length} of {listings.length} items
+          </div>
+
+          {filteredItems.length === 0 ? (
+            <div className="text-center py-12">
+              <p className="text-lg text-gray-500 mb-4">No items found matching your criteria.</p>
+              <p className="text-gray-400">Try adjusting your filters or search terms.</p>
+            </div>
+          ) : (
+            <>
+              {viewType === "grid" ? (
+                <ItemGrid items={filteredItems} onItemLike={handleItemLike} />
+              ) : (
+                <ItemList items={filteredItems} onItemLike={handleItemLike} />
+              )}
+            </>
+          )}
+        </main>
+      </div>
+
+      <PostItemDialog
+        open={showPostDialog}
+        onOpenChange={setShowPostDialog}
+      />
+    </div>
+  );
 };
 
 export default Index;

@@ -91,9 +91,24 @@ export const useListingStore = create<ListingState>()((set, get) => ({
 
   incrementViews: async (listingId: string) => {
     try {
+      // First get current views
+      const { data: currentListing, error: fetchError } = await supabase
+        .from('listings')
+        .select('views')
+        .eq('id', listingId)
+        .single();
+
+      if (fetchError) {
+        console.error('Error fetching current views:', fetchError);
+        return;
+      }
+
+      const newViews = (currentListing.views || 0) + 1;
+
+      // Update with new views count
       const { error } = await supabase
         .from('listings')
-        .update({ views: supabase.rpc('increment', { field: 'views' }) })
+        .update({ views: newViews })
         .eq('id', listingId);
 
       if (error) {
@@ -104,7 +119,7 @@ export const useListingStore = create<ListingState>()((set, get) => ({
       set(state => ({
         listings: state.listings.map(listing => 
           listing.id === listingId 
-            ? { ...listing, views: (listing.views || 0) + 1 }
+            ? { ...listing, views: newViews }
             : listing
         )
       }));

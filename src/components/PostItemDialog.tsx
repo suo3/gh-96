@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -222,7 +223,7 @@ export const PostItemDialog = ({ open, onOpenChange }: PostItemDialogProps) => {
 
           <div className="space-y-2">
             <Label>Images</Label>
-            <ImageUpload images={images} setImages={setImages} />
+            <ImageUpload onImagesUploaded={setImages} currentImages={images} />
           </div>
 
           <div className="space-y-2">
