@@ -28,7 +28,7 @@ export const ItemGrid = ({ items, onItemLike }: ItemGridProps) => {
 
   // Fetch ratings for all users when items change
   useEffect(() => {
-    const userIds = [...new Set(items.map(item => item.user_id).filter(Boolean))];
+    const userIds = [...new Set(items.map(item => item.userId).filter(Boolean))];
     userIds.forEach(userId => {
       if (userId) {
         fetchUserRatings(userId);
@@ -39,8 +39,8 @@ export const ItemGrid = ({ items, onItemLike }: ItemGridProps) => {
   // Apply rating filter at component level
   const filteredByRating = items.filter((item) => {
     if (minRating <= 0) return true;
-    if (!item.user_id) return true; // Keep items without user_id
-    const userRating = getAverageRating(item.user_id);
+    if (!item.userId) return true; // Keep items without userId
+    const userRating = getAverageRating(item.userId);
     return userRating >= minRating;
   });
 
@@ -59,7 +59,7 @@ export const ItemGrid = ({ items, onItemLike }: ItemGridProps) => {
       return;
     }
 
-    if (item.user_id === user.id) {
+    if (item.userId === user.id) {
       toast({
         title: "Cannot swap with yourself",
         description: "You cannot start a conversation about your own listing.",
@@ -83,7 +83,7 @@ export const ItemGrid = ({ items, onItemLike }: ItemGridProps) => {
       const conversationId = await createConversationFromSwipe(
         item.id,
         item.title,
-        item.user_id || ''
+        item.userId || ''
       );
 
       if (conversationId) {
@@ -190,8 +190,8 @@ export const ItemGrid = ({ items, onItemLike }: ItemGridProps) => {
                   {item.location || "Location not specified"}
                 </div>
                 <div className="flex items-center mb-3">
-                  {item.user_id && (
-                    <UserRatingDisplay userId={item.user_id} size="sm" />
+                  {item.userId && (
+                    <UserRatingDisplay userId={item.userId} size="sm" />
                   )}
                   <div className="flex items-center ml-4 text-sm text-gray-600">
                     <Eye className="w-4 h-4 mr-1" />

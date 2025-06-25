@@ -1,3 +1,4 @@
+
 import { create } from 'zustand';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuthStore } from './authStore';
@@ -15,8 +16,28 @@ export interface SwapRequest {
   updatedAt: Date;
 }
 
+export interface PendingSwap {
+  id: string;
+  item_title: string;
+  user1_id: string;
+  user2_id: string;
+  status: string;
+  created_at: string;
+}
+
+export interface Achievement {
+  id: string;
+  title: string;
+  description: string;
+  icon: 'Award' | 'RotateCcw' | 'Star';
+  color: 'emerald' | 'blue' | 'yellow';
+  unlockedAt: Date;
+}
+
 interface SwapState {
   swaps: SwapRequest[];
+  pendingSwaps: PendingSwap[];
+  achievements: Achievement[];
   isLoading: boolean;
   error: string | null;
   createSwapRequest: (request: Omit<SwapRequest, 'id' | 'createdAt' | 'updatedAt'>) => Promise<boolean>;
@@ -26,6 +47,8 @@ interface SwapState {
 
 export const useSwapStore = create<SwapState>()((set, get) => ({
   swaps: [],
+  pendingSwaps: [],
+  achievements: [],
   isLoading: false,
   error: null,
 

@@ -1,3 +1,4 @@
+
 import { create } from 'zustand';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuthStore } from './authStore';
@@ -18,6 +19,11 @@ export interface Listing {
   views: number;
   likes: number;
   status: 'active' | 'swapped' | 'inactive';
+  profiles?: {
+    first_name?: string;
+    username?: string;
+  };
+  hasActiveMessage?: boolean;
 }
 
 interface LocationCoordinates {
@@ -30,6 +36,13 @@ interface ListingState {
   userLocation: LocationCoordinates | null;
   isLoading: boolean;
   error: string | null;
+  selectedCategory: string;
+  selectedCondition: string;
+  swapFilter: string;
+  maxDistance: number;
+  minRating: number;
+  searchTerm: string;
+  sortBy: string;
   addListing: (listing: Omit<Listing, 'id' | 'createdAt' | 'views' | 'likes'>) => Promise<boolean>;
   fetchListings: () => Promise<void>;
   fetchUserListings: (userId: string) => Promise<Listing[]>;
@@ -37,6 +50,15 @@ interface ListingState {
   setUserLocation: (location: LocationCoordinates) => void;
   geocodeLocation: (address: string) => Promise<LocationCoordinates | null>;
   calculateDistance: (listing: Listing) => number | null;
+  setSelectedCategory: (category: string) => void;
+  setSelectedCondition: (condition: string) => void;
+  setSwapFilter: (filter: string) => void;
+  setMaxDistance: (distance: number) => void;
+  setMinRating: (rating: number) => void;
+  setSearchTerm: (term: string) => void;
+  setSortBy: (sort: string) => void;
+  incrementViews: (listingId: string) => Promise<void>;
+  updateListingConversationStatus: (listingId: string, hasActiveMessage: boolean) => void;
 }
 
 export const useListingStore = create<ListingState>()((set, get) => ({
@@ -44,6 +66,55 @@ export const useListingStore = create<ListingState>()((set, get) => ({
   userLocation: null,
   isLoading: false,
   error: null,
+  selectedCategory: 'all',
+  selectedCondition: 'all',
+  swapFilter: 'all',
+  maxDistance: 25,
+  minRating: 0,
+  searchTerm: '',
+  sortBy: 'newest',
+
+  setSelectedCategory: (category: string) => set({ selectedCategory: category }),
+  setSelectedCondition: (condition: string) => set({ selectedCondition: condition }),
+  setSwapFilter: (filter: string) => set({ swapFilter: filter }),
+  setMaxDistance: (distance: number) => set({ maxDistance: distance }),
+  setMinRating: (rating: number) => set({ minRating: rating }),
+  setSearchTerm: (term: string) => set({ searchTerm: term }),
+  setSortBy: (sort: string) => set({ sortBy: sort }),
+
+  incrementViews: async (listingId: string) => {
+    try {
+      const { error } = await supabase
+        .from('listings')
+        .update({ views: supabase.raw('views + 1') })
+        .eq('id', listingId);
+
+      if (error) {
+        console.error('Error incrementing views:', error);
+        return;
+      }
+
+      set(state => ({
+        listings: state.listings.map(listing => 
+          listing.id === listingId 
+            ? { ...listing, views: (listing.views || 0) + 1 }
+            : listing
+        )
+      }));
+    } catch (error) {
+      console.error('Error in incrementViews:', error);
+    }
+  },
+
+  updateListingConversationStatus: (listingId: string, hasActiveMessage: boolean) => {
+    set(state => ({
+      listings: state.listings.map(listing => 
+        listing.id === listingId 
+          ? { ...listing, hasActiveMessage }
+          : listing
+      )
+    }));
+  },
 
   addListing: async (listing) => {
     try {

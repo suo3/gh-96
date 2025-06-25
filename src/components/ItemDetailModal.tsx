@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
@@ -30,18 +31,18 @@ export const ItemDetailModal = ({ item, open, onOpenChange, onItemLike }: ItemDe
 
   // Fetch ratings when item changes
   useEffect(() => {
-    if (item?.user_id) {
-      fetchUserRatings(item.user_id);
+    if (item?.userId) {
+      fetchUserRatings(item.userId);
     }
-  }, [item?.user_id, fetchUserRatings]);
+  }, [item?.userId, fetchUserRatings]);
 
   // Increment views when modal opens and item is present
   useEffect(() => {
-    if (open && item?.id && user?.id !== item.user_id) {
+    if (open && item?.id && user?.id !== item.userId) {
       // Only increment views if the user is not the owner of the item
       incrementViews(item.id);
     }
-  }, [open, item?.id, item?.user_id, user?.id, incrementViews]);
+  }, [open, item?.id, item?.userId, user?.id, incrementViews]);
 
   if (!item) return null;
 
@@ -55,7 +56,7 @@ export const ItemDetailModal = ({ item, open, onOpenChange, onItemLike }: ItemDe
       return;
     }
 
-    if (item.user_id === user.id) {
+    if (item.userId === user.id) {
       toast({
         title: "Cannot swap with yourself",
         description: "You cannot start a conversation about your own listing.",
@@ -79,7 +80,7 @@ export const ItemDetailModal = ({ item, open, onOpenChange, onItemLike }: ItemDe
       const conversationId = await createConversationFromSwipe(
         item.id,
         item.title,
-        item.user_id || ''
+        item.userId || ''
       );
 
       if (conversationId) {
@@ -120,7 +121,7 @@ export const ItemDetailModal = ({ item, open, onOpenChange, onItemLike }: ItemDe
       return;
     }
 
-    if (item.user_id === user.id) {
+    if (item.userId === user.id) {
       toast({
         title: "Cannot rate yourself",
         description: "You cannot rate your own listings.",
@@ -176,7 +177,7 @@ export const ItemDetailModal = ({ item, open, onOpenChange, onItemLike }: ItemDe
   };
 
   const images = getItemImages(item);
-  const userRating = getUserRating(item.user_id);
+  const userRating = getUserRating(item.userId);
 
   return (
     <>
@@ -271,11 +272,11 @@ export const ItemDetailModal = ({ item, open, onOpenChange, onItemLike }: ItemDe
               </p>
 
               {/* Wanted Items */}
-              {item.wanted_items && item.wanted_items.length > 0 && (
+              {item.wantedItems && item.wantedItems.length > 0 && (
                 <div>
                   <h4 className="font-semibold text-gray-900 mb-2">Looking for:</h4>
                   <div className="flex flex-wrap gap-2">
-                    {item.wanted_items.map((wantedItem, index) => (
+                    {item.wantedItems.map((wantedItem, index) => (
                       <Badge key={index} variant="outline" className="border-emerald-200">
                         {wantedItem}
                       </Badge>
@@ -296,15 +297,15 @@ export const ItemDetailModal = ({ item, open, onOpenChange, onItemLike }: ItemDe
                         {getUserDisplayName(item)}
                       </div>
                       <div className="text-sm text-gray-600">
-                        Listed {new Date(item.created_at || '').toLocaleDateString()}
+                        Listed {new Date(item.createdAt || '').toLocaleDateString()}
                       </div>
                     </div>
                   </div>
                   
                   {/* Owner Rating */}
-                  {item.user_id && (
+                  {item.userId && (
                     <UserRatingDisplay 
-                      userId={item.user_id} 
+                      userId={item.userId} 
                       showCount={true} 
                       size="md" 
                     />
@@ -336,7 +337,7 @@ export const ItemDetailModal = ({ item, open, onOpenChange, onItemLike }: ItemDe
                   </Button>
                   
                   {/* Rate Owner Button */}
-                  {item.user_id && item.user_id !== user?.id && (
+                  {item.userId && item.userId !== user?.id && (
                     <Button
                       variant="outline"
                       onClick={handleRateOwner}
@@ -354,11 +355,11 @@ export const ItemDetailModal = ({ item, open, onOpenChange, onItemLike }: ItemDe
       </Dialog>
 
       {/* Rating Dialog */}
-      {item && item.user_id && (
+      {item && item.userId && (
         <UserRating
           open={showRatingDialog}
           onOpenChange={setShowRatingDialog}
-          ratedUserId={item.user_id}
+          ratedUserId={item.userId}
           ratedUserName={getUserDisplayName(item)}
           itemTitle={item.title}
         />
