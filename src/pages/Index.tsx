@@ -1,4 +1,3 @@
-
 import { AppHeader } from "@/components/AppHeader";
 import { ContentControls } from "@/components/ContentControls";
 import { SwipeMode } from "@/components/SwipeMode";
@@ -46,6 +45,7 @@ const Index = () => {
             showFilters={showFilters}
             onDisplayModeChange={setDisplayMode}
             onToggleFilters={() => setShowFilters(!showFilters)}
+            onFilterChange={handleFilterChange}
           />
         </div>
       ) : null}
@@ -63,11 +63,13 @@ const Index = () => {
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
-        {/* Filters */}
-        <FilterPanel 
-          onFilterChange={handleFilterChange}
-          isVisible={showFilters && displayMode !== "swipe"}
-        />
+        {/* Filters - Only show on desktop and when not in swipe mode */}
+        {!isMobile && (
+          <FilterPanel 
+            onFilterChange={handleFilterChange}
+            isVisible={showFilters && displayMode !== "swipe"}
+          />
+        )}
 
         {/* Swipe Mode */}
         {displayMode === "swipe" && isMobile && (
