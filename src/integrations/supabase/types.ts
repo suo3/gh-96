@@ -495,6 +495,23 @@ export type Database = {
         Args: { user_uuid?: string }
         Returns: Database["public"]["Enums"]["admin_role"]
       }
+      get_conversations_with_profiles: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          conv_id: string
+          item_title: string
+          created_at: string
+          updated_at: string
+          user1_id: string
+          user2_id: string
+          last_message: string
+          last_message_time: string
+          unread_count: number
+          partner_name: string
+          partner_username: string
+          partner_avatar: string
+        }[]
+      }
       get_conversations_with_unread: {
         Args: Record<PropertyKey, never>
         Returns: {

@@ -1,3 +1,4 @@
+
 import { create } from 'zustand';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuthStore } from './authStore';
@@ -14,6 +15,7 @@ export interface Message {
 export interface Conversation {
   id: string;
   partner: string;
+  partnerUsername: string;
   avatar: string;
   lastMessage: string;
   time: string;
@@ -33,6 +35,7 @@ interface MessageStore {
   isLoading: boolean;
   totalUnreadCount: number;
   error: string | null;
+  searchQuery: string;
   
   setSelectedConversation: (id: string | null) => void;
   sendMessage: (conversationId: string, text: string) => Promise<void>;
@@ -47,6 +50,8 @@ interface MessageStore {
   fetchConversations: () => Promise<void>;
   fetchMessages: (conversationId: string) => Promise<void>;
   checkListingHasActiveConversation: (listingId: string) => Promise<boolean>;
+  setSearchQuery: (query: string) => void;
+  getFilteredConversations: () => Conversation[];
 }
 
 export const useMessageStore = create<MessageStore>((set, get) => ({
@@ -57,6 +62,7 @@ export const useMessageStore = create<MessageStore>((set, get) => ({
   isLoading: false,
   totalUnreadCount: 0,
   error: null,
+  searchQuery: '',
   
   setSelectedConversation: (id) => {
     set({ selectedConversation: id });
@@ -74,7 +80,6 @@ export const useMessageStore = create<MessageStore>((set, get) => ({
     }
 
     try {
-      // Insert message into database
       const { error } = await supabase
         .from('messages')
         .insert({
@@ -88,7 +93,6 @@ export const useMessageStore = create<MessageStore>((set, get) => ({
         return;
       }
 
-      // Refresh messages and conversations to get latest state
       get().fetchMessages(conversationId);
       get().fetchConversations();
 
@@ -107,7 +111,6 @@ export const useMessageStore = create<MessageStore>((set, get) => ({
     try {
       console.log('Attempting to delete message:', messageId);
       
-      // Delete message from database
       const { error } = await supabase
         .from('messages')
         .delete()
@@ -119,8 +122,6 @@ export const useMessageStore = create<MessageStore>((set, get) => ({
       }
 
       console.log('Message deleted successfully:', messageId);
-
-      // Refresh messages and conversations to get latest state
       get().fetchMessages(conversationId);
       get().fetchConversations();
 
@@ -139,7 +140,6 @@ export const useMessageStore = create<MessageStore>((set, get) => ({
     try {
       console.log('Attempting to delete conversation:', conversationId);
       
-      // First delete all messages in the conversation
       const { error: messagesError } = await supabase
         .from('messages')
         .delete()
@@ -152,7 +152,6 @@ export const useMessageStore = create<MessageStore>((set, get) => ({
 
       console.log('Messages deleted successfully for conversation:', conversationId);
 
-      // Then delete the conversation
       const { error: conversationError } = await supabase
         .from('conversations')
         .delete()
@@ -165,7 +164,6 @@ export const useMessageStore = create<MessageStore>((set, get) => ({
 
       console.log('Conversation deleted successfully:', conversationId);
 
-      // Update local state - remove the conversation and its messages
       set(state => {
         const updatedConversations = state.conversations.filter(c => c.id !== conversationId);
         const updatedMessages = { ...state.messages };
@@ -192,7 +190,6 @@ export const useMessageStore = create<MessageStore>((set, get) => ({
 
     const unreadToClear = conversation.unread;
 
-    // Optimistic update
     set(state => ({
       conversations: state.conversations.map(c =>
         c.id === conversationId ? { ...c, unread: 0 } : c
@@ -209,7 +206,6 @@ export const useMessageStore = create<MessageStore>((set, get) => ({
     
     if (error) {
       console.error('Error marking messages as read', error);
-      // Revert on error
       set(state => ({
         conversations: state.conversations.map(c =>
           c.id === conversationId ? { ...c, unread: conversation.unread } : c
@@ -241,7 +237,6 @@ export const useMessageStore = create<MessageStore>((set, get) => ({
     try {
       console.log('Creating conversation for listing:', { listingId, itemTitle, listingOwnerId });
       
-      // Check if conversation already exists for this listing
       const { data: existingConversation, error: checkError } = await supabase
         .from('conversations')
         .select('id')
@@ -276,7 +271,6 @@ export const useMessageStore = create<MessageStore>((set, get) => ({
 
       console.log('Conversation created:', data);
 
-      // Add initial message
       await supabase
         .from('messages')
         .insert({
@@ -285,7 +279,6 @@ export const useMessageStore = create<MessageStore>((set, get) => ({
           content: `Hi! I'm interested in your ${itemTitle}.`
         });
 
-      // Refresh conversations
       get().fetchConversations();
       
       return data.id;
@@ -303,7 +296,6 @@ export const useMessageStore = create<MessageStore>((set, get) => ({
     }
 
     try {
-      // Add completion message to the conversation
       const { error: messageError } = await supabase
         .from('messages')
         .insert({
@@ -316,7 +308,6 @@ export const useMessageStore = create<MessageStore>((set, get) => ({
         console.error('Error adding completion message:', messageError);
       }
 
-      // Update local state immediately
       set((state) => ({
         conversations: state.conversations.map(conv =>
           conv.id === conversationId
@@ -339,7 +330,6 @@ export const useMessageStore = create<MessageStore>((set, get) => ({
     }
 
     try {
-      // Add rejection message
       await supabase
         .from('messages')
         .insert({
@@ -348,7 +338,6 @@ export const useMessageStore = create<MessageStore>((set, get) => ({
           content: 'I have declined this swap request.'
         });
 
-      // Update local state
       set((state) => ({
         conversations: state.conversations.map(conv =>
           conv.id === conversationId
@@ -375,7 +364,7 @@ export const useMessageStore = create<MessageStore>((set, get) => ({
     try {
       console.log('Fetching conversations for user:', session.user.id);
       
-      const { data, error } = await supabase.rpc('get_conversations_with_unread');
+      const { data, error } = await supabase.rpc('get_conversations_with_profiles');
 
       if (error) {
         console.error('Error fetching conversations:', error);
@@ -392,10 +381,8 @@ export const useMessageStore = create<MessageStore>((set, get) => ({
       }
 
       let totalUnread = 0;
-      // Transform database conversations to UI format
       const conversations: Conversation[] = data.map(conv => {
-        const partnerId = conv.user1_id === session.user.id ? conv.user2_id : conv.user1_id;
-        const isOwner = conv.user2_id === session.user.id; // Item owner is user2
+        const isOwner = conv.user2_id === session.user.id;
         
         let timeDisplay = new Date(conv.created_at).toLocaleDateString();
         if (conv.last_message_time) {
@@ -413,15 +400,16 @@ export const useMessageStore = create<MessageStore>((set, get) => ({
         
         return {
           id: conv.conv_id,
-          partner: 'Unknown User', // TODO: In real app, fetch from profiles using partnerId
-          avatar: 'U', // TODO: Fetch from profiles
+          partner: conv.partner_name || 'Unknown User',
+          partnerUsername: conv.partner_username || '',
+          avatar: conv.partner_avatar || 'U',
           lastMessage: conv.last_message || 'No messages yet.',
           time: timeDisplay,
           unread: unreadCount,
           item: conv.item_title || 'Unknown Item',
           status: 'matched' as const,
           isOwner,
-          listingId: (conv as any).listing_id // Cast to access listing_id if it exists
+          listingId: (conv as any).listing_id
         };
       });
 
@@ -453,7 +441,6 @@ export const useMessageStore = create<MessageStore>((set, get) => ({
         return;
       }
 
-      // Transform database messages to UI format
       const messages: Message[] = data.map(msg => ({
         id: msg.id,
         conversationId: msg.conversation_id,
@@ -490,5 +477,21 @@ export const useMessageStore = create<MessageStore>((set, get) => ({
       console.error('Error in checkListingHasActiveConversation:', error);
       return false;
     }
+  },
+
+  setSearchQuery: (query) => {
+    set({ searchQuery: query });
+  },
+
+  getFilteredConversations: () => {
+    const { conversations, searchQuery } = get();
+    if (!searchQuery.trim()) return conversations;
+    
+    const query = searchQuery.toLowerCase();
+    return conversations.filter(conv => 
+      conv.partner.toLowerCase().includes(query) ||
+      conv.item.toLowerCase().includes(query) ||
+      conv.lastMessage.toLowerCase().includes(query)
+    );
   }
 }));

@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,6 +9,7 @@ import { ArrowLeft, Send, MessageCircle, CheckCircle } from "lucide-react";
 import { ConversationList } from "./ConversationList";
 import { MessageBubble } from "./MessageBubble";
 import { TypingIndicator } from "./TypingIndicator";
+import { MessageSearch } from "./MessageSearch";
 import { useMessageStore } from "@/stores/messageStore";
 import { useAuthStore } from "@/stores/authStore";
 
@@ -27,7 +29,10 @@ export const MessagesPanel = ({ onBack, onLogin }: MessagesPanelProps) => {
     fetchConversations, 
     fetchMessages, 
     sendMessage,
-    isLoading 
+    isLoading,
+    searchQuery,
+    setSearchQuery,
+    getFilteredConversations
   } = useMessageStore();
   const { isAuthenticated, user } = useAuthStore();
 
@@ -118,7 +123,7 @@ export const MessagesPanel = ({ onBack, onLogin }: MessagesPanelProps) => {
     );
   }
 
-  // Get messages for the selected conversation
+  const filteredConversations = getFilteredConversations();
   const currentMessages = selectedChat ? messages[selectedChat] || [] : [];
   const selectedConversation = conversations.find(c => c.id === selectedChat);
 
@@ -137,7 +142,8 @@ export const MessagesPanel = ({ onBack, onLogin }: MessagesPanelProps) => {
                   Messages
                 </h1>
                 <div className="text-sm text-gray-600">
-                  {conversations.length} conversation{conversations.length !== 1 ? 's' : ''}
+                  {filteredConversations.length} conversation{filteredConversations.length !== 1 ? 's' : ''}
+                  {searchQuery && ` matching "${searchQuery}"`}
                 </div>
               </div>
             </div>
@@ -148,20 +154,32 @@ export const MessagesPanel = ({ onBack, onLogin }: MessagesPanelProps) => {
         </div>
       </header>
 
-      <div className="container mx-auto px-4 py-8">
-        <div className="grid lg:grid-cols-3 gap-6 h-[600px]">
+      <div className="container mx-auto px-4 py-6">
+        <div className="grid lg:grid-cols-3 gap-6 h-[700px]">
           {/* Conversations List */}
           <Card className="lg:col-span-1">
-            <CardHeader>
-              <CardTitle className="text-lg">Conversations</CardTitle>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-lg mb-3">Conversations</CardTitle>
+              <MessageSearch 
+                searchQuery={searchQuery}
+                onSearchChange={setSearchQuery}
+              />
             </CardHeader>
             <CardContent className="p-0">
-              {conversations.length > 0 ? (
+              {filteredConversations.length > 0 ? (
                 <ConversationList
-                  conversations={conversations}
+                  conversations={filteredConversations}
                   selectedChat={selectedChat}
                   onSelectChat={setSelectedChat}
                 />
+              ) : searchQuery ? (
+                <div className="p-8 text-center text-gray-500">
+                  <MessageCircle className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+                  <p className="text-sm">No conversations match your search</p>
+                  <p className="text-xs text-gray-400 mt-1">
+                    Try searching for different terms
+                  </p>
+                </div>
               ) : (
                 <div className="p-8 text-center text-gray-500">
                   <MessageCircle className="w-12 h-12 mx-auto mb-4 text-gray-300" />
@@ -181,13 +199,25 @@ export const MessagesPanel = ({ onBack, onLogin }: MessagesPanelProps) => {
                 <CardHeader className="border-b">
                   <div className="flex items-center justify-between">
                     <CardTitle className="text-lg flex items-center">
-                      {selectedConversation?.partner || 'Chat'}
-                      {selectedConversation?.status === 'completed' && (
-                        <div className="ml-3 flex items-center text-green-600">
-                          <CheckCircle className="w-5 h-5 mr-1" />
-                          <span className="text-sm font-medium">Swap Completed</span>
+                      <div className="w-8 h-8 bg-gradient-to-br from-emerald-400 to-teal-400 rounded-full flex items-center justify-center text-white text-sm font-bold mr-3">
+                        {selectedConversation?.avatar || 'U'}
+                      </div>
+                      <div>
+                        <div className="flex items-center">
+                          {selectedConversation?.partner || 'Chat'}
+                          {selectedConversation?.status === 'completed' && (
+                            <div className="ml-3 flex items-center text-green-600">
+                              <CheckCircle className="w-5 h-5 mr-1" />
+                              <span className="text-sm font-medium">Swap Completed</span>
+                            </div>
+                          )}
                         </div>
-                      )}
+                        {selectedConversation?.partnerUsername && (
+                          <div className="text-sm text-gray-500">
+                            @{selectedConversation.partnerUsername}
+                          </div>
+                        )}
+                      </div>
                     </CardTitle>
                     {selectedConversation?.status === 'completed' && (
                       <Badge variant="secondary" className="bg-green-100 text-green-800">
@@ -201,7 +231,7 @@ export const MessagesPanel = ({ onBack, onLogin }: MessagesPanelProps) => {
                     </p>
                   )}
                 </CardHeader>
-                <CardContent className="p-0 flex flex-col h-[500px]">
+                <CardContent className="p-0 flex flex-col h-[600px]">
                   {/* Messages Area */}
                   <ScrollArea className="flex-1 p-4">
                     <div className="space-y-4">
@@ -281,7 +311,7 @@ export const MessagesPanel = ({ onBack, onLogin }: MessagesPanelProps) => {
                 </CardContent>
               </>
             ) : (
-              <CardContent className="flex items-center justify-center h-[500px] text-center">
+              <CardContent className="flex items-center justify-center h-[600px] text-center">
                 <div>
                   <MessageCircle className="w-16 h-16 mx-auto mb-4 text-gray-300" />
                   <h3 className="text-lg font-medium text-gray-900 mb-2">
@@ -290,6 +320,13 @@ export const MessagesPanel = ({ onBack, onLogin }: MessagesPanelProps) => {
                   <p className="text-gray-600">
                     Choose a conversation from the list to start chatting
                   </p>
+                  {searchQuery && (
+                    <p className="text-sm text-gray-500 mt-2">
+                      {filteredConversations.length === 0 
+                        ? "No conversations match your search" 
+                        : "Select from filtered results"}
+                    </p>
+                  )}
                 </div>
               </CardContent>
             )}
