@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -19,9 +20,10 @@ interface FilterPanelProps {
   }) => void;
   isVisible: boolean;
   isMobile?: boolean;
+  showSearch?: boolean;
 }
 
-export const FilterPanel = ({ onFilterChange, isVisible, isMobile = false }: FilterPanelProps) => {
+export const FilterPanel = ({ onFilterChange, isVisible, isMobile = false, showSearch = true }: FilterPanelProps) => {
   const { 
     selectedCategory, setSelectedCategory,
     selectedCondition, setSelectedCondition,
@@ -142,15 +144,17 @@ export const FilterPanel = ({ onFilterChange, isVisible, isMobile = false }: Fil
   return (
     <CardWrapper {...cardProps}>
       <ContentWrapper {...contentProps}>
-        {/* Search Bar */}
-        <div className={isMobile ? "mb-6" : "mb-4"}>
-          <Input
-            placeholder="Search items..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="bg-white/80 backdrop-blur-sm border-emerald-200"
-          />
-        </div>
+        {/* Search Bar - Only show if showSearch is true */}
+        {showSearch && (
+          <div className={isMobile ? "mb-6" : "mb-4"}>
+            <Input
+              placeholder="Search items..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="bg-white/80 backdrop-blur-sm border-emerald-200"
+            />
+          </div>
+        )}
 
         <div className={`grid ${isMobile ? 'grid-cols-1 gap-4' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4'} ${isMobile ? 'mb-6' : 'mb-4'}`}>
           {/* Category Select */}

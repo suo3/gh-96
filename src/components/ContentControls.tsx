@@ -4,7 +4,9 @@ import { Filter } from "lucide-react";
 import { ViewToggle } from "@/components/ViewToggle";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { FilterPanel } from "@/components/FilterPanel";
+import { Input } from "@/components/ui/input";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useListingStore } from "@/stores/listingStore";
 
 interface ContentControlsProps {
   displayMode: "swipe" | "grid" | "list";
@@ -22,10 +24,11 @@ export const ContentControls = ({
   onFilterChange
 }: ContentControlsProps) => {
   const isMobile = useIsMobile();
+  const { searchTerm, setSearchTerm } = useListingStore();
 
   return (
     <div className="container mx-auto px-4 py-4">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between mb-4">
         <ViewToggle currentView={displayMode} onViewChange={onDisplayModeChange} />
         
         {isMobile ? (
@@ -42,7 +45,7 @@ export const ContentControls = ({
             <SheetContent side="bottom" className="h-[80vh] overflow-y-auto">
               <SheetHeader>
                 <SheetTitle className="text-lg font-semibold text-emerald-800">
-                  Filter Items
+                  More Filters
                 </SheetTitle>
               </SheetHeader>
               <div className="mt-6">
@@ -50,6 +53,7 @@ export const ContentControls = ({
                   onFilterChange={onFilterChange}
                   isVisible={true}
                   isMobile={true}
+                  showSearch={false}
                 />
               </div>
             </SheetContent>
@@ -65,6 +69,18 @@ export const ContentControls = ({
           </Button>
         )}
       </div>
+      
+      {/* Mobile Search Bar - Always Visible */}
+      {isMobile && (
+        <div className="mb-4">
+          <Input
+            placeholder="Search items..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="bg-white/80 backdrop-blur-sm border-emerald-200"
+          />
+        </div>
+      )}
     </div>
   );
 };
