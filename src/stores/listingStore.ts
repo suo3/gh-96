@@ -83,6 +83,7 @@ interface ListingStore {
   
   // Computed
   getFilteredListings: () => Listing[];
+  applyFilters: () => void;
   
   // New method for conversation tracking
   updateListingConversationStatus: (listingId: string, hasActiveMessage: boolean) => void;
@@ -111,7 +112,10 @@ export const useListingStore = create<ListingStore>((set, get) => ({
   userLocation: null,
   filteredListings: [],
 
-  setListings: (listings) => set({ listings, filteredListings: listings }),
+  setListings: (listings) => {
+    set({ listings });
+    get().applyFilters();
+  },
 
   fetchCategories: async () => {
     try {
@@ -162,9 +166,11 @@ export const useListingStore = create<ListingStore>((set, get) => ({
       set(state => ({
         listings: [data, ...state.listings],
         userListings: [data, ...state.userListings],
-        filteredListings: [data, ...state.filteredListings],
         isLoading: false
       }));
+      
+      // Apply filters after adding new listing
+      get().applyFilters();
     } catch (error) {
       console.error('Error adding listing:', error);
       set({ error: error instanceof Error ? error.message : 'Failed to add listing', isLoading: false });
@@ -192,11 +198,11 @@ export const useListingStore = create<ListingStore>((set, get) => ({
         userListings: state.userListings.map(listing => 
           listing.id === id ? { ...listing, ...data } : listing
         ),
-        filteredListings: state.filteredListings.map(listing => 
-          listing.id === id ? { ...listing, ...data } : listing
-        ),
         isLoading: false
       }));
+      
+      // Apply filters after updating listing
+      get().applyFilters();
     } catch (error) {
       console.error('Error updating listing:', error);
       set({ error: error instanceof Error ? error.message : 'Failed to update listing', isLoading: false });
@@ -218,9 +224,11 @@ export const useListingStore = create<ListingStore>((set, get) => ({
       set(state => ({
         listings: state.listings.filter(listing => listing.id !== id),
         userListings: state.userListings.filter(listing => listing.id !== id),
-        filteredListings: state.filteredListings.filter(listing => listing.id !== id),
         isLoading: false
       }));
+      
+      // Apply filters after deleting listing
+      get().applyFilters();
     } catch (error) {
       console.error('Error deleting listing:', error);
       set({ error: error instanceof Error ? error.message : 'Failed to delete listing', isLoading: false });
@@ -284,9 +292,11 @@ export const useListingStore = create<ListingStore>((set, get) => ({
 
       set({ 
         listings: listingsWithConversationStatus,
-        filteredListings: listingsWithConversationStatus,
         isLoading: false 
       });
+      
+      // Apply filters after setting listings
+      get().applyFilters();
     } catch (error) {
       console.error('Error fetching listings:', error);
       set({ 
@@ -333,13 +343,11 @@ export const useListingStore = create<ListingStore>((set, get) => ({
           listing.id === id 
             ? { ...listing, views: (listing.views || 0) + 1 }
             : listing
-        ),
-        filteredListings: state.filteredListings.map(listing =>
-          listing.id === id 
-            ? { ...listing, views: (listing.views || 0) + 1 }
-            : listing
         )
       }));
+      
+      // Apply filters after incrementing views
+      get().applyFilters();
     } catch (error) {
       console.error('Error incrementing views:', error);
     }
@@ -354,33 +362,72 @@ export const useListingStore = create<ListingStore>((set, get) => ({
           listing.id === id 
             ? { ...listing, likes: (listing.likes || 0) + 1 }
             : listing
-        ),
-        filteredListings: state.filteredListings.map(listing =>
-          listing.id === id 
-            ? { ...listing, likes: (listing.likes || 0) + 1 }
-            : listing
         )
       }));
+      
+      // Apply filters after incrementing likes
+      get().applyFilters();
     } catch (error) {
       console.error('Error incrementing likes:', error);
     }
   },
 
-  // Filter setters
-  setSelectedCategory: (category) => set({ selectedCategory: category }),
-  setSearchQuery: (query) => set({ searchQuery: query }),
-  setSelectedLocation: (location) => set({ selectedLocation: location }),
-  setSelectedCondition: (condition) => set({ selectedCondition: condition }),
-  setPriceRange: (range) => set({ priceRange: range }),
-  setSortBy: (sortBy) => set({ sortBy }),
+  // Filter setters - now they trigger applyFilters
+  setSelectedCategory: (category) => {
+    set({ selectedCategory: category });
+    get().applyFilters();
+  },
+  
+  setSearchQuery: (query) => {
+    set({ searchQuery: query });
+    get().applyFilters();
+  },
+  
+  setSelectedLocation: (location) => {
+    set({ selectedLocation: location });
+    get().applyFilters();
+  },
+  
+  setSelectedCondition: (condition) => {
+    set({ selectedCondition: condition });
+    get().applyFilters();
+  },
+  
+  setPriceRange: (range) => {
+    set({ priceRange: range });
+    get().applyFilters();
+  },
+  
+  setSortBy: (sortBy) => {
+    set({ sortBy });
+    get().applyFilters();
+  },
+  
   setViewMode: (mode) => set({ viewMode: mode }),
-  setMinRating: (rating) => set({ minRating: rating }),
+  
+  setMinRating: (rating) => {
+    set({ minRating: rating });
+    get().applyFilters();
+  },
 
-  // New setters
-  setSwapFilter: (filter) => set({ swapFilter: filter }),
-  setMaxDistance: (distance) => set({ maxDistance: distance }),
-  setSearchTerm: (term) => set({ searchTerm: term }),
+  // New setters - now they trigger applyFilters
+  setSwapFilter: (filter) => {
+    set({ swapFilter: filter });
+    get().applyFilters();
+  },
+  
+  setMaxDistance: (distance) => {
+    set({ maxDistance: distance });
+    get().applyFilters();
+  },
+  
+  setSearchTerm: (term) => {
+    set({ searchTerm: term });
+    get().applyFilters();
+  },
+  
   setUserLocation: (location) => set({ userLocation: location }),
+  
   setCurrentUserId: (userId) => {
     // This might be handled differently depending on your auth system
     console.log('Setting current user ID:', userId);
@@ -403,36 +450,47 @@ export const useListingStore = create<ListingStore>((set, get) => ({
         listing.id === itemId 
           ? { ...listing, hasActiveMessage: true }
           : listing
-      ),
-      filteredListings: state.filteredListings.map(listing =>
-        listing.id === itemId 
-          ? { ...listing, hasActiveMessage: true }
-          : listing
       )
     }));
+    
+    // Apply filters after marking as messaged
+    get().applyFilters();
   },
 
-  clearFilters: () => set({
-    selectedCategory: 'all',
-    searchQuery: '',
-    selectedLocation: '',
-    selectedCondition: 'all',
-    priceRange: [0, 1000],
-    sortBy: 'newest',
-    minRating: 0,
-    swapFilter: 'all',
-    searchTerm: ''
-  }),
+  clearFilters: () => {
+    set({
+      selectedCategory: 'all',
+      searchQuery: '',
+      selectedLocation: '',
+      selectedCondition: 'all',
+      priceRange: [0, 1000],
+      sortBy: 'newest',
+      minRating: 0,
+      swapFilter: 'all',
+      searchTerm: ''
+    });
+    get().applyFilters();
+  },
 
-  getFilteredListings: () => {
+  applyFilters: () => {
     const state = get();
     let filtered = [...state.listings];
 
-    // Apply filters
+    console.log('Applying filters with state:', {
+      selectedCategory: state.selectedCategory,
+      searchTerm: state.searchTerm,
+      selectedCondition: state.selectedCondition,
+      swapFilter: state.swapFilter,
+      totalListings: filtered.length
+    });
+
+    // Apply category filter
     if (state.selectedCategory && state.selectedCategory !== 'all') {
       filtered = filtered.filter(item => item.category === state.selectedCategory);
+      console.log(`After category filter (${state.selectedCategory}):`, filtered.length);
     }
 
+    // Apply search query filter
     if (state.searchQuery) {
       const query = state.searchQuery.toLowerCase();
       filtered = filtered.filter(item => 
@@ -442,8 +500,10 @@ export const useListingStore = create<ListingStore>((set, get) => ({
           wanted.toLowerCase().includes(query)
         ))
       );
+      console.log(`After search query filter (${state.searchQuery}):`, filtered.length);
     }
 
+    // Apply search term filter
     if (state.searchTerm) {
       const query = state.searchTerm.toLowerCase();
       filtered = filtered.filter(item => 
@@ -453,22 +513,30 @@ export const useListingStore = create<ListingStore>((set, get) => ({
           wanted.toLowerCase().includes(query)
         ))
       );
+      console.log(`After search term filter (${state.searchTerm}):`, filtered.length);
     }
 
+    // Apply location filter
     if (state.selectedLocation) {
       filtered = filtered.filter(item => 
         item.location && item.location.toLowerCase().includes(state.selectedLocation.toLowerCase())
       );
+      console.log(`After location filter (${state.selectedLocation}):`, filtered.length);
     }
 
+    // Apply condition filter
     if (state.selectedCondition && state.selectedCondition !== 'all') {
       filtered = filtered.filter(item => item.condition === state.selectedCondition);
+      console.log(`After condition filter (${state.selectedCondition}):`, filtered.length);
     }
 
+    // Apply swap filter
     if (state.swapFilter === 'unswapped') {
       filtered = filtered.filter(item => !item.hasActiveMessage);
+      console.log('After unswapped filter:', filtered.length);
     } else if (state.swapFilter === 'swapped') {
       filtered = filtered.filter(item => item.hasActiveMessage);
+      console.log('After swapped filter:', filtered.length);
     }
 
     // Apply sorting
@@ -495,7 +563,12 @@ export const useListingStore = create<ListingStore>((set, get) => ({
         break;
     }
 
-    return filtered;
+    console.log('Final filtered results:', filtered.length);
+    set({ filteredListings: filtered });
+  },
+
+  getFilteredListings: () => {
+    return get().filteredListings;
   },
 
   updateListingConversationStatus: (listingId, hasActiveMessage) => {
@@ -504,13 +577,11 @@ export const useListingStore = create<ListingStore>((set, get) => ({
         listing.id === listingId 
           ? { ...listing, hasActiveMessage }
           : listing
-      ),
-      filteredListings: state.filteredListings.map(listing =>
-        listing.id === listingId 
-          ? { ...listing, hasActiveMessage }
-          : listing
       )
     }));
+    
+    // Apply filters after updating conversation status
+    get().applyFilters();
   },
 
   checkAndUpdateConversationStatuses: async () => {
@@ -534,10 +605,8 @@ export const useListingStore = create<ListingStore>((set, get) => ({
         })
       );
 
-      set({ 
-        listings: updatedListings,
-        filteredListings: updatedListings
-      });
+      set({ listings: updatedListings });
+      get().applyFilters();
     } catch (error) {
       console.error('Error updating conversation statuses:', error);
     }
