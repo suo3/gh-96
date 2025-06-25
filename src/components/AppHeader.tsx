@@ -33,6 +33,7 @@ export const AppHeader = ({ userLocation, onLocationDetect, onPostItem }: AppHea
   const { user, isAuthenticated } = useAuthStore();
   const navigate = useNavigate();
   const [showLocationInput, setShowLocationInput] = useState(false);
+  const [locationValue, setLocationValue] = useState("");
 
   // Check if user is admin
   const { data: isAdmin } = useQuery({
@@ -55,6 +56,14 @@ export const AppHeader = ({ userLocation, onLocationDetect, onPostItem }: AppHea
 
   const handleAdmin = () => {
     navigate("/admin");
+  };
+
+  const handleLocationSubmit = () => {
+    if (locationValue.trim()) {
+      console.log('Location set:', locationValue);
+      setShowLocationInput(false);
+      setLocationValue("");
+    }
   };
 
   return (
@@ -155,12 +164,19 @@ export const AppHeader = ({ userLocation, onLocationDetect, onPostItem }: AppHea
           <div className="bg-white rounded-lg p-6 w-full max-w-md">
             <h3 className="text-lg font-semibold mb-4">Set Your Location</h3>
             <LocationInput
-              onLocationSet={(location) => {
-                console.log('Location set:', location);
-                setShowLocationInput(false);
-              }}
-              onDetectLocation={onLocationDetect}
+              value={locationValue}
+              onChange={setLocationValue}
+              placeholder="Enter your location"
+              className="mb-4"
             />
+            <div className="flex gap-2">
+              <Button onClick={handleLocationSubmit} className="flex-1">
+                Set Location
+              </Button>
+              <Button onClick={onLocationDetect} variant="outline">
+                Detect
+              </Button>
+            </div>
             <Button
               variant="outline"
               onClick={() => setShowLocationInput(false)}

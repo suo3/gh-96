@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useMessageStore } from "@/stores/messageStore";
@@ -8,6 +7,11 @@ import { useLocationDetection } from "@/hooks/useLocationDetection";
 import { useToast } from "@/components/ui/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
 
+interface Location {
+  latitude: number;
+  longitude: number;
+}
+
 export const useIndexLogic = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -16,7 +20,7 @@ export const useIndexLogic = () => {
   const [showLoginDialog, setShowLoginDialog] = useState(false);
   const [showFilters, setShowFilters] = useState(!isMobile);
   const [showLocationPrompt, setShowLocationPrompt] = useState(false);
-  const [userLocation, setUserLocation] = useState("Seattle, WA");
+  const [userLocation, setUserLocation] = useState<Location | null>(null);
   
   const { createConversationFromSwipe, totalUnreadCount, fetchConversations } = useMessageStore();
   const { isAuthenticated, canCreateListing, canMakeSwap, user } = useAuthStore();
@@ -88,7 +92,7 @@ export const useIndexLogic = () => {
   }, [isMobile, displayMode]);
 
   const handleLocationSet = (location: string) => {
-    setUserLocation(location);
+    // For now, just close the prompt - would need geocoding to convert to coordinates
     setShowLocationPrompt(false);
   };
 
@@ -108,7 +112,8 @@ export const useIndexLogic = () => {
   const handleLocationDetect = async () => {
     const location = await requestLocationPermission();
     if (location) {
-      setUserLocation(location);
+      // Would need to convert string location to coordinates
+      console.log('Location detected:', location);
     }
   };
 
