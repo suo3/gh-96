@@ -1,186 +1,176 @@
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import { MapPin, Plus, Bell, User, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { AuthButton } from "@/components/AuthButton";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Badge } from "@/components/ui/badge";
+import { AuthButton } from "./AuthButton";
+import { LocationInput } from "./LocationInput";
 import { useAuthStore } from "@/stores/authStore";
-import { useNavigate, useLocation } from "react-router-dom";
-import { MessageSquare, Plus, MapPin, Shield, Home } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { useQuery } from "@tanstack/react-query";
+
+interface Location {
+  latitude: number;
+  longitude: number;
+}
 
 interface AppHeaderProps {
-  userLocation?: { latitude: number; longitude: number } | null;
-  onLocationDetect?: () => void;
-  onPostItem?: () => void;
+  userLocation: Location | null;
+  onLocationDetect: () => void;
+  onPostItem: () => void;
 }
 
 export const AppHeader = ({ userLocation, onLocationDetect, onPostItem }: AppHeaderProps) => {
   const { user, isAuthenticated } = useAuthStore();
   const navigate = useNavigate();
-  const location = useLocation();
-  const [isAdmin, setIsAdmin] = useState(false);
+  const [showLocationInput, setShowLocationInput] = useState(false);
 
-  useEffect(() => {
-    const checkAdminStatus = async () => {
-      if (!isAuthenticated || !user) return;
+  // Check if user is admin
+  const { data: isAdmin } = useQuery({
+    queryKey: ['isAdmin', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return false;
+      const { data } = await supabase.rpc('is_admin');
+      return data || false;
+    },
+    enabled: !!user?.id
+  });
 
-      try {
-        const { data: adminCheck } = await supabase.rpc('is_admin');
-        setIsAdmin(!!adminCheck);
-      } catch (error) {
-        console.error('Error checking admin status:', error);
-      }
-    };
+  const handleProfile = () => {
+    navigate("/profile");
+  };
 
-    checkAdminStatus();
-  }, [isAuthenticated, user]);
+  const handleMessages = () => {
+    navigate("/messages");
+  };
 
-  const isHomePage = location.pathname === "/";
-  const isMessagesPage = location.pathname === "/messages";
-  const isProfilePage = location.pathname === "/profile";
-  const isAdminPage = location.pathname === "/admin";
+  const handleAdmin = () => {
+    navigate("/admin");
+  };
 
   return (
-    <header className="bg-white/90 backdrop-blur-md border-b border-emerald-100 sticky top-0 z-40">
-      <div className="container mx-auto px-4 py-4">
+    <header className="bg-white/90 backdrop-blur-sm border-b border-emerald-100 sticky top-0 z-40">
+      <div className="container mx-auto px-4 py-3">
         <div className="flex items-center justify-between">
+          {/* Logo */}
           <div className="flex items-center space-x-2">
-            <div 
-              className="text-2xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent cursor-pointer"
-              onClick={() => navigate("/")}
-            >
-              SwapBoard
-            </div>
+            <h1 className="text-2xl font-bold text-emerald-600">SwapBoard</h1>
           </div>
 
-          <nav className="hidden md:flex items-center space-x-4">
-            {!isHomePage && (
-              <Button 
-                variant="ghost" 
-                onClick={() => navigate("/")}
-                className="flex items-center gap-2"
+          {/* Location */}
+          <div className="hidden md:flex items-center space-x-2 text-sm text-gray-600">
+            <MapPin className="w-4 h-4" />
+            {userLocation ? (
+              <span>Location detected</span>
+            ) : (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowLocationInput(true)}
+                className="text-gray-600 hover:text-emerald-600"
               >
-                <Home className="w-4 h-4" />
-                Home
+                Set location
               </Button>
             )}
-            
-            {isAuthenticated && (
-              <>
-                <Button 
-                  variant="ghost" 
-                  onClick={() => navigate("/messages")}
-                  className={`flex items-center gap-2 ${isMessagesPage ? 'bg-emerald-100 text-emerald-700' : ''}`}
-                >
-                  <MessageSquare className="w-4 h-4" />
-                  Messages
-                </Button>
-                
-                <Button 
-                  variant="ghost" 
-                  onClick={() => navigate("/profile")}
-                  className={`flex items-center gap-2 ${isProfilePage ? 'bg-emerald-100 text-emerald-700' : ''}`}
-                >
-                  Profile
-                </Button>
+          </div>
 
-                {isAdmin && (
-                  <Button 
-                    variant="ghost" 
-                    onClick={() => navigate("/admin")}
-                    className={`flex items-center gap-2 ${isAdminPage ? 'bg-emerald-100 text-emerald-700' : ''}`}
-                  >
-                    <Shield className="w-4 h-4" />
-                    Admin
-                  </Button>
-                )}
-              </>
-            )}
-          </nav>
-
+          {/* User Actions */}
           <div className="flex items-center space-x-2">
-            {isAuthenticated && onPostItem && (
-              <Button onClick={onPostItem} size="sm" className="hidden sm:flex">
-                <Plus className="w-4 h-4 mr-2" />
-                Post Item
-              </Button>
+            {isAuthenticated ? (
+              <>
+                {/* Post Item Button */}
+                <Button
+                  onClick={onPostItem}
+                  className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  <span className="hidden sm:inline">Post Item</span>
+                </Button>
+
+                {/* User Menu */}
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                      <Avatar className="h-8 w-8">
+                        <AvatarImage src={user?.avatar} alt={user?.firstName} />
+                        <AvatarFallback>
+                          {user?.firstName?.[0]?.toUpperCase() || 'U'}
+                        </AvatarFallback>
+                      </Avatar>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="w-56" align="end" forceMount>
+                    <div className="flex items-center justify-start gap-2 p-2">
+                      <div className="flex flex-col space-y-1 leading-none">
+                        <p className="font-medium">{user?.firstName} {user?.lastName}</p>
+                        <p className="w-[200px] truncate text-sm text-muted-foreground">
+                          @{user?.username}
+                        </p>
+                        <div className="flex items-center gap-2">
+                          <Badge variant="outline" className="text-xs">
+                            {user?.coins || 0} coins
+                          </Badge>
+                        </div>
+                      </div>
+                    </div>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={handleProfile}>
+                      <User className="mr-2 h-4 w-4" />
+                      Profile
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={handleMessages}>
+                      <Bell className="mr-2 h-4 w-4" />
+                      Messages
+                    </DropdownMenuItem>
+                    {isAdmin && (
+                      <DropdownMenuItem onClick={handleAdmin}>
+                        <Shield className="mr-2 h-4 w-4" />
+                        Admin Dashboard
+                      </DropdownMenuItem>
+                    )}
+                    <DropdownMenuSeparator />
+                    <AuthButton />
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </>
+            ) : (
+              <AuthButton />
             )}
-            
-            {isAuthenticated && onLocationDetect && !userLocation && (
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={onLocationDetect}
-                className="hidden sm:flex"
-              >
-                <MapPin className="w-4 h-4 mr-2" />
-                Set Location
-              </Button>
-            )}
-            
-            <AuthButton />
           </div>
         </div>
-
-        {/* Mobile Navigation */}
-        {isAuthenticated && (
-          <div className="md:hidden mt-4 flex justify-around border-t border-emerald-100 pt-4">
-            {!isHomePage && (
-              <Button 
-                variant="ghost" 
-                size="sm"
-                onClick={() => navigate("/")}
-                className="flex flex-col items-center gap-1"
-              >
-                <Home className="w-4 h-4" />
-                <span className="text-xs">Home</span>
-              </Button>
-            )}
-            
-            <Button 
-              variant="ghost" 
-              size="sm"
-              onClick={() => navigate("/messages")}
-              className={`flex flex-col items-center gap-1 ${isMessagesPage ? 'bg-emerald-100 text-emerald-700' : ''}`}
-            >
-              <MessageSquare className="w-4 h-4" />
-              <span className="text-xs">Messages</span>
-            </Button>
-            
-            <Button 
-              variant="ghost" 
-              size="sm"
-              onClick={() => navigate("/profile")}
-              className={`flex flex-col items-center gap-1 ${isProfilePage ? 'bg-emerald-100 text-emerald-700' : ''}`}
-            >
-              <span className="text-xs">Profile</span>
-            </Button>
-
-            {isAdmin && (
-              <Button 
-                variant="ghost" 
-                size="sm"
-                onClick={() => navigate("/admin")}
-                className={`flex flex-col items-center gap-1 ${isAdminPage ? 'bg-emerald-100 text-emerald-700' : ''}`}
-              >
-                <Shield className="w-4 h-4" />
-                <span className="text-xs">Admin</span>
-              </Button>
-            )}
-            
-            {onPostItem && (
-              <Button 
-                variant="ghost" 
-                size="sm"
-                onClick={onPostItem}
-                className="flex flex-col items-center gap-1"
-              >
-                <Plus className="w-4 h-4" />
-                <span className="text-xs">Post</span>
-              </Button>
-            )}
-          </div>
-        )}
       </div>
+
+      {/* Location Input Modal */}
+      {showLocationInput && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+            <h3 className="text-lg font-semibold mb-4">Set Your Location</h3>
+            <LocationInput
+              onLocationSet={(location) => {
+                console.log('Location set:', location);
+                setShowLocationInput(false);
+              }}
+              onDetectLocation={onLocationDetect}
+            />
+            <Button
+              variant="outline"
+              onClick={() => setShowLocationInput(false)}
+              className="mt-4 w-full"
+            >
+              Cancel
+            </Button>
+          </div>
+        </div>
+      )}
     </header>
   );
 };

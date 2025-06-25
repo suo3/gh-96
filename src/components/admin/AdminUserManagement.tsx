@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { UserPlus, Search, Shield, Eye } from "lucide-react";
+import { UserPlus, Search, Shield, Users } from "lucide-react";
 import { toast } from "sonner";
 
 interface User {

@@ -36,8 +36,8 @@ export const AdminSettings = ({ adminRole }: AdminSettingsProps) => {
 
   const fetchDatabaseStats = async () => {
     try {
-      // Get table counts (simplified for demo)
-      const tables = ['profiles', 'listings', 'swaps', 'messages', 'conversations'];
+      // Get table counts for specific tables
+      const tables = ['profiles', 'listings', 'swaps', 'messages', 'conversations'] as const;
       let totalRows = 0;
 
       for (const table of tables) {
