@@ -1,93 +1,185 @@
 
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { MapPin, MessageCircle, Plus, Navigation, RotateCcw, User } from "lucide-react";
 import { AuthButton } from "@/components/AuthButton";
-import { useMessageStore } from "@/stores/messageStore";
 import { useAuthStore } from "@/stores/authStore";
-import { useToast } from "@/components/ui/use-toast";
+import { useNavigate, useLocation } from "react-router-dom";
+import { MessageSquare, Plus, MapPin, Shield, Home } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 interface AppHeaderProps {
-  userLocation: string;
-  onLocationDetect: () => Promise<void>;
-  onPostItem: () => void;
+  userLocation?: { latitude: number; longitude: number } | null;
+  onLocationDetect?: () => void;
+  onPostItem?: () => void;
 }
 
-export const AppHeader = ({
-  userLocation,
-  onLocationDetect,
-  onPostItem
-}: AppHeaderProps) => {
+export const AppHeader = ({ userLocation, onLocationDetect, onPostItem }: AppHeaderProps) => {
+  const { user, isAuthenticated } = useAuthStore();
   const navigate = useNavigate();
-  const { totalUnreadCount } = useMessageStore();
-  const { isAuthenticated } = useAuthStore();
+  const location = useLocation();
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    const checkAdminStatus = async () => {
+      if (!isAuthenticated || !user) return;
+
+      try {
+        const { data: adminCheck } = await supabase.rpc('is_admin');
+        setIsAdmin(!!adminCheck);
+      } catch (error) {
+        console.error('Error checking admin status:', error);
+      }
+    };
+
+    checkAdminStatus();
+  }, [isAuthenticated, user]);
+
+  const isHomePage = location.pathname === "/";
+  const isMessagesPage = location.pathname === "/messages";
+  const isProfilePage = location.pathname === "/profile";
+  const isAdminPage = location.pathname === "/admin";
 
   return (
-    <header className="bg-white/90 backdrop-blur-sm border-b border-emerald-100 sticky top-0 z-50 shadow-sm">
+    <header className="bg-white/90 backdrop-blur-md border-b border-emerald-100 sticky top-0 z-40">
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-500 rounded-xl flex items-center justify-center shadow-lg">
-              <RotateCcw className="w-6 h-6 text-white" />
-            </div>
-            <div>
-              <h1 className="text-xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">SwapBoard</h1>
-              <div className="flex items-center text-sm text-gray-600">
-                <MapPin className="w-4 h-4 mr-1" />
-                {userLocation}
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={onLocationDetect}
-                  className="ml-2 h-6 px-2 text-xs hover:bg-emerald-100"
-                >
-                  <Navigation className="w-3 h-3 mr-1" />
-                  Update
-                </Button>
-              </div>
+          <div className="flex items-center space-x-2">
+            <div 
+              className="text-2xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent cursor-pointer"
+              onClick={() => navigate("/")}
+            >
+              SwapBoard
             </div>
           </div>
-          <div className="flex items-center space-x-3">
+
+          <nav className="hidden md:flex items-center space-x-4">
+            {!isHomePage && (
+              <Button 
+                variant="ghost" 
+                onClick={() => navigate("/")}
+                className="flex items-center gap-2"
+              >
+                <Home className="w-4 h-4" />
+                Home
+              </Button>
+            )}
+            
             {isAuthenticated && (
               <>
-                <Button
-                  variant="ghost"
-                  size="icon"
+                <Button 
+                  variant="ghost" 
                   onClick={() => navigate("/messages")}
-                  className="relative"
+                  className={`flex items-center gap-2 ${isMessagesPage ? 'bg-emerald-100 text-emerald-700' : ''}`}
                 >
-                  <MessageCircle className="w-5 h-5" />
-                  {totalUnreadCount > 0 && (
-                    <Badge className="absolute -top-1 -right-1 w-5 h-5 p-0 flex items-center justify-center bg-red-500 text-xs">
-                      {totalUnreadCount}
-                    </Badge>
-                  )}
+                  <MessageSquare className="w-4 h-4" />
+                  Messages
                 </Button>
                 
-                <Button
-                  variant="ghost"
-                  size="icon"
+                <Button 
+                  variant="ghost" 
                   onClick={() => navigate("/profile")}
-                  className="hover:bg-emerald-100"
+                  className={`flex items-center gap-2 ${isProfilePage ? 'bg-emerald-100 text-emerald-700' : ''}`}
                 >
-                  <User className="w-5 h-5" />
+                  Profile
                 </Button>
+
+                {isAdmin && (
+                  <Button 
+                    variant="ghost" 
+                    onClick={() => navigate("/admin")}
+                    className={`flex items-center gap-2 ${isAdminPage ? 'bg-emerald-100 text-emerald-700' : ''}`}
+                  >
+                    <Shield className="w-4 h-4" />
+                    Admin
+                  </Button>
+                )}
               </>
+            )}
+          </nav>
+
+          <div className="flex items-center space-x-2">
+            {isAuthenticated && onPostItem && (
+              <Button onClick={onPostItem} size="sm" className="hidden sm:flex">
+                <Plus className="w-4 h-4 mr-2" />
+                Post Item
+              </Button>
+            )}
+            
+            {isAuthenticated && onLocationDetect && !userLocation && (
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={onLocationDetect}
+                className="hidden sm:flex"
+              >
+                <MapPin className="w-4 h-4 mr-2" />
+                Set Location
+              </Button>
             )}
             
             <AuthButton />
-            
-            <Button
-              onClick={onPostItem}
-              className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 shadow-lg"
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              Post Item
-            </Button>
           </div>
         </div>
+
+        {/* Mobile Navigation */}
+        {isAuthenticated && (
+          <div className="md:hidden mt-4 flex justify-around border-t border-emerald-100 pt-4">
+            {!isHomePage && (
+              <Button 
+                variant="ghost" 
+                size="sm"
+                onClick={() => navigate("/")}
+                className="flex flex-col items-center gap-1"
+              >
+                <Home className="w-4 h-4" />
+                <span className="text-xs">Home</span>
+              </Button>
+            )}
+            
+            <Button 
+              variant="ghost" 
+              size="sm"
+              onClick={() => navigate("/messages")}
+              className={`flex flex-col items-center gap-1 ${isMessagesPage ? 'bg-emerald-100 text-emerald-700' : ''}`}
+            >
+              <MessageSquare className="w-4 h-4" />
+              <span className="text-xs">Messages</span>
+            </Button>
+            
+            <Button 
+              variant="ghost" 
+              size="sm"
+              onClick={() => navigate("/profile")}
+              className={`flex flex-col items-center gap-1 ${isProfilePage ? 'bg-emerald-100 text-emerald-700' : ''}`}
+            >
+              <span className="text-xs">Profile</span>
+            </Button>
+
+            {isAdmin && (
+              <Button 
+                variant="ghost" 
+                size="sm"
+                onClick={() => navigate("/admin")}
+                className={`flex flex-col items-center gap-1 ${isAdminPage ? 'bg-emerald-100 text-emerald-700' : ''}`}
+              >
+                <Shield className="w-4 h-4" />
+                <span className="text-xs">Admin</span>
+              </Button>
+            )}
+            
+            {onPostItem && (
+              <Button 
+                variant="ghost" 
+                size="sm"
+                onClick={onPostItem}
+                className="flex flex-col items-center gap-1"
+              >
+                <Plus className="w-4 h-4" />
+                <span className="text-xs">Post</span>
+              </Button>
+            )}
+          </div>
+        )}
       </div>
     </header>
   );

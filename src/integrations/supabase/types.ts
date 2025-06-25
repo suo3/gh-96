@@ -9,6 +9,33 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      admin_users: {
+        Row: {
+          granted_at: string | null
+          granted_by: string | null
+          id: string
+          is_active: boolean | null
+          role: Database["public"]["Enums"]["admin_role"]
+          user_id: string
+        }
+        Insert: {
+          granted_at?: string | null
+          granted_by?: string | null
+          id?: string
+          is_active?: boolean | null
+          role?: Database["public"]["Enums"]["admin_role"]
+          user_id: string
+        }
+        Update: {
+          granted_at?: string | null
+          granted_by?: string | null
+          id?: string
+          is_active?: boolean | null
+          role?: Database["public"]["Enums"]["admin_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
       categories: {
         Row: {
           created_at: string
@@ -313,6 +340,50 @@ export type Database = {
           },
         ]
       }
+      reported_listings: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          id: string
+          listing_id: string
+          reason: string
+          reporter_id: string
+          resolved_at: string | null
+          resolved_by: string | null
+          status: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          listing_id: string
+          reason: string
+          reporter_id: string
+          resolved_at?: string | null
+          resolved_by?: string | null
+          status?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          listing_id?: string
+          reason?: string
+          reporter_id?: string
+          resolved_at?: string | null
+          resolved_by?: string | null
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reported_listings_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       subscribers: {
         Row: {
           created_at: string
@@ -420,6 +491,10 @@ export type Database = {
         Args: { required_coins: number }
         Returns: boolean
       }
+      get_admin_role: {
+        Args: { user_uuid?: string }
+        Returns: Database["public"]["Enums"]["admin_role"]
+      }
       get_conversations_with_unread: {
         Args: Record<PropertyKey, never>
         Returns: {
@@ -450,6 +525,10 @@ export type Database = {
         Args: { listing_uuid: string }
         Returns: undefined
       }
+      is_admin: {
+        Args: { user_uuid?: string }
+        Returns: boolean
+      }
       listing_has_active_conversation: {
         Args: { listing_uuid: string }
         Returns: boolean
@@ -460,7 +539,7 @@ export type Database = {
       }
     }
     Enums: {
-      [_ in never]: never
+      admin_role: "super_admin" | "moderator" | "support"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -575,6 +654,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      admin_role: ["super_admin", "moderator", "support"],
+    },
   },
 } as const

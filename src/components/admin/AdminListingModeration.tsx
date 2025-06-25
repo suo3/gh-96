@@ -1,0 +1,227 @@
+
+import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Flag, Eye, Check, X, AlertTriangle } from "lucide-react";
+import { toast } from "sonner";
+
+interface ReportedListing {
+  id: string;
+  listing_id: string;
+  listing_title: string;
+  listing_category: string;
+  reporter_username: string;
+  reason: string;
+  description: string;
+  status: string;
+  created_at: string;
+}
+
+export const AdminListingModeration = () => {
+  const [reports, setReports] = useState<ReportedListing[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [statusFilter, setStatusFilter] = useState("pending");
+  const [searchTerm, setSearchTerm] = useState("");
+
+  useEffect(() => {
+    fetchReports();
+  }, []);
+
+  const fetchReports = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('reported_listings')
+        .select(`
+          *,
+          listings!inner(title, category),
+          profiles!reporter_id(username)
+        `)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      const formattedReports: ReportedListing[] = data.map(report => ({
+        id: report.id,
+        listing_id: report.listing_id,
+        listing_title: (report.listings as any)?.title || 'Unknown',
+        listing_category: (report.listings as any)?.category || 'Unknown',
+        reporter_username: (report.profiles as any)?.username || 'Unknown',
+        reason: report.reason,
+        description: report.description || '',
+        status: report.status,
+        created_at: report.created_at
+      }));
+
+      setReports(formattedReports);
+    } catch (error) {
+      console.error('Error fetching reports:', error);
+      toast.error('Failed to load reports');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const updateReportStatus = async (reportId: string, status: string) => {
+    try {
+      const { error } = await supabase
+        .from('reported_listings')
+        .update({
+          status,
+          resolved_by: (await supabase.auth.getUser()).data.user?.id,
+          resolved_at: new Date().toISOString()
+        })
+        .eq('id', reportId);
+
+      if (error) throw error;
+
+      toast.success(`Report ${status} successfully`);
+      fetchReports();
+    } catch (error) {
+      console.error('Error updating report:', error);
+      toast.error('Failed to update report');
+    }
+  };
+
+  const filteredReports = reports.filter(report => {
+    const matchesStatus = statusFilter === "all" || report.status === statusFilter;
+    const matchesSearch = report.listing_title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         report.reporter_username.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         report.reason.toLowerCase().includes(searchTerm.toLowerCase());
+
+    return matchesStatus && matchesSearch;
+  });
+
+  if (loading) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Loading reports...</CardTitle>
+        </CardHeader>
+      </Card>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Flag className="w-5 h-5" />
+            Content Moderation
+          </CardTitle>
+          <CardDescription>
+            Review and manage reported listings
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-col sm:flex-row gap-4 mb-6">
+            <Input
+              placeholder="Search reports..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="flex-1"
+            />
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger className="w-full sm:w-48">
+                <SelectValue placeholder="Filter by status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Reports</SelectItem>
+                <SelectItem value="pending">Pending</SelectItem>
+                <SelectItem value="resolved">Resolved</SelectItem>
+                <SelectItem value="dismissed">Dismissed</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Listing</TableHead>
+                  <TableHead>Reporter</TableHead>
+                  <TableHead>Reason</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Date</TableHead>
+                  <TableHead>Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredReports.map((report) => (
+                  <TableRow key={report.id}>
+                    <TableCell>
+                      <div>
+                        <div className="font-medium">{report.listing_title}</div>
+                        <div className="text-sm text-gray-500">{report.listing_category}</div>
+                      </div>
+                    </TableCell>
+                    <TableCell>@{report.reporter_username}</TableCell>
+                    <TableCell>
+                      <div>
+                        <div className="font-medium">{report.reason}</div>
+                        {report.description && (
+                          <div className="text-sm text-gray-500 mt-1">
+                            {report.description}
+                          </div>
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <Badge 
+                        variant={
+                          report.status === 'pending' ? 'destructive' :
+                          report.status === 'resolved' ? 'default' : 'secondary'
+                        }
+                      >
+                        {report.status === 'pending' && <AlertTriangle className="w-3 h-3 mr-1" />}
+                        {report.status}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      {new Date(report.created_at).toLocaleDateString()}
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex gap-2">
+                        {report.status === 'pending' && (
+                          <>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => updateReportStatus(report.id, 'resolved')}
+                            >
+                              <Check className="w-4 h-4 mr-1" />
+                              Resolve
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => updateReportStatus(report.id, 'dismissed')}
+                            >
+                              <X className="w-4 h-4 mr-1" />
+                              Dismiss
+                            </Button>
+                          </>
+                        )}
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+
+          {filteredReports.length === 0 && (
+            <div className="text-center py-8 text-gray-500">
+              No reports found matching your criteria.
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  );
+};
