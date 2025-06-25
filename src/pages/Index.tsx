@@ -329,10 +329,7 @@ const Index = () => {
                 </Button>
               )}
               
-              <AuthButton
-                onLogin={() => setShowLoginDialog(true)}
-                onProfile={() => navigate("/profile")}
-              />
+              <AuthButton />
               
               <Button
                 onClick={handlePostItem}
