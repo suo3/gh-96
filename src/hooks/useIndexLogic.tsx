@@ -67,7 +67,12 @@ export const useIndexLogic = () => {
       if (user?.location) {
         const coords = await geocodeLocation(user.location);
         if (coords) {
-          setUserLocation(coords);
+          // Convert lat/lng to latitude/longitude to match Location interface
+          const location: Location = {
+            latitude: coords.lat,
+            longitude: coords.lng
+          };
+          setUserLocation(location);
           setStoreUserLocation(coords);
           fetchListings();
         }
@@ -91,8 +96,20 @@ export const useIndexLogic = () => {
     setShowFilters(!isMobile);
   }, [isMobile, displayMode]);
 
-  const handleLocationSet = (location: string) => {
-    // For now, just close the prompt - would need geocoding to convert to coordinates
+  const handleLocationSet = async (location: string) => {
+    if (location.trim()) {
+      const coords = await geocodeLocation(location);
+      if (coords) {
+        // Convert lat/lng to latitude/longitude to match Location interface
+        const locationObj: Location = {
+          latitude: coords.lat,
+          longitude: coords.lng
+        };
+        setUserLocation(locationObj);
+        setStoreUserLocation(coords);
+        fetchListings();
+      }
+    }
     setShowLocationPrompt(false);
   };
 
