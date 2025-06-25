@@ -29,7 +29,7 @@ export const ListingManager = () => {
     // Transform the data to match the expected format
     const transformedListings = listings.map(listing => ({
       ...listing,
-      createdAt: new Date(listing.createdAt),
+      createdAt: new Date(listing.created_at || ''),
     }));
     setUserListings(transformedListings);
     setIsLoading(false);
@@ -54,7 +54,7 @@ export const ListingManager = () => {
   };
 
   const handleToggleStatus = async (id: string, currentStatus: string, title: string) => {
-    const newStatus = currentStatus === 'active' ? 'inactive' : 'active';
+    const newStatus = currentStatus === 'active' ? 'paused' : 'active';
     await updateListing(id, { status: newStatus });
     await loadUserListings();
     toast({
@@ -93,7 +93,7 @@ export const ListingManager = () => {
                     <Badge 
                       variant={
                         listing.status === 'active' ? 'default' : 
-                        listing.status === 'swapped' ? 'secondary' : 'outline'
+                        listing.status === 'completed' ? 'secondary' : 'outline'
                       }
                     >
                       {listing.status}
@@ -123,7 +123,7 @@ export const ListingManager = () => {
                   <div className="space-y-2">
                     <p className="text-sm font-medium">Looking for:</p>
                     <div className="flex flex-wrap gap-2">
-                      {(listing.wantedItems || []).map((item: string, index: number) => (
+                      {(listing.wanted_items || []).map((item: string, index: number) => (
                         <Badge key={index} variant="outline" className="text-xs">
                           {item}
                         </Badge>
@@ -132,7 +132,7 @@ export const ListingManager = () => {
                   </div>
 
                   <div className="flex items-center space-x-2 pt-4">
-                    {listing.status !== 'swapped' && (
+                    {listing.status !== 'completed' && (
                       <>
                         <Button
                           variant="outline"

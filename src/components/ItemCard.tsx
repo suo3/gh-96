@@ -90,8 +90,8 @@ export const ItemCard = ({ item, onItemClick, onItemLike }: ItemCardProps) => {
                 </span>
               </div>
               
-              {item.userId && (
-                <UserRatingDisplay userId={item.userId} size="sm" />
+              {item.user_id && (
+                <UserRatingDisplay userId={item.user_id} size="sm" />
               )}
             </div>
           </div>

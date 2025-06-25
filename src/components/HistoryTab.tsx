@@ -40,7 +40,7 @@ export const HistoryTab = () => {
 
   const getSwapPartner = (swap: any) => {
     if (!user) return 'Unknown';
-    return swap.user1Id === user.id ? 'User 2' : 'User 1';
+    return swap.user1_id === user.id ? 'User 2' : 'User 1';
   };
 
   const getUserSwapItem = (swap: any) => {
@@ -48,9 +48,9 @@ export const HistoryTab = () => {
     if (swap.item_title) {
       return swap.item_title;
     }
-    // For completed swaps, we have item1Title and item2Title
-    if (!user) return swap.item1Title;
-    return swap.user1Id === user.id ? swap.item1Title : swap.item2Title;
+    // For completed swaps, we have item1_title and item2_title
+    if (!user) return swap.item1_title;
+    return swap.user1_id === user.id ? swap.item1_title : swap.item2_title;
   };
 
   const getPartnerSwapItem = (swap: any) => {
@@ -59,28 +59,15 @@ export const HistoryTab = () => {
       return 'Pending...';
     }
     // For completed swaps
-    if (!user) return swap.item2Title;
-    return swap.user1Id === user.id ? swap.item2Title : swap.item1Title;
-  };
-
-  // Helper function to get the creation date consistently
-  const getCreationDate = (activity: any) => {
-    // For swap requests, use createdAt
-    if (activity.createdAt) {
-      return activity.createdAt;
-    }
-    // For pending swaps, use created_at
-    if (activity.created_at) {
-      return new Date(activity.created_at);
-    }
-    return new Date();
+    if (!user) return swap.item2_title;
+    return swap.user1_id === user.id ? swap.item2_title : swap.item1_title;
   };
 
   // Combine and sort all activities
   const allActivities = [
     ...swaps.map(swap => ({ ...swap, type: 'completed' })),
     ...pendingSwaps.map(swap => ({ ...swap, type: 'pending' }))
-  ].sort((a, b) => getCreationDate(b).getTime() - getCreationDate(a).getTime());
+  ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
   const totalActivities = allActivities.length;
 
@@ -109,7 +96,7 @@ export const HistoryTab = () => {
                     <div className="font-medium text-gray-900">{getUserSwapItem(activity)}</div>
                     <div className="flex items-center gap-2">
                       <Badge variant="secondary">
-                        {getCreationDate(activity).toLocaleDateString()}
+                        {new Date(activity.created_at).toLocaleDateString()}
                       </Badge>
                       {activity.type === 'pending' && (
                         <MessageCircle className="w-4 h-4 text-blue-500" />

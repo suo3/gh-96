@@ -1,19 +1,18 @@
 
 import { create } from 'zustand';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuthStore } from './authStore';
 
-export interface SwapRequest {
+export interface Swap {
   id: string;
-  item1Id: string;
-  item1Title: string;
-  item2Id: string;
-  item2Title: string;
-  user1Id: string;
-  user2Id: string;
-  status: 'pending' | 'accepted' | 'rejected' | 'completed';
-  createdAt: Date;
-  updatedAt: Date;
+  item1_id: string | null;
+  item2_id: string | null;
+  user1_id: string;
+  user2_id: string;
+  item1_title: string;
+  item2_title: string;
+  status: 'pending' | 'completed' | 'cancelled';
+  created_at: string;
+  updated_at: string;
 }
 
 export interface PendingSwap {
@@ -21,166 +20,169 @@ export interface PendingSwap {
   item_title: string;
   user1_id: string;
   user2_id: string;
-  status: string;
+  status: 'pending';
   created_at: string;
+  updated_at: string;
 }
 
 export interface Achievement {
   id: string;
   title: string;
   description: string;
-  icon: 'Award' | 'RotateCcw' | 'Star';
-  color: 'emerald' | 'blue' | 'yellow';
+  icon: string;
   unlockedAt: Date;
+  color: string;
 }
 
 interface SwapState {
-  swaps: SwapRequest[];
+  swaps: Swap[];
   pendingSwaps: PendingSwap[];
   achievements: Achievement[];
   isLoading: boolean;
-  error: string | null;
-  createSwapRequest: (request: Omit<SwapRequest, 'id' | 'createdAt' | 'updatedAt'>) => Promise<boolean>;
   fetchUserSwaps: (userId: string) => Promise<void>;
-  updateSwapStatus: (swapId: string, status: SwapRequest['status']) => Promise<boolean>;
+  generateAchievements: (totalSwaps: number, totalPending: number) => Achievement[];
+  saveAchievementsToProfile: (userId: string, achievements: Achievement[]) => Promise<void>;
 }
 
-export const useSwapStore = create<SwapState>()((set, get) => ({
+export const useSwapStore = create<SwapState>((set, get) => ({
   swaps: [],
   pendingSwaps: [],
   achievements: [],
   isLoading: false,
-  error: null,
-
-  createSwapRequest: async (request) => {
-    try {
-      set({ isLoading: true, error: null });
-      
-      // Check if user has enough coins
-      const { canMakeSwap, spendCoins } = useAuthStore.getState();
-      if (!canMakeSwap()) {
-        set({ error: 'Insufficient coins to make swap. You need 2 coins.', isLoading: false });
-        return false;
-      }
-
-      // Spend the coins first
-      const coinSpent = await spendCoins(2, 'Initiated swap: ' + request.item1Title + ' for ' + request.item2Title);
-      if (!coinSpent) {
-        set({ error: 'Failed to deduct coins. Please try again.', isLoading: false });
-        return false;
-      }
-
-      const { data, error } = await supabase
-        .from('swaps')
-        .insert([
-          {
-            item1_id: request.item1Id,
-            item1_title: request.item1Title,
-            item2_id: request.item2Id,
-            item2_title: request.item2Title,
-            user1_id: request.user1Id,
-            user2_id: request.user2Id,
-            status: request.status as 'pending' | 'accepted' | 'rejected' | 'completed',
-          },
-        ])
-        .select()
-        .single();
-
-      if (error) {
-        console.error('Error creating swap request:', error);
-        set({ error: error.message, isLoading: false });
-        return false;
-      }
-
-      const newSwap: SwapRequest = {
-        id: data.id,
-        item1Id: data.item1_id,
-        item1Title: data.item1_title,
-        item2Id: data.item2_id,
-        item2Title: data.item2_title,
-        user1Id: data.user1_id,
-        user2Id: data.user2_id,
-        status: data.status as 'pending' | 'accepted' | 'rejected' | 'completed',
-        createdAt: new Date(data.created_at),
-        updatedAt: new Date(data.updated_at),
-      };
-
-      set(state => ({
-        swaps: [newSwap, ...state.swaps],
-        isLoading: false,
-        error: null,
-      }));
-
-      return true;
-    } catch (error) {
-      console.error('Error in createSwapRequest:', error);
-      set({ error: 'Failed to create swap request', isLoading: false });
-      return false;
-    }
-  },
 
   fetchUserSwaps: async (userId: string) => {
     try {
-      set({ isLoading: true, error: null });
-      const { data, error } = await supabase
+      set({ isLoading: true });
+      
+      // Fetch completed swaps where the user is either user1 or user2
+      const { data: swaps, error: swapsError } = await supabase
         .from('swaps')
         .select('*')
         .or(`user1_id.eq.${userId},user2_id.eq.${userId}`)
         .order('created_at', { ascending: false });
 
-      if (error) {
-        console.error('Error fetching swaps:', error);
-        set({ error: error.message, isLoading: false });
-        return;
+      if (swapsError) {
+        console.error('Error fetching swaps:', swapsError);
       }
 
-      const fetchedSwaps: SwapRequest[] = data.map(swap => ({
-        id: swap.id,
-        item1Id: swap.item1_id,
-        item1Title: swap.item1_title,
-        item2Id: swap.item2_id,
-        item2Title: swap.item2_title,
-        user1Id: swap.user1_id,
-        user2Id: swap.user2_id,
-        status: swap.status as 'pending' | 'accepted' | 'rejected' | 'completed',
-        createdAt: new Date(swap.created_at),
-        updatedAt: new Date(swap.updated_at),
+      // Fetch pending conversations (representing pending swaps)
+      const { data: conversations, error: conversationsError } = await supabase
+        .from('conversations')
+        .select('*')
+        .or(`user1_id.eq.${userId},user2_id.eq.${userId}`)
+        .order('created_at', { ascending: false });
+
+      if (conversationsError) {
+        console.error('Error fetching conversations:', conversationsError);
+      }
+
+      // Type the swaps data properly
+      const typedSwaps: Swap[] = (swaps || []).map(swap => ({
+        ...swap,
+        status: swap.status as 'pending' | 'completed' | 'cancelled'
       }));
 
-      set({ swaps: fetchedSwaps, isLoading: false, error: null });
+      // Convert conversations to pending swaps
+      const pendingSwaps: PendingSwap[] = (conversations || []).map(conv => ({
+        id: conv.id,
+        item_title: conv.item_title || 'Unknown Item',
+        user1_id: conv.user1_id,
+        user2_id: conv.user2_id,
+        status: 'pending' as const,
+        created_at: conv.created_at || new Date().toISOString(),
+        updated_at: conv.updated_at || new Date().toISOString()
+      }));
+
+      console.log('Fetched swaps:', typedSwaps);
+      console.log('Fetched pending swaps from conversations:', pendingSwaps);
+
+      // Generate achievements based on total activity
+      const totalActivity = typedSwaps.length + pendingSwaps.length;
+      const achievements = get().generateAchievements(typedSwaps.length, totalActivity);
+      
+      // Save achievements to user profile
+      await get().saveAchievementsToProfile(userId, achievements);
+
+      set({ 
+        swaps: typedSwaps, 
+        pendingSwaps: pendingSwaps,
+        achievements 
+      });
     } catch (error) {
-      console.error('Error in fetchUserSwaps:', error);
-      set({ error: 'Failed to fetch swaps', isLoading: false });
+      console.error('Error fetching user swaps:', error);
+    } finally {
+      set({ isLoading: false });
     }
   },
 
-  updateSwapStatus: async (swapId: string, status: SwapRequest['status']) => {
+  generateAchievements: (completedSwaps: number, totalActivity: number) => {
+    const achievements: Achievement[] = [];
+
+    // First Activity Achievement (includes conversations)
+    if (totalActivity >= 1) {
+      achievements.push({
+        id: 'first-activity',
+        title: 'First Swap Attempt',
+        description: 'Welcome to the community!',
+        icon: 'Award',
+        unlockedAt: new Date(),
+        color: 'emerald'
+      });
+    }
+
+    // First Completed Swap Achievement
+    if (completedSwaps >= 1) {
+      achievements.push({
+        id: 'first-swap',
+        title: 'First Completed Swap',
+        description: 'Successfully completed your first swap!',
+        icon: 'RotateCcw',
+        unlockedAt: new Date(),
+        color: 'blue'
+      });
+    }
+
+    // 5 Activities Achievement
+    if (totalActivity >= 5) {
+      achievements.push({
+        id: '5-activities',
+        title: '5 Swap Activities',
+        description: 'Getting active in the community!',
+        icon: 'Star',
+        unlockedAt: new Date(),
+        color: 'yellow'
+      });
+    }
+
+    // 5 Completed Swaps Achievement
+    if (completedSwaps >= 5) {
+      achievements.push({
+        id: '5-swaps',
+        title: '5 Completed Swaps',
+        description: 'Experienced swapper!',
+        icon: 'Star',
+        unlockedAt: new Date(),
+        color: 'yellow'
+      });
+    }
+
+    return achievements;
+  },
+
+  saveAchievementsToProfile: async (userId: string, achievements: Achievement[]) => {
     try {
-      set({ isLoading: true, error: null });
-      const { data, error } = await supabase
-        .from('swaps')
-        .update({ status })
-        .eq('id', swapId)
-        .select()
-        .single();
+      const achievementIds = achievements.map(a => a.id);
+      
+      const { error } = await supabase
+        .from('profiles')
+        .update({ achievements: achievementIds })
+        .eq('id', userId);
 
       if (error) {
-        console.error('Error updating swap status:', error);
-        set({ error: error.message, isLoading: false });
-        return false;
+        console.error('Error saving achievements:', error);
       }
-
-      set(state => ({
-        swaps: state.swaps.map(swap => swap.id === swapId ? { ...swap, status } : swap),
-        isLoading: false,
-        error: null,
-      }));
-
-      return true;
     } catch (error) {
-      console.error('Error in updateSwapStatus:', error);
-      set({ error: 'Failed to update swap status', isLoading: false });
-      return false;
+      console.error('Error saving achievements to profile:', error);
     }
-  },
+  }
 }));
