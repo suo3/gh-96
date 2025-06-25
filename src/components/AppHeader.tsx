@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { MapPin, Plus, Bell, User, Shield, Coins } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -79,8 +80,10 @@ export const AppHeader = ({ userLocation, onLocationDetect, onPostItem }: AppHea
           {/* Location */}
           <div className="hidden md:flex items-center space-x-2 text-sm text-gray-600">
             <MapPin className="w-4 h-4" />
-            {userLocation ? (
-              <span>Location detected</span>
+            {user?.location ? (
+              <span className="font-medium">{user.location}</span>
+            ) : userLocation ? (
+              <span className="font-medium">Location detected</span>
             ) : (
               <Button
                 variant="ghost"
