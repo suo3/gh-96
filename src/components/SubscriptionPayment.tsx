@@ -1,23 +1,22 @@
 
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useAuthStore } from "@/stores/authStore";
 import { useToast } from "@/hooks/use-toast";
-import { Crown, Check, Loader2 } from "lucide-react";
+import { Coins, Check, Loader2, Zap } from "lucide-react";
 
 export const SubscriptionPayment = () => {
-  const { user, processSubscriptionPayment } = useAuthStore();
+  const { user, purchaseCoins } = useAuthStore();
   const { toast } = useToast();
   const [isProcessing, setIsProcessing] = useState(false);
 
-  const handleSubscription = async (planType: 'monthly' | 'yearly') => {
+  const handlePurchase = async (coinAmount: number, planType: string) => {
     if (!user) {
       toast({
         title: "Authentication Required",
-        description: "Please log in to subscribe to premium.",
+        description: "Please log in to purchase coins.",
         variant: "destructive",
       });
       return;
@@ -26,7 +25,7 @@ export const SubscriptionPayment = () => {
     setIsProcessing(true);
     
     try {
-      const success = await processSubscriptionPayment(planType);
+      const success = await purchaseCoins(coinAmount, planType);
       
       if (success) {
         toast({
@@ -55,33 +54,12 @@ export const SubscriptionPayment = () => {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Premium Membership</CardTitle>
+          <CardTitle>Purchase Coins</CardTitle>
         </CardHeader>
         <CardContent>
           <p className="text-center text-gray-600">
-            Please log in to view subscription options.
+            Please log in to purchase coins.
           </p>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  if (user.membershipType === 'premium') {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center">
-            <Crown className="w-5 h-5 mr-2 text-yellow-500" />
-            Premium Member
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="text-center">
-            <Badge className="mb-4">Active Subscription</Badge>
-            <p className="text-sm text-gray-600">
-              You have unlimited listings and swaps!
-            </p>
-          </div>
         </CardContent>
       </Card>
     );
@@ -90,40 +68,49 @@ export const SubscriptionPayment = () => {
   return (
     <div className="space-y-6">
       <div className="text-center">
-        <h2 className="text-2xl font-bold mb-2">Upgrade to Premium</h2>
-        <p className="text-gray-600">Get unlimited listings and swaps</p>
+        <h2 className="text-2xl font-bold mb-2">Purchase Swap Coins</h2>
+        <p className="text-gray-600">Get more coins to post listings and make swaps</p>
+        <div className="mt-4 p-4 bg-emerald-50 rounded-lg">
+          <div className="flex items-center justify-center space-x-2">
+            <Coins className="w-5 h-5 text-emerald-600" />
+            <span className="text-lg font-semibold text-emerald-700">
+              Current Balance: {user.coins} coins
+            </span>
+          </div>
+        </div>
       </div>
 
-      <div className="grid md:grid-cols-2 gap-6">
-        <Card className="relative">
+      <div className="grid md:grid-cols-3 gap-6">
+        <Card>
           <CardHeader>
             <CardTitle className="flex items-center justify-between">
-              Monthly Plan
-              <Badge variant="outline">$7.99/month</Badge>
+              Starter Pack
+              <Badge variant="outline">$4.99</Badge>
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
+            <div className="text-center">
+              <div className="text-3xl font-bold text-blue-600">25</div>
+              <div className="text-sm text-gray-600">Coins</div>
+              <div className="text-xs text-gray-500 mt-1">$0.20 per coin</div>
+            </div>
             <div className="space-y-2">
               <div className="flex items-center">
                 <Check className="w-4 h-4 text-green-500 mr-2" />
-                <span className="text-sm">Unlimited listings</span>
+                <span className="text-sm">25 listing posts</span>
               </div>
               <div className="flex items-center">
                 <Check className="w-4 h-4 text-green-500 mr-2" />
-                <span className="text-sm">Unlimited swaps</span>
-              </div>
-              <div className="flex items-center">
-                <Check className="w-4 h-4 text-green-500 mr-2" />
-                <span className="text-sm">Priority support</span>
+                <span className="text-sm">12 swap opportunities</span>
               </div>
             </div>
             <Button 
-              onClick={() => handleSubscription('monthly')}
+              onClick={() => handlePurchase(25, "starter")}
               disabled={isProcessing}
               className="w-full"
             >
               {isProcessing && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-              Subscribe Monthly
+              Purchase Starter Pack
             </Button>
           </CardContent>
         </Card>
@@ -134,45 +121,85 @@ export const SubscriptionPayment = () => {
           </div>
           <CardHeader>
             <CardTitle className="flex items-center justify-between">
-              Yearly Plan
-              <Badge variant="outline">$79.99/year</Badge>
+              Value Pack
+              <Badge variant="outline">$9.99</Badge>
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
+            <div className="text-center">
+              <div className="text-3xl font-bold text-emerald-600">60</div>
+              <div className="text-sm text-gray-600">Coins</div>
+              <div className="text-xs text-gray-500 mt-1">$0.17 per coin</div>
+            </div>
             <div className="space-y-2">
               <div className="flex items-center">
                 <Check className="w-4 h-4 text-green-500 mr-2" />
-                <span className="text-sm">Unlimited listings</span>
+                <span className="text-sm">60 listing posts</span>
               </div>
               <div className="flex items-center">
                 <Check className="w-4 h-4 text-green-500 mr-2" />
-                <span className="text-sm">Unlimited swaps</span>
+                <span className="text-sm">30 swap opportunities</span>
               </div>
               <div className="flex items-center">
-                <Check className="w-4 h-4 text-green-500 mr-2" />
-                <span className="text-sm">Priority support</span>
-              </div>
-              <div className="flex items-center">
-                <Check className="w-4 h-4 text-green-500 mr-2" />
-                <span className="text-sm font-medium text-emerald-600">Save 17%</span>
+                <Zap className="w-4 h-4 text-emerald-500 mr-2" />
+                <span className="text-sm font-medium text-emerald-600">Save 15%</span>
               </div>
             </div>
             <Button 
-              onClick={() => handleSubscription('yearly')}
+              onClick={() => handlePurchase(60, "value")}
               disabled={isProcessing}
               className="w-full bg-emerald-500 hover:bg-emerald-600"
             >
               {isProcessing && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-              Subscribe Yearly
+              Purchase Value Pack
+            </Button>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center justify-between">
+              Power Pack
+              <Badge variant="outline">$19.99</Badge>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="text-center">
+              <div className="text-3xl font-bold text-purple-600">150</div>
+              <div className="text-sm text-gray-600">Coins</div>
+              <div className="text-xs text-gray-500 mt-1">$0.13 per coin</div>
+            </div>
+            <div className="space-y-2">
+              <div className="flex items-center">
+                <Check className="w-4 h-4 text-green-500 mr-2" />
+                <span className="text-sm">150 listing posts</span>
+              </div>
+              <div className="flex items-center">
+                <Check className="w-4 h-4 text-green-500 mr-2" />
+                <span className="text-sm">75 swap opportunities</span>
+              </div>
+              <div className="flex items-center">
+                <Zap className="w-4 h-4 text-purple-500 mr-2" />
+                <span className="text-sm font-medium text-purple-600">Save 35%</span>
+              </div>
+            </div>
+            <Button 
+              onClick={() => handlePurchase(150, "power")}
+              disabled={isProcessing}
+              className="w-full bg-purple-500 hover:bg-purple-600"
+            >
+              {isProcessing && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+              Purchase Power Pack
             </Button>
           </CardContent>
         </Card>
       </div>
 
       <div className="text-center text-sm text-gray-500">
-        <p>Current usage: {user.monthlyListings}/50 listings, {user.monthlySwaps}/50 swaps</p>
+        <p>• 1 coin = 1 listing post</p>
+        <p>• 2 coins = 1 swap opportunity</p>
+        <p>• Current balance: {user.coins} coins</p>
       </div>
     </div>
   );
 };
-
