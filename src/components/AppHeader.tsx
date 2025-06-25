@@ -14,6 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import { AuthButton } from "./AuthButton";
 import { LocationInput } from "./LocationInput";
 import { useAuthStore } from "@/stores/authStore";
+import { useMessageStore } from "@/stores/messageStore";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
@@ -31,6 +32,7 @@ interface AppHeaderProps {
 
 export const AppHeader = ({ userLocation, onLocationDetect, onPostItem }: AppHeaderProps) => {
   const { user, isAuthenticated } = useAuthStore();
+  const { totalUnreadCount } = useMessageStore();
   const navigate = useNavigate();
   const [showLocationInput, setShowLocationInput] = useState(false);
   const [locationValue, setLocationValue] = useState("");
@@ -93,9 +95,34 @@ export const AppHeader = ({ userLocation, onLocationDetect, onPostItem }: AppHea
           </div>
 
           {/* User Actions */}
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-3">
             {isAuthenticated ? (
               <>
+                {/* Coins Display */}
+                <div className="hidden sm:flex items-center space-x-1 text-sm text-gray-700">
+                  <span className="font-medium">{user?.coins || 0}</span>
+                  <span className="text-gray-500">coins</span>
+                </div>
+
+                {/* Messages Button */}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleMessages}
+                  className="relative text-gray-600 hover:text-emerald-600"
+                >
+                  <Bell className="w-4 h-4" />
+                  {totalUnreadCount > 0 && (
+                    <Badge 
+                      variant="destructive" 
+                      className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center text-xs p-0 min-w-[20px]"
+                    >
+                      {totalUnreadCount > 99 ? '99+' : totalUnreadCount}
+                    </Badge>
+                  )}
+                  <span className="ml-1 hidden sm:inline">Messages</span>
+                </Button>
+
                 {/* Post Item Button */}
                 <Button
                   onClick={onPostItem}
@@ -124,7 +151,7 @@ export const AppHeader = ({ userLocation, onLocationDetect, onPostItem }: AppHea
                         <p className="w-[200px] truncate text-sm text-muted-foreground">
                           @{user?.username}
                         </p>
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 sm:hidden">
                           <Badge variant="outline" className="text-xs">
                             {user?.coins || 0} coins
                           </Badge>
@@ -136,9 +163,14 @@ export const AppHeader = ({ userLocation, onLocationDetect, onPostItem }: AppHea
                       <User className="mr-2 h-4 w-4" />
                       Profile
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={handleMessages}>
+                    <DropdownMenuItem onClick={handleMessages} className="sm:hidden">
                       <Bell className="mr-2 h-4 w-4" />
                       Messages
+                      {totalUnreadCount > 0 && (
+                        <Badge variant="destructive" className="ml-auto">
+                          {totalUnreadCount}
+                        </Badge>
+                      )}
                     </DropdownMenuItem>
                     {isAdmin && (
                       <DropdownMenuItem onClick={handleAdmin}>
