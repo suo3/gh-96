@@ -1,107 +1,72 @@
 
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2"
+import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import Stripe from "https://esm.sh/stripe@14.21.0";
 
 const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+};
 
 serve(async (req) => {
-  if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders })
+  if (req.method === "OPTIONS") {
+    return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const signature = req.headers.get('stripe-signature')
-    const body = await req.text()
-    
-    const stripeSecretKey = Deno.env.get('STRIPE_SECRET_KEY')
-    const webhookSecret = Deno.env.get('STRIPE_WEBHOOK_SECRET')
-    
-    if (!stripeSecretKey || !webhookSecret) {
-      throw new Error('Stripe keys not configured')
+    const signature = req.headers.get("stripe-signature");
+    if (!signature) {
+      return new Response("No signature", { status: 400 });
     }
 
-    // Initialize Supabase client
-    const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
-    )
+    const body = await req.text();
+    const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
+      apiVersion: "2023-10-16",
+    });
 
-    // Verify webhook signature (simplified for demo)
-    // In production, you should use Stripe's webhook verification
-    const event = JSON.parse(body)
+    const event = stripe.webhooks.constructEvent(
+      body,
+      signature,
+      Deno.env.get("STRIPE_WEBHOOK_SECRET") || ""
+    );
 
-    if (event.type === 'checkout.session.completed') {
-      const session = event.data.object
-      const userId = session.metadata.user_id
-      const planType = session.metadata.plan_type
+    console.log("Received webhook event:", event.type);
 
-      // Update user's subscription status
-      const { error: profileError } = await supabaseClient
-        .from('profiles')
-        .update({ membership_type: 'premium' })
-        .eq('id', userId)
+    if (event.type === "checkout.session.completed") {
+      const session = event.data.object as Stripe.Checkout.Session;
+      
+      // Extract user and coin info from metadata
+      const userId = session.metadata?.user_id;
+      const coinAmount = parseInt(session.metadata?.coin_amount || "0");
+      const planType = session.metadata?.plan_type || "unknown";
 
-      if (profileError) {
-        console.error('Profile update error:', profileError)
-      }
+      if (userId && coinAmount > 0) {
+        console.log(`Adding ${coinAmount} coins to user ${userId}`);
+        
+        // Use service role key to add coins
+        const supabaseAdmin = createClient(
+          Deno.env.get("SUPABASE_URL") ?? "",
+          Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
+        );
 
-      // Update subscriber record
-      const subscriptionEnd = new Date()
-      subscriptionEnd.setMonth(subscriptionEnd.getMonth() + (planType === 'yearly' ? 12 : 1))
+        const { error } = await supabaseAdmin.rpc('add_coins', {
+          coin_amount: coinAmount,
+          description: `Purchased ${coinAmount} coins (${planType} pack)`,
+          payment_intent_id: session.payment_intent?.toString()
+        });
 
-      const { error: subError } = await supabaseClient
-        .from('subscribers')
-        .update({
-          subscribed: true,
-          subscription_end: subscriptionEnd.toISOString(),
-          stripe_customer_id: session.customer,
-        })
-        .eq('user_id', userId)
+        if (error) {
+          console.error("Error adding coins:", error);
+          return new Response("Error adding coins", { status: 500 });
+        }
 
-      if (subError) {
-        console.error('Subscription update error:', subError)
+        console.log(`Successfully added ${coinAmount} coins to user ${userId}`);
       }
     }
 
-    if (event.type === 'customer.subscription.deleted') {
-      const subscription = event.data.object
-      const customerId = subscription.customer
-
-      // Find user by stripe customer ID and downgrade
-      const { data: subscriber, error: findError } = await supabaseClient
-        .from('subscribers')
-        .select('user_id')
-        .eq('stripe_customer_id', customerId)
-        .single()
-
-      if (!findError && subscriber) {
-        await supabaseClient
-          .from('profiles')
-          .update({ membership_type: 'free' })
-          .eq('id', subscriber.user_id)
-
-        await supabaseClient
-          .from('subscribers')
-          .update({ subscribed: false })
-          .eq('user_id', subscriber.user_id)
-      }
-    }
-
-    return new Response(JSON.stringify({ received: true }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      status: 200,
-    })
+    return new Response("OK", { status: 200 });
   } catch (error) {
-    console.error('Webhook error:', error)
-    return new Response(
-      JSON.stringify({ error: error.message }),
-      { 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 400,
-      },
-    )
+    console.error("Webhook error:", error);
+    return new Response(`Webhook error: ${error.message}`, { status: 400 });
   }
-})
+});

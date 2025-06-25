@@ -1,355 +1,290 @@
-
-import { useState, useEffect } from "react";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import * as z from "zod";
-
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useToast } from "@/components/ui/use-toast";
-import { useListingStore } from "@/stores/listingStore";
-import { useLocationDetection } from "@/hooks/useLocationDetection";
+import { Badge } from "@/components/ui/badge";
 import { ImageUpload } from "./ImageUpload";
-import { MapPin, Loader2 } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
-
-const formSchema = z.object({
-  title: z.string().min(2, {
-    message: "Title must be at least 2 characters.",
-  }),
-  description: z.string().optional(),
-  category: z.string().min(1, {
-    message: "Please select a category.",
-  }),
-  condition: z.string().min(1, {
-    message: "Please select a condition.",
-  }),
-  location: z.string().min(2, {
-    message: "Location must be at least 2 characters.",
-  }),
-  wantedItems: z.string().optional(),
-  images: z.array(z.string()).max(4, {
-    message: "You can upload up to 4 images.",
-  }).optional(),
-});
+import { LocationInput } from "./LocationInput";
+import { useListingStore } from "@/stores/listingStore";
+import { useAuthStore } from "@/stores/authStore";
+import { useToast } from "@/components/ui/use-toast";
+import { Coins, Plus, X } from "lucide-react";
 
 interface PostItemDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
-interface Category {
-  id: string;
-  name: string;
-  display_order: number;
-  is_active: boolean;
-}
-
-interface Condition {
-  id: string;
-  name: string;
-  value: string;
-  display_order: number;
-  is_active: boolean;
-}
-
 export const PostItemDialog = ({ open, onOpenChange }: PostItemDialogProps) => {
-  const { addListing } = useListingStore();
+  const { user, canCreateListing } = useAuthStore();
+  const { addListing, isLoading } = useListingStore();
   const { toast } = useToast();
-  const [isPending, setIsPending] = useState(false);
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [conditions, setConditions] = useState<Condition[]>([]);
-  const [isLoadingOptions, setIsLoadingOptions] = useState(true);
-  const { detectLocation, isDetecting, detectedLocation } = useLocationDetection();
+  
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
+  const [category, setCategory] = useState('');
+  const [condition, setCondition] = useState('');
+  const [images, setImages] = useState<string[]>([]);
+  const [wantedItems, setWantedItems] = useState<string[]>([]);
+  const [currentWantedItem, setCurrentWantedItem] = useState('');
+  const [location, setLocation] = useState('');
 
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      title: "",
-      description: "",
-      category: "",
-      condition: "",
-      location: "",
-      wantedItems: "",
-      images: [],
-    },
-  });
+  const categories = [
+    "Electronics",
+    "Clothing",
+    "Furniture",
+    "Books",
+    "Sports Equipment",
+    "Home Appliances",
+    "Other"
+  ];
 
-  useEffect(() => {
-    const fetchOptions = async () => {
-      setIsLoadingOptions(true);
-      try {
-        // Fetch categories
-        const { data: categoriesData, error: categoriesError } = await supabase
-          .from('categories')
-          .select('*')
-          .eq('is_active', true)
-          .order('display_order');
+  const conditions = [
+    "New",
+    "Like New",
+    "Used - Excellent",
+    "Used - Good",
+    "Used - Fair"
+  ];
 
-        if (categoriesError) {
-          console.error('Error fetching categories:', categoriesError);
-        } else {
-          setCategories(categoriesData || []);
-        }
-
-        // Fetch conditions
-        const { data: conditionsData, error: conditionsError } = await supabase
-          .from('conditions')
-          .select('*')
-          .eq('is_active', true)
-          .order('display_order');
-
-        if (conditionsError) {
-          console.error('Error fetching conditions:', conditionsError);
-        } else {
-          setConditions(conditionsData || []);
-        }
-      } catch (error) {
-        console.error('Error fetching options:', error);
-      } finally {
-        setIsLoadingOptions(false);
-      }
-    };
-
-    fetchOptions();
-  }, []);
-
-  const handleDetectLocation = async () => {
-    const location = await detectLocation();
-    if (location) {
-      form.setValue("location", location);
+  const handleAddWantedItem = () => {
+    if (currentWantedItem.trim() !== '') {
+      setWantedItems([...wantedItems, currentWantedItem.trim()]);
+      setCurrentWantedItem('');
     }
   };
 
-  const handleImageUpload = (imageUrls: string[]) => {
-    form.setValue("images", imageUrls);
+  const handleRemoveWantedItem = (index: number) => {
+    const newWantedItems = [...wantedItems];
+    newWantedItems.splice(index, 1);
+    setWantedItems(newWantedItems);
   };
 
-  const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    console.log('Form submitted with values:', values);
-    setIsPending(true);
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
     
-    try {
-      await addListing({
-        title: values.title,
-        description: values.description,
-        category: values.category,
-        condition: values.condition,
-        location: values.location,
-        wanted_items: values.wantedItems ? [values.wantedItems] : [],
-        images: values.images || []
+    if (!user) {
+      toast({
+        title: "Authentication Required",
+        description: "Please log in to post an item.",
+        variant: "destructive",
       });
+      return;
+    }
 
+    if (!canCreateListing()) {
       toast({
-        title: "Item Posted!",
-        description: "Your item has been successfully posted to the marketplace.",
+        title: "Insufficient Coins",
+        description: "You need 1 coin to post a listing. Purchase more coins to continue.",
+        variant: "destructive",
       });
-      form.reset();
+      return;
+    }
+
+    if (!title.trim() || !category || !condition) {
+      toast({
+        title: "Missing Information",
+        description: "Please fill in all required fields.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const success = await addListing({
+      title: title.trim(),
+      description: description.trim(),
+      category,
+      condition,
+      images,
+      wantedItems,
+      userId: user.id,
+      userName: `${user.firstName} ${user.lastName}`,
+      userAvatar: user.avatar || user.firstName?.charAt(0) || 'U',
+      location: location.trim(),
+      status: 'active',
+    });
+
+    if (success) {
+      toast({
+        title: "Item Posted Successfully!",
+        description: "Your item has been posted and 1 coin has been deducted from your account.",
+      });
+      
+      // Reset form and close dialog
+      setTitle('');
+      setDescription('');
+      setCategory('');
+      setCondition('');
+      setImages([]);
+      setWantedItems([]);
+      setLocation('');
+      setCurrentWantedItem('');
       onOpenChange(false);
-    } catch (error) {
-      console.error('Error posting item:', error);
+    } else {
       toast({
-        title: "Error",
-        description: "Failed to post your item. Please try again.",
-        variant: "destructive"
+        title: "Failed to Post Item",
+        description: "There was an error posting your item. Please try again.",
+        variant: "destructive",
       });
-    } finally {
-      setIsPending(false);
     }
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogTrigger asChild>
-        <Button variant="outline">Post Item</Button>
-      </DialogTrigger>
-      <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Post a New Item</DialogTitle>
-          <DialogDescription>
-            List your item for swapping.
-          </DialogDescription>
+          <DialogTitle className="flex items-center justify-between">
+            Post New Item
+            <div className="flex items-center space-x-2 text-sm">
+              <Coins className="w-4 h-4 text-yellow-500" />
+              <span className={`${canCreateListing() ? 'text-green-600' : 'text-red-600'}`}>
+                Cost: 1 coin {!canCreateListing() && '(Insufficient balance)'}
+              </span>
+            </div>
+          </DialogTitle>
         </DialogHeader>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="title"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Title</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Item Title" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            
-            <FormField
-              control={form.control}
-              name="description"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Description</FormLabel>
-                  <FormControl>
-                    <Textarea
-                      placeholder="Describe the item you are offering"
-                      className="resize-none"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            
-            <FormField
-              control={form.control}
-              name="images"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Images (Up to 4)</FormLabel>
-                  <FormControl>
-                    <ImageUpload
-                      onImagesUploaded={handleImageUpload}
-                      maxImages={4}
-                      currentImages={field.value || []}
-                    />
-                  </FormControl>
-                  <FormDescription>
-                    Upload up to 4 images of your item
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            
-            <FormField
-              control={form.control}
-              name="category"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Category</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value} disabled={isLoadingOptions}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder={isLoadingOptions ? "Loading categories..." : "Select a category"} />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {categories.map((category) => (
-                        <SelectItem key={category.id} value={category.name}>
-                          {category.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            
-            <FormField
-              control={form.control}
-              name="condition"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Condition</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value} disabled={isLoadingOptions}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder={isLoadingOptions ? "Loading conditions..." : "Select item condition"} />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {conditions.map((condition) => (
-                        <SelectItem key={condition.id} value={condition.value}>
-                          {condition.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            
-            <FormField
-              control={form.control}
-              name="location"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Location</FormLabel>
-                  <div className="flex gap-2">
-                    <FormControl>
-                      <Input placeholder="City, State" {...field} />
-                    </FormControl>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="icon"
-                      onClick={handleDetectLocation}
-                      disabled={isDetecting}
-                    >
-                      {isDetecting ? (
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                      ) : (
-                        <MapPin className="w-4 h-4" />
-                      )}
-                    </Button>
-                  </div>
-                  {detectedLocation && (
-                    <FormDescription className="text-green-600">
-                      Location detected: {detectedLocation}
-                    </FormDescription>
-                  )}
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            
-            <FormField
-              control={form.control}
-              name="wantedItems"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Wanted Items (Optional)</FormLabel>
-                  <FormControl>
-                    <Input placeholder="List items you would like to swap for" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            
-            <DialogFooter>
-              <Button type="submit" disabled={isPending || isLoadingOptions}>
-                {isPending ? "Posting..." : "Post Item"}
+
+        {!canCreateListing() && (
+          <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4">
+            <p className="text-red-700 text-sm">
+              You need 1 coin to post a listing. You currently have {user?.coins || 0} coins.
+              <Button 
+                variant="link" 
+                className="p-0 h-auto text-red-700 underline ml-1"
+                onClick={() => {
+                  onOpenChange(false);
+                  // Could trigger opening coin purchase dialog here
+                }}
+              >
+                Purchase more coins
               </Button>
-            </DialogFooter>
-          </form>
-        </Form>
+            </p>
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="space-y-2">
+            <Label htmlFor="title">Title</Label>
+            <Input
+              id="title"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              required
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="description">Description</Label>
+            <Textarea
+              id="description"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              rows={3}
+            />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="category">Category</Label>
+              <Select value={category} onValueChange={setCategory}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select a category" />
+                </SelectTrigger>
+                <SelectContent>
+                  {categories.map((cat) => (
+                    <SelectItem key={cat} value={cat}>
+                      {cat}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="condition">Condition</Label>
+              <Select value={condition} onValueChange={setCondition}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select condition" />
+                </SelectTrigger>
+                <SelectContent>
+                  {conditions.map((cond) => (
+                    <SelectItem key={cond} value={cond}>
+                      {cond}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label>Images</Label>
+            <ImageUpload images={images} setImages={setImages} />
+          </div>
+
+          <div className="space-y-2">
+            <Label>Wanted Items (Optional)</Label>
+            <div className="flex items-center space-x-2">
+              <Input
+                type="text"
+                placeholder="Enter item"
+                value={currentWantedItem}
+                onChange={(e) => setCurrentWantedItem(e.target.value)}
+              />
+              <Button type="button" size="sm" onClick={handleAddWantedItem}>
+                <Plus className="w-4 h-4 mr-2" />
+                Add
+              </Button>
+            </div>
+            {wantedItems.length > 0 && (
+              <div className="flex flex-wrap gap-2 mt-2">
+                {wantedItems.map((item, index) => (
+                  <Badge key={index} variant="secondary" className="flex items-center space-x-1">
+                    <span>{item}</span>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="-mr-1"
+                      onClick={() => handleRemoveWantedItem(index)}
+                    >
+                      <X className="w-4 h-4" />
+                    </Button>
+                  </Badge>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="location">Location</Label>
+            <LocationInput
+              value={location}
+              onChange={(value) => setLocation(value)}
+              placeholder="Enter your city and state"
+            />
+          </div>
+          
+          <div className="flex gap-3">
+            <Button 
+              type="button" 
+              variant="outline" 
+              onClick={() => onOpenChange(false)}
+              className="flex-1"
+            >
+              Cancel
+            </Button>
+            <Button 
+              type="submit" 
+              disabled={isLoading || !canCreateListing()}
+              className="flex-1"
+            >
+              {isLoading ? 'Posting...' : 'Post Item (1 coin)'}
+            </Button>
+          </div>
+        </form>
       </DialogContent>
     </Dialog>
   );
