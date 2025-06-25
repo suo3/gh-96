@@ -1,3 +1,4 @@
+
 import { create } from 'zustand';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuthStore } from './authStore';
@@ -349,8 +350,17 @@ export const useListingStore = create<ListingStore>((set, get) => ({
 
   incrementViews: async (id) => {
     try {
-      // For now, just update locally since the RPC function doesn't exist
-      // TODO: Create increment_listing_views RPC function in database
+      // Call the database function to increment views
+      const { error } = await supabase.rpc('increment_listing_views', { 
+        listing_uuid: id 
+      });
+
+      if (error) {
+        console.error('Error incrementing views:', error);
+        return;
+      }
+
+      // Update local state to reflect the change immediately
       set(state => ({
         listings: state.listings.map(listing =>
           listing.id === id 
@@ -368,8 +378,17 @@ export const useListingStore = create<ListingStore>((set, get) => ({
 
   incrementLikes: async (id) => {
     try {
-      // For now, just update locally since the RPC function doesn't exist
-      // TODO: Create increment_listing_likes RPC function in database
+      // Call the database function to increment likes
+      const { error } = await supabase.rpc('increment_listing_likes', { 
+        listing_uuid: id 
+      });
+
+      if (error) {
+        console.error('Error incrementing likes:', error);
+        return;
+      }
+
+      // Update local state to reflect the change immediately
       set(state => ({
         listings: state.listings.map(listing =>
           listing.id === id 

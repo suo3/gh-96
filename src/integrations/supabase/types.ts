@@ -442,6 +442,14 @@ export type Database = {
         Args: { user_uuid: string }
         Returns: number
       }
+      increment_listing_likes: {
+        Args: { listing_uuid: string }
+        Returns: undefined
+      }
+      increment_listing_views: {
+        Args: { listing_uuid: string }
+        Returns: undefined
+      }
       listing_has_active_conversation: {
         Args: { listing_uuid: string }
         Returns: boolean
