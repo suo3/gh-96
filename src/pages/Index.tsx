@@ -14,7 +14,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Listing } from "@/stores/listingStore";
 
 const Index = () => {
-  const [viewType, setViewType] = useState<"grid" | "list">("grid");
+  const [viewType, setViewType] = useState<"grid" | "list" | "swipe">("grid");
   const [showPostDialog, setShowPostDialog] = useState(false);
   
   const {
@@ -28,7 +28,6 @@ const Index = () => {
     minRating,
     maxDistance,
     swapFilter,
-    filteredListings,
     markItemAsMessaged,
     setSelectedCategory,
     setSelectedCondition,
@@ -168,6 +167,30 @@ const Index = () => {
     }
   };
 
+  const handleSearch = (keyword: string) => {
+    setSearchTerm(keyword);
+  };
+
+  const handleFilterChange = (filters: {
+    category: string;
+    condition: string;
+    location: string;
+    radius: number;
+  }) => {
+    setSelectedCategory(filters.category || 'all');
+    setSelectedCondition(filters.condition || 'all');
+    setMaxDistance(filters.radius);
+  };
+
+  const handleBack = () => {
+    // This could navigate back or close the search/filter view
+    console.log('Back button pressed');
+  };
+
+  const handleViewChange = (view: "swipe" | "grid" | "list") => {
+    setViewType(view);
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -176,12 +199,23 @@ const Index = () => {
     );
   }
 
+  // If swipe view is selected, show SearchAndFilter component
+  if (viewType === "swipe") {
+    return (
+      <SearchAndFilter
+        onSearch={handleSearch}
+        onFilterChange={handleFilterChange}
+        onBack={handleBack}
+      />
+    );
+  }
+
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex flex-col lg:flex-row gap-8">
         {/* Filters Panel */}
         <aside className="lg:w-80">
-          <SearchAndFilter />
+          {/* We can add FilterPanel here later if needed */}
         </aside>
 
         {/* Main Content */}
@@ -189,7 +223,7 @@ const Index = () => {
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center space-x-4">
               <h1 className="text-2xl font-bold">Available Items</h1>
-              <ViewToggle viewType={viewType} onViewChange={setViewType} />
+              <ViewToggle currentView={viewType} onViewChange={handleViewChange} />
             </div>
             <Button 
               onClick={() => setShowPostDialog(true)}
