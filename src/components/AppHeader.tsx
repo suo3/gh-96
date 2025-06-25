@@ -3,8 +3,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, MessageCircle, Plus, Filter, Navigation, RotateCcw, User } from "lucide-react";
-import { ViewToggle } from "@/components/ViewToggle";
+import { MapPin, MessageCircle, Plus, Navigation, RotateCcw, User } from "lucide-react";
 import { AuthButton } from "@/components/AuthButton";
 import { useMessageStore } from "@/stores/messageStore";
 import { useAuthStore } from "@/stores/authStore";
@@ -12,20 +11,12 @@ import { useToast } from "@/components/ui/use-toast";
 
 interface AppHeaderProps {
   userLocation: string;
-  displayMode: "swipe" | "grid" | "list";
-  showFilters: boolean;
-  onDisplayModeChange: (mode: "swipe" | "grid" | "list") => void;
-  onToggleFilters: () => void;
   onLocationDetect: () => Promise<void>;
   onPostItem: () => void;
 }
 
 export const AppHeader = ({
   userLocation,
-  displayMode,
-  showFilters,
-  onDisplayModeChange,
-  onToggleFilters,
   onLocationDetect,
   onPostItem
 }: AppHeaderProps) => {
@@ -59,17 +50,6 @@ export const AppHeader = ({
             </div>
           </div>
           <div className="flex items-center space-x-3">
-            <ViewToggle currentView={displayMode} onViewChange={onDisplayModeChange} />
-            
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={onToggleFilters}
-              className={`${showFilters ? 'bg-emerald-100 text-emerald-600' : ''}`}
-            >
-              <Filter className="w-5 h-5" />
-            </Button>
-            
             {isAuthenticated && (
               <>
                 <Button

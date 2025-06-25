@@ -1,5 +1,6 @@
 
 import { AppHeader } from "@/components/AppHeader";
+import { ContentControls } from "@/components/ContentControls";
 import { SwipeMode } from "@/components/SwipeMode";
 import { BrowseMode } from "@/components/BrowseMode";
 import { FilterPanel } from "@/components/FilterPanel";
@@ -33,13 +34,21 @@ const Index = () => {
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50">
       <AppHeader
         userLocation={userLocation}
-        displayMode={displayMode}
-        showFilters={showFilters}
-        onDisplayModeChange={setDisplayMode}
-        onToggleFilters={() => setShowFilters(!showFilters)}
         onLocationDetect={handleLocationDetect}
         onPostItem={handlePostItem}
       />
+
+      {/* Content Controls */}
+      {displayMode !== "swipe" || !isMobile ? (
+        <div className="bg-white/50 backdrop-blur-sm border-b border-emerald-100">
+          <ContentControls
+            displayMode={displayMode}
+            showFilters={showFilters}
+            onDisplayModeChange={setDisplayMode}
+            onToggleFilters={() => setShowFilters(!showFilters)}
+          />
+        </div>
+      ) : null}
 
       {/* Location Permission Prompt */}
       {showLocationPrompt && (
