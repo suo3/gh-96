@@ -65,9 +65,9 @@ export const useIndexLogic = () => {
   useEffect(() => {
     const initializeLocation = async () => {
       if (user?.location) {
-        setUserLocation(user.location);
         const coords = await geocodeLocation(user.location);
         if (coords) {
+          setUserLocation(coords);
           setStoreUserLocation(coords);
           fetchListings();
         }
