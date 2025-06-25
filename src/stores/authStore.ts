@@ -1,4 +1,3 @@
-
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { supabase } from '@/integrations/supabase/client';
@@ -12,12 +11,15 @@ export interface UserProfile {
   firstName: string;
   lastName: string;
   location: string;
+  bio?: string;
+  profileImageUrl?: string;
   coins: number;
   joinedDate: Date;
   rating: number;
   totalSwaps: number;
   monthlyListings: number;
   monthlySwaps: number;
+  achievements?: string[];
 }
 
 interface AuthState {
@@ -65,13 +67,16 @@ export const useAuthStore = create<AuthState>()(
               firstName: profile.first_name || '',
               lastName: profile.last_name || '',
               location: profile.location || '',
+              bio: profile.bio || '',
+              profileImageUrl: profile.profile_image_url || '',
               coins: profile.coins || 0,
               joinedDate: new Date(profile.joined_date),
               rating: parseFloat(profile.rating?.toString() || '0'),
               totalSwaps: profile.total_swaps || 0,
               monthlyListings: profile.monthly_listings || 0,
               monthlySwaps: profile.monthly_swaps || 0,
-              avatar: profile.avatar || ''
+              avatar: profile.avatar || '',
+              achievements: profile.achievements || []
             };
 
             set({ user: updatedUser });
@@ -111,13 +116,16 @@ export const useAuthStore = create<AuthState>()(
                       firstName: profile.first_name || '',
                       lastName: profile.last_name || '',
                       location: profile.location || '',
+                      bio: profile.bio || '',
+                      profileImageUrl: profile.profile_image_url || '',
                       coins: profile.coins || 0,
                       joinedDate: new Date(profile.joined_date),
                       rating: parseFloat(profile.rating?.toString() || '0'),
                       totalSwaps: profile.total_swaps || 0,
                       monthlyListings: profile.monthly_listings || 0,
                       monthlySwaps: profile.monthly_swaps || 0,
-                      avatar: profile.avatar || ''
+                      avatar: profile.avatar || '',
+                      achievements: profile.achievements || []
                     };
 
                     set({ 
@@ -183,13 +191,16 @@ export const useAuthStore = create<AuthState>()(
                 firstName: profile.first_name || '',
                 lastName: profile.last_name || '',
                 location: profile.location || '',
+                bio: profile.bio || '',
+                profileImageUrl: profile.profile_image_url || '',
                 coins: profile.coins || 0,
                 joinedDate: new Date(profile.joined_date),
                 rating: parseFloat(profile.rating?.toString() || '0'),
                 totalSwaps: profile.total_swaps || 0,
                 monthlyListings: profile.monthly_listings || 0,
                 monthlySwaps: profile.monthly_swaps || 0,
-                avatar: profile.avatar || ''
+                avatar: profile.avatar || '',
+                achievements: profile.achievements || []
               };
 
               set({ 
@@ -295,6 +306,8 @@ export const useAuthStore = create<AuthState>()(
               first_name: updates.firstName,
               last_name: updates.lastName,
               location: updates.location,
+              bio: updates.bio,
+              profile_image_url: updates.profileImageUrl,
               monthly_listings: updates.monthlyListings,
               monthly_swaps: updates.monthlySwaps,
               total_swaps: updates.totalSwaps,

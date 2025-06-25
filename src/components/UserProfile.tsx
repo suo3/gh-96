@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,6 +9,7 @@ import { ListingManager } from "./ListingManager";
 import { HistoryTab } from "./HistoryTab";
 import { UserRatingDisplay } from "./UserRatingDisplay";
 import { AllRatingsModal } from "./AllRatingsModal";
+import { AchievementsDisplay } from "./AchievementsDisplay";
 import { useAuthStore } from "@/stores/authStore";
 import { useRatingStore } from "@/stores/ratingStore";
 import { useEffect } from "react";
@@ -68,8 +68,18 @@ export const UserProfile = ({ onBack }: UserProfileProps) => {
         <Card className="mb-8">
           <CardContent className="p-8">
             <div className="flex items-start space-x-6">
-              <div className="w-24 h-24 bg-gradient-to-br from-emerald-400 to-teal-400 rounded-full flex items-center justify-center text-white text-3xl font-bold">
-                {user.avatar}
+              <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-white shadow-lg">
+                {user.profileImageUrl ? (
+                  <img
+                    src={user.profileImageUrl}
+                    alt="Profile"
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full bg-gradient-to-br from-emerald-400 to-teal-400 flex items-center justify-center text-white text-3xl font-bold">
+                    {user.avatar}
+                  </div>
+                )}
               </div>
               <div className="flex-1">
                 <div className="flex items-center space-x-3 mb-2">
@@ -81,6 +91,11 @@ export const UserProfile = ({ onBack }: UserProfileProps) => {
                     </Badge>
                   </div>
                 </div>
+                
+                {user.bio && (
+                  <p className="text-gray-600 mb-4 max-w-2xl">{user.bio}</p>
+                )}
+                
                 <div className="flex items-center space-x-4 text-gray-600 mb-4">
                   <div className="flex items-center">
                     <MapPin className="w-4 h-4 mr-1" />
@@ -136,6 +151,15 @@ export const UserProfile = ({ onBack }: UserProfileProps) => {
             </div>
           </CardContent>
         </Card>
+
+        {/* Achievements */}
+        <div className="mb-8">
+          <AchievementsDisplay 
+            achievements={user.achievements || []}
+            totalSwaps={user.totalSwaps}
+            rating={user.rating}
+          />
+        </div>
 
         {/* Ratings Summary */}
         {ratings.length > 0 && (

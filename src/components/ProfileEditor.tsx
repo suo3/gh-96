@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useAuthStore } from "@/stores/authStore";
@@ -12,6 +13,7 @@ import { useLocationDetection } from "@/hooks/useLocationDetection";
 import { PasswordChange } from "./PasswordChange";
 import { CoinPurchase } from "./CoinPurchase";
 import { LocationInput } from "./LocationInput";
+import { ProfileImageUpload } from "./ProfileImageUpload";
 import { Save, Coins, Navigation } from "lucide-react";
 
 export const ProfileEditor = () => {
@@ -24,7 +26,9 @@ export const ProfileEditor = () => {
     firstName: '',
     lastName: '',
     username: '',
-    location: ''
+    location: '',
+    bio: '',
+    profileImageUrl: ''
   });
 
   useEffect(() => {
@@ -33,7 +37,9 @@ export const ProfileEditor = () => {
         firstName: user.firstName || '',
         lastName: user.lastName || '',
         username: user.username || '',
-        location: user.location || ''
+        location: user.location || '',
+        bio: user.bio || '',
+        profileImageUrl: user.profileImageUrl || ''
       });
     }
   }, [user]);
@@ -63,6 +69,10 @@ export const ProfileEditor = () => {
     }
   };
 
+  const handleImageUploaded = (imageUrl: string) => {
+    setFormData(prev => ({ ...prev, profileImageUrl: imageUrl }));
+  };
+
   if (!user) return null;
 
   return (
@@ -79,7 +89,15 @@ export const ProfileEditor = () => {
             </div>
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-6">
+          {/* Profile Image Upload */}
+          <div className="flex justify-center">
+            <ProfileImageUpload
+              currentImageUrl={formData.profileImageUrl}
+              onImageUploaded={handleImageUploaded}
+            />
+          </div>
+
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="firstName">First Name</Label>
@@ -98,6 +116,7 @@ export const ProfileEditor = () => {
               />
             </div>
           </div>
+
           <div className="space-y-2">
             <Label htmlFor="username">Username</Label>
             <Input
@@ -106,6 +125,18 @@ export const ProfileEditor = () => {
               onChange={(e) => setFormData(prev => ({ ...prev, username: e.target.value }))}
             />
           </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="bio">Bio</Label>
+            <Textarea
+              id="bio"
+              placeholder="Tell others about yourself and what you're looking to swap..."
+              value={formData.bio}
+              onChange={(e) => setFormData(prev => ({ ...prev, bio: e.target.value }))}
+              rows={3}
+            />
+          </div>
+
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <Label htmlFor="location">Location</Label>
@@ -127,6 +158,7 @@ export const ProfileEditor = () => {
               placeholder="Enter your city and state"
             />
           </div>
+
           <Button onClick={handleSave} className="w-full">
             <Save className="w-4 h-4 mr-2" />
             Save Changes

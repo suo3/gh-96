@@ -245,6 +245,7 @@ export type Database = {
         Row: {
           achievements: string[] | null
           avatar: string | null
+          bio: string | null
           coins: number
           created_at: string | null
           first_name: string | null
@@ -254,6 +255,7 @@ export type Database = {
           location: string | null
           monthly_listings: number | null
           monthly_swaps: number | null
+          profile_image_url: string | null
           rating: number | null
           total_swaps: number | null
           updated_at: string | null
@@ -262,6 +264,7 @@ export type Database = {
         Insert: {
           achievements?: string[] | null
           avatar?: string | null
+          bio?: string | null
           coins?: number
           created_at?: string | null
           first_name?: string | null
@@ -271,6 +274,7 @@ export type Database = {
           location?: string | null
           monthly_listings?: number | null
           monthly_swaps?: number | null
+          profile_image_url?: string | null
           rating?: number | null
           total_swaps?: number | null
           updated_at?: string | null
@@ -279,6 +283,7 @@ export type Database = {
         Update: {
           achievements?: string[] | null
           avatar?: string | null
+          bio?: string | null
           coins?: number
           created_at?: string | null
           first_name?: string | null
@@ -288,6 +293,7 @@ export type Database = {
           location?: string | null
           monthly_listings?: number | null
           monthly_swaps?: number | null
+          profile_image_url?: string | null
           rating?: number | null
           total_swaps?: number | null
           updated_at?: string | null
