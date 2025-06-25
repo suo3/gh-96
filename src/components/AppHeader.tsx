@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, MessageCircle, Plus, Filter, Navigation, RotateCcw } from "lucide-react";
+import { MapPin, MessageCircle, Plus, Filter, Navigation, RotateCcw, User } from "lucide-react";
 import { ViewToggle } from "@/components/ViewToggle";
 import { AuthButton } from "@/components/AuthButton";
 import { useMessageStore } from "@/stores/messageStore";
@@ -71,19 +71,30 @@ export const AppHeader = ({
             </Button>
             
             {isAuthenticated && (
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => navigate("/messages")}
-                className="relative"
-              >
-                <MessageCircle className="w-5 h-5" />
-                {totalUnreadCount > 0 && (
-                  <Badge className="absolute -top-1 -right-1 w-5 h-5 p-0 flex items-center justify-center bg-red-500 text-xs">
-                    {totalUnreadCount}
-                  </Badge>
-                )}
-              </Button>
+              <>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => navigate("/messages")}
+                  className="relative"
+                >
+                  <MessageCircle className="w-5 h-5" />
+                  {totalUnreadCount > 0 && (
+                    <Badge className="absolute -top-1 -right-1 w-5 h-5 p-0 flex items-center justify-center bg-red-500 text-xs">
+                      {totalUnreadCount}
+                    </Badge>
+                  )}
+                </Button>
+                
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => navigate("/profile")}
+                  className="hover:bg-emerald-100"
+                >
+                  <User className="w-5 h-5" />
+                </Button>
+              </>
             )}
             
             <AuthButton />
