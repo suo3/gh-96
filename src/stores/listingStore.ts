@@ -90,6 +90,19 @@ interface ListingStore {
   checkAndUpdateConversationStatuses: () => Promise<void>;
 }
 
+// Helper function to calculate distance between two coordinates in miles
+const calculateDistance = (lat1: number, lng1: number, lat2: number, lng2: number): number => {
+  const R = 3959; // Earth's radius in miles
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLng = (lng2 - lng1) * Math.PI / 180;
+  const a = 
+    Math.sin(dLat/2) * Math.sin(dLat/2) +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+    Math.sin(dLng/2) * Math.sin(dLng/2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  return R * c;
+};
+
 export const useListingStore = create<ListingStore>((set, get) => ({
   listings: [],
   userListings: [],
@@ -481,6 +494,8 @@ export const useListingStore = create<ListingStore>((set, get) => ({
       searchTerm: state.searchTerm,
       selectedCondition: state.selectedCondition,
       swapFilter: state.swapFilter,
+      maxDistance: state.maxDistance,
+      userLocation: state.userLocation,
       totalListings: filtered.length
     });
 
@@ -539,6 +554,56 @@ export const useListingStore = create<ListingStore>((set, get) => ({
       console.log('After swapped filter:', filtered.length);
     }
 
+    // Apply distance filter - NEW FUNCTIONALITY
+    if (state.userLocation && state.maxDistance) {
+      filtered = filtered.filter(item => {
+        if (!item.location) return true; // Include items without location data
+        
+        // For now, we'll use a simple geocoding approach
+        // In production, you'd want to store coordinates in the database
+        // or use a proper geocoding service
+        
+        // Mock coordinates for different cities for demonstration
+        const locationCoords: { [key: string]: { lat: number; lng: number } } = {
+          'seattle': { lat: 47.6062, lng: -122.3321 },
+          'portland': { lat: 45.5152, lng: -122.6784 },
+          'san francisco': { lat: 37.7749, lng: -122.4194 },
+          'los angeles': { lat: 34.0522, lng: -118.2437 },
+          'new york': { lat: 40.7128, lng: -74.0060 },
+          'chicago': { lat: 41.8781, lng: -87.6298 },
+          'boston': { lat: 42.3601, lng: -71.0589 },
+          'miami': { lat: 25.7617, lng: -80.1918 }
+        };
+        
+        // Try to find coordinates for the item location
+        const itemLocationKey = item.location.toLowerCase();
+        let itemCoords = null;
+        
+        for (const [city, coords] of Object.entries(locationCoords)) {
+          if (itemLocationKey.includes(city)) {
+            itemCoords = coords;
+            break;
+          }
+        }
+        
+        if (!itemCoords) {
+          // If we can't determine coordinates, include the item
+          return true;
+        }
+        
+        const distance = calculateDistance(
+          state.userLocation.lat,
+          state.userLocation.lng,
+          itemCoords.lat,
+          itemCoords.lng
+        );
+        
+        console.log(`Distance from user to ${item.location}: ${distance.toFixed(1)} miles`);
+        return distance <= state.maxDistance;
+      });
+      console.log(`After distance filter (${state.maxDistance} miles):`, filtered.length);
+    }
+
     // Apply sorting
     switch (state.sortBy) {
       case 'popular':
@@ -549,6 +614,41 @@ export const useListingStore = create<ListingStore>((set, get) => ({
         break;
       case 'title':
         filtered.sort((a, b) => a.title.localeCompare(b.title));
+        break;
+      case 'distance':
+        if (state.userLocation) {
+          filtered.sort((a, b) => {
+            // Mock distance calculation for sorting
+            const locationCoords: { [key: string]: { lat: number; lng: number } } = {
+              'seattle': { lat: 47.6062, lng: -122.3321 },
+              'portland': { lat: 45.5152, lng: -122.6784 },
+              'san francisco': { lat: 37.7749, lng: -122.4194 },
+              'los angeles': { lat: 34.0522, lng: -118.2437 },
+              'new york': { lat: 40.7128, lng: -74.0060 },
+              'chicago': { lat: 41.8781, lng: -87.6298 },
+              'boston': { lat: 42.3601, lng: -71.0589 },
+              'miami': { lat: 25.7617, lng: -80.1918 }
+            };
+            
+            const getDistance = (item: Listing) => {
+              if (!item.location) return Infinity;
+              const itemLocationKey = item.location.toLowerCase();
+              for (const [city, coords] of Object.entries(locationCoords)) {
+                if (itemLocationKey.includes(city)) {
+                  return calculateDistance(
+                    state.userLocation!.lat,
+                    state.userLocation!.lng,
+                    coords.lat,
+                    coords.lng
+                  );
+                }
+              }
+              return Infinity;
+            };
+            
+            return getDistance(a) - getDistance(b);
+          });
+        }
         break;
       case 'oldest':
         filtered.sort((a, b) => 
