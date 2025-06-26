@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,6 +8,7 @@ import { Switch } from "@/components/ui/switch";
 import { Settings, Save, Database } from "lucide-react";
 import { toast } from "sonner";
 import { usePlatformSettings } from "@/hooks/usePlatformSettings";
+import { supabase } from "@/integrations/supabase/client";
 
 interface AdminSettingsProps {
   adminRole: string | null;
@@ -24,6 +24,12 @@ export const AdminSettings = ({ adminRole }: AdminSettingsProps) => {
   });
 
   const [loading, setLoading] = useState(false);
+  const [localSettings, setLocalSettings] = useState(settings);
+
+  // Update local settings when platform settings change
+  useEffect(() => {
+    setLocalSettings(settings);
+  }, [settings]);
 
   useEffect(() => {
     fetchDatabaseStats();
@@ -71,7 +77,7 @@ export const AdminSettings = ({ adminRole }: AdminSettingsProps) => {
   };
 
   const handleSaveSettings = async () => {
-    const success = await updateSettings(settings);
+    const success = await updateSettings(localSettings);
     if (success) {
       toast.success('Settings saved successfully');
     } else {
@@ -159,9 +165,9 @@ export const AdminSettings = ({ adminRole }: AdminSettingsProps) => {
                 <Label htmlFor="maintenance">Maintenance Mode</Label>
                 <Switch
                   id="maintenance"
-                  checked={settings.maintenanceMode}
+                  checked={localSettings.maintenanceMode}
                   onCheckedChange={(checked) =>
-                    updateSettings({ ...settings, maintenanceMode: checked })
+                    setLocalSettings({ ...localSettings, maintenanceMode: checked })
                   }
                 />
               </div>
@@ -170,9 +176,9 @@ export const AdminSettings = ({ adminRole }: AdminSettingsProps) => {
                 <Label htmlFor="approval">Require Listing Approval</Label>
                 <Switch
                   id="approval"
-                  checked={settings.requireApproval}
+                  checked={localSettings.requireApproval}
                   onCheckedChange={(checked) =>
-                    updateSettings({ ...settings, requireApproval: checked })
+                    setLocalSettings({ ...localSettings, requireApproval: checked })
                   }
                 />
               </div>
@@ -181,9 +187,9 @@ export const AdminSettings = ({ adminRole }: AdminSettingsProps) => {
                 <Label htmlFor="anonymous">Allow Anonymous Browsing</Label>
                 <Switch
                   id="anonymous"
-                  checked={settings.allowAnonymous}
+                  checked={localSettings.allowAnonymous}
                   onCheckedChange={(checked) =>
-                    updateSettings({ ...settings, allowAnonymous: checked })
+                    setLocalSettings({ ...localSettings, allowAnonymous: checked })
                   }
                 />
               </div>
@@ -197,9 +203,9 @@ export const AdminSettings = ({ adminRole }: AdminSettingsProps) => {
                   type="number"
                   min="1"
                   max="100"
-                  value={settings.maxListingsPerUser}
+                  value={localSettings.maxListingsPerUser}
                   onChange={(e) =>
-                    updateSettings({ ...settings, maxListingsPerUser: parseInt(e.target.value) || 10 })
+                    setLocalSettings({ ...localSettings, maxListingsPerUser: parseInt(e.target.value) || 10 })
                   }
                 />
               </div>
@@ -208,9 +214,9 @@ export const AdminSettings = ({ adminRole }: AdminSettingsProps) => {
                 <Label htmlFor="welcome">Welcome Message</Label>
                 <Input
                   id="welcome"
-                  value={settings.welcomeMessage}
+                  value={localSettings.welcomeMessage}
                   onChange={(e) =>
-                    updateSettings({ ...settings, welcomeMessage: e.target.value })
+                    setLocalSettings({ ...localSettings, welcomeMessage: e.target.value })
                   }
                   placeholder="Enter welcome message..."
                 />
@@ -223,9 +229,9 @@ export const AdminSettings = ({ adminRole }: AdminSettingsProps) => {
             <Textarea
               id="announcement"
               placeholder="Enter any platform-wide announcements..."
-              value={settings.announcementText}
+              value={localSettings.announcementText}
               onChange={(e) =>
-                updateSettings({ ...settings, announcementText: e.target.value })
+                setLocalSettings({ ...localSettings, announcementText: e.target.value })
               }
               className="min-h-[100px]"
             />

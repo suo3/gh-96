@@ -41,7 +41,8 @@ export const usePlatformSettings = () => {
       if (data && data.length > 0) {
         const settingsMap: Record<string, any> = {};
         data.forEach(item => {
-          settingsMap[item.key] = JSON.parse(item.value as string);
+          // The value is already parsed as JSONB, no need to JSON.parse again
+          settingsMap[item.key] = item.value;
         });
 
         setSettings({
@@ -68,22 +69,22 @@ export const usePlatformSettings = () => {
       console.log('Updating platform settings:', newSettings);
 
       const updates = [
-        { key: 'maintenance_mode', value: JSON.stringify(newSettings.maintenanceMode) },
-        { key: 'max_listings_per_user', value: JSON.stringify(newSettings.maxListingsPerUser) },
-        { key: 'require_approval', value: JSON.stringify(newSettings.requireApproval) },
-        { key: 'allow_anonymous', value: JSON.stringify(newSettings.allowAnonymous) },
-        { key: 'welcome_message', value: JSON.stringify(newSettings.welcomeMessage) },
-        { key: 'announcement_text', value: JSON.stringify(newSettings.announcementText) }
+        { key: 'maintenance_mode', value: newSettings.maintenanceMode },
+        { key: 'max_listings_per_user', value: newSettings.maxListingsPerUser },
+        { key: 'require_approval', value: newSettings.requireApproval },
+        { key: 'allow_anonymous', value: newSettings.allowAnonymous },
+        { key: 'welcome_message', value: newSettings.welcomeMessage },
+        { key: 'announcement_text', value: newSettings.announcementText }
       ];
 
       for (const update of updates) {
         const { error } = await supabase
           .from('platform_settings')
-          .upsert({
-            key: update.key,
+          .update({
             value: update.value,
             updated_at: new Date().toISOString()
-          });
+          })
+          .eq('key', update.key);
 
         if (error) {
           console.error(`Error updating ${update.key}:`, error);
