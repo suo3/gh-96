@@ -30,21 +30,36 @@ export const AdminSettings = ({ adminRole }: AdminSettingsProps) => {
     dbSize: "0 MB"
   });
 
+  const [loading, setLoading] = useState(false);
+
   useEffect(() => {
     fetchDatabaseStats();
   }, []);
 
   const fetchDatabaseStats = async () => {
     try {
+      setLoading(true);
+      console.log('Fetching database statistics...');
+      
       // Get table counts for specific tables
       const tables = ['profiles', 'listings', 'swaps', 'messages', 'conversations'] as const;
       let totalRows = 0;
 
       for (const table of tables) {
-        const { count } = await supabase
-          .from(table)
-          .select('*', { count: 'exact', head: true });
-        totalRows += count || 0;
+        try {
+          const { count, error } = await supabase
+            .from(table)
+            .select('*', { count: 'exact', head: true });
+          
+          if (error) {
+            console.warn(`Error counting ${table}:`, error);
+            continue;
+          }
+          
+          totalRows += count || 0;
+        } catch (err) {
+          console.warn(`Failed to count ${table}:`, err);
+        }
       }
 
       setDbStats({
@@ -52,18 +67,32 @@ export const AdminSettings = ({ adminRole }: AdminSettingsProps) => {
         totalRows,
         dbSize: "~2.5 MB" // Placeholder - would need database functions for real size
       });
+
+      console.log('Database stats updated:', { totalRows, totalTables: tables.length });
     } catch (error) {
       console.error('Error fetching database stats:', error);
+      toast.error('Failed to load database statistics');
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleSaveSettings = () => {
-    // In a real app, these would be saved to a settings table
-    toast.success('Settings saved successfully');
+    try {
+      // In a real app, these would be saved to a settings table
+      console.log('Saving settings:', settings);
+      toast.success('Settings saved successfully');
+    } catch (error) {
+      console.error('Error saving settings:', error);
+      toast.error('Failed to save settings');
+    }
   };
 
   const cleanupOldData = async () => {
     try {
+      setLoading(true);
+      console.log('Starting data cleanup...');
+      
       // Clean up old messages (older than 1 year)
       const oneYearAgo = new Date();
       oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
@@ -76,10 +105,13 @@ export const AdminSettings = ({ adminRole }: AdminSettingsProps) => {
       if (error) throw error;
 
       toast.success('Old data cleaned up successfully');
-      fetchDatabaseStats();
+      console.log('Data cleanup completed');
+      await fetchDatabaseStats(); // Refresh stats after cleanup
     } catch (error) {
       console.error('Error cleaning up data:', error);
       toast.error('Failed to clean up data');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -87,11 +119,22 @@ export const AdminSettings = ({ adminRole }: AdminSettingsProps) => {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Access Restricted</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            <Settings className="w-5 h-5" />
+            Access Restricted
+          </CardTitle>
           <CardDescription>
             Only super administrators can access settings.
           </CardDescription>
         </CardHeader>
+        <CardContent>
+          <div className="text-center py-8">
+            <p className="text-gray-600">Your current role: {adminRole || 'Unknown'}</p>
+            <p className="text-sm text-gray-500 mt-2">
+              Contact a super administrator to access these settings.
+            </p>
+          </div>
+        </CardContent>
       </Card>
     );
   }
@@ -151,9 +194,11 @@ export const AdminSettings = ({ adminRole }: AdminSettingsProps) => {
                 <Input
                   id="maxListings"
                   type="number"
+                  min="1"
+                  max="100"
                   value={settings.maxListingsPerUser}
                   onChange={(e) =>
-                    setSettings(prev => ({ ...prev, maxListingsPerUser: parseInt(e.target.value) }))
+                    setSettings(prev => ({ ...prev, maxListingsPerUser: parseInt(e.target.value) || 10 }))
                   }
                 />
               </div>
@@ -166,6 +211,7 @@ export const AdminSettings = ({ adminRole }: AdminSettingsProps) => {
                   onChange={(e) =>
                     setSettings(prev => ({ ...prev, welcomeMessage: e.target.value }))
                   }
+                  placeholder="Enter welcome message..."
                 />
               </div>
             </div>
@@ -180,10 +226,15 @@ export const AdminSettings = ({ adminRole }: AdminSettingsProps) => {
               onChange={(e) =>
                 setSettings(prev => ({ ...prev, announcementText: e.target.value }))
               }
+              className="min-h-[100px]"
             />
           </div>
 
-          <Button onClick={handleSaveSettings} className="w-full sm:w-auto">
+          <Button 
+            onClick={handleSaveSettings} 
+            className="w-full sm:w-auto"
+            disabled={loading}
+          >
             <Save className="w-4 h-4 mr-2" />
             Save Settings
           </Button>
@@ -216,13 +267,22 @@ export const AdminSettings = ({ adminRole }: AdminSettingsProps) => {
             </div>
           </div>
 
-          <div className="space-y-4">
+          <div className="flex flex-col sm:flex-row gap-4">
             <Button 
               variant="outline" 
               onClick={cleanupOldData}
+              disabled={loading}
               className="w-full sm:w-auto"
             >
-              Clean Up Old Data
+              {loading ? "Cleaning..." : "Clean Up Old Data"}
+            </Button>
+            <Button 
+              variant="outline" 
+              onClick={fetchDatabaseStats}
+              disabled={loading}
+              className="w-full sm:w-auto"
+            >
+              {loading ? "Refreshing..." : "Refresh Stats"}
             </Button>
           </div>
         </CardContent>
