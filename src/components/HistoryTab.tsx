@@ -24,11 +24,11 @@ export const HistoryTab = () => {
     ...swaps.map(swap => ({
       id: swap.id,
       type: 'swap' as const,
-      title: `Swapped ${swap.item1Title} for ${swap.item2Title}`,
-      description: `Completed swap with ${swap.item1UserId === user?.id ? swap.item2UserName : swap.item1UserName}`,
-      date: new Date(swap.createdAt),
+      title: `Swapped ${swap.item1_title} for ${swap.item2_title}`,
+      description: `Completed swap between items`,
+      date: new Date(swap.created_at),
       status: swap.status,
-      partner: swap.item1UserId === user?.id ? swap.item2UserName : swap.item1UserName
+      partner: 'Trading Partner'
     })),
     ...conversations.map(conv => ({
       id: conv.id,
