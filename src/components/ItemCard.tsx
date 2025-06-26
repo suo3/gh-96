@@ -1,9 +1,13 @@
 
-import { Heart, MapPin, MessageCircle } from "lucide-react";
+import { Heart, MapPin, MessageCircle, MoreVertical } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
 import { Listing } from "@/stores/listingStore";
 import { UserRatingDisplay } from "./UserRatingDisplay";
+import { ReportListingDialog } from "./ReportListingDialog";
+import { useState } from "react";
 
 interface ItemCardProps {
   item: Listing;
@@ -12,6 +16,8 @@ interface ItemCardProps {
 }
 
 export const ItemCard = ({ item, onItemClick, onItemLike }: ItemCardProps) => {
+  const [showReportDialog, setShowReportDialog] = useState(false);
+
   const getUserDisplayName = (item: Listing) => {
     return item.profiles?.first_name || item.profiles?.username || 'Anonymous User';
   };
@@ -54,6 +60,25 @@ export const ItemCard = ({ item, onItemClick, onItemLike }: ItemCardProps) => {
               Active
             </Badge>
           )}
+          
+          {/* More options menu */}
+          <div className="absolute top-2 left-2">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                <Button variant="secondary" size="sm" className="w-8 h-8 p-0 bg-white/80 hover:bg-white">
+                  <MoreVertical className="w-4 h-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start">
+                <DropdownMenuItem onClick={(e) => {
+                  e.stopPropagation();
+                  setShowReportDialog(true);
+                }}>
+                  Report listing
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </div>
         
         <CardContent className="p-4">
@@ -110,6 +135,14 @@ export const ItemCard = ({ item, onItemClick, onItemLike }: ItemCardProps) => {
           <span>Interested</span>
         </button>
       </div>
+
+      {/* Report Dialog */}
+      {showReportDialog && (
+        <ReportListingDialog
+          listingId={item.id}
+          listingTitle={item.title}
+        />
+      )}
     </Card>
   );
 };
