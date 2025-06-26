@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Flag, Eye, Check, X, AlertTriangle } from "lucide-react";
-import { toast } from "sonner";
+import { useToast } from "@/hooks/use-toast";
 
 interface ReportedListing {
   id: string;
@@ -27,6 +27,7 @@ export const AdminListingModeration = () => {
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState("pending");
   const [searchTerm, setSearchTerm] = useState("");
+  const { toast } = useToast();
 
   useEffect(() => {
     fetchReports();
@@ -60,7 +61,11 @@ export const AdminListingModeration = () => {
       setReports(formattedReports);
     } catch (error) {
       console.error('Error fetching reports:', error);
-      toast.error('Failed to load reports');
+      toast({
+        title: "Error",
+        description: "Failed to load reports",
+        variant: "destructive",
+      });
     } finally {
       setLoading(false);
     }
@@ -79,11 +84,18 @@ export const AdminListingModeration = () => {
 
       if (error) throw error;
 
-      toast.success(`Report ${status} successfully`);
+      toast({
+        title: "Success",
+        description: `Report ${status} successfully`,
+      });
       fetchReports();
     } catch (error) {
       console.error('Error updating report:', error);
-      toast.error('Failed to update report');
+      toast({
+        title: "Error",
+        description: "Failed to update report",
+        variant: "destructive",
+      });
     }
   };
 
