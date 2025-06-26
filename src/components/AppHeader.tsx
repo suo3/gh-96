@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { MapPin, Plus, Bell, User, Shield, Coins } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -198,7 +197,7 @@ export const AppHeader = ({ userLocation, onLocationDetect, onPostItem }: AppHea
       {/* Location Input Modal */}
       {showLocationInput && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md mx-auto">
             <h3 className="text-lg font-semibold mb-4">Set Your Location</h3>
             <LocationInput
               value={locationValue}
