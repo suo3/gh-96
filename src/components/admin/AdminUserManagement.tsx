@@ -221,19 +221,32 @@ export const AdminUserManagement = ({ adminRole }: AdminUserManagementProps) => 
                     <TableCell>
                       <div className="flex gap-2">
                         {adminRole === 'super_admin' && !user.isAdmin && (
-                          <Select onValueChange={(role) => promoteToAdmin(user.id, role)}>
-                            <SelectTrigger asChild>
-                              <Button variant="outline" size="sm">
-                                <UserPlus className="w-4 h-4 mr-1" />
-                                Promote
-                              </Button>
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="support">Support</SelectItem>
-                              <SelectItem value="moderator">Moderator</SelectItem>
-                              <SelectItem value="super_admin">Super Admin</SelectItem>
-                            </SelectContent>
-                          </Select>
+                          <div className="flex gap-2">
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              onClick={() => promoteToAdmin(user.id, 'support')}
+                            >
+                              <UserPlus className="w-4 h-4 mr-1" />
+                              Support
+                            </Button>
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              onClick={() => promoteToAdmin(user.id, 'moderator')}
+                            >
+                              <UserPlus className="w-4 h-4 mr-1" />
+                              Moderator
+                            </Button>
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              onClick={() => promoteToAdmin(user.id, 'super_admin')}
+                            >
+                              <UserPlus className="w-4 h-4 mr-1" />
+                              Super Admin
+                            </Button>
+                          </div>
                         )}
                         {adminRole === 'super_admin' && user.isAdmin && (
                           <Button
