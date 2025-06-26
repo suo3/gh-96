@@ -497,6 +497,10 @@ export type Database = {
         Args: { required_coins: number }
         Returns: boolean
       }
+      delete_user_account: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       get_admin_role: {
         Args: { user_uuid?: string }
         Returns: Database["public"]["Enums"]["admin_role"]

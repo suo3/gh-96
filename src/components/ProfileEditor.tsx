@@ -14,6 +14,7 @@ import { PasswordChange } from "./PasswordChange";
 import { CoinPurchase } from "./CoinPurchase";
 import { LocationInput } from "./LocationInput";
 import { ProfileImageUpload } from "./ProfileImageUpload";
+import { AccountDeletion } from "./AccountDeletion";
 import { Save, Coins, Navigation } from "lucide-react";
 
 export const ProfileEditor = () => {
@@ -169,6 +170,8 @@ export const ProfileEditor = () => {
       <PasswordChange />
 
       <CoinPurchase />
+
+      <AccountDeletion />
     </div>
   );
 };
