@@ -1,3 +1,4 @@
+
 import { AppHeader } from "@/components/AppHeader";
 import { ContentControls } from "@/components/ContentControls";
 import { SwipeMode } from "@/components/SwipeMode";
@@ -5,7 +6,10 @@ import { BrowseMode } from "@/components/BrowseMode";
 import { FilterPanel } from "@/components/FilterPanel";
 import { LoginDialog } from "@/components/LoginDialog";
 import { LocationPermissionPrompt } from "@/components/LocationPermissionPrompt";
+import { PlatformAnnouncement } from "@/components/PlatformAnnouncement";
+import { MaintenanceMode } from "@/components/MaintenanceMode";
 import { useIndexLogic } from "@/hooks/useIndexLogic";
+import { usePlatformSettings } from "@/hooks/usePlatformSettings";
 
 const Index = () => {
   const {
@@ -29,6 +33,13 @@ const Index = () => {
     handleFilterChange
   } = useIndexLogic();
 
+  const { settings, loading: settingsLoading } = usePlatformSettings();
+
+  // Show maintenance mode if enabled
+  if (!settingsLoading && settings.maintenanceMode) {
+    return <MaintenanceMode />;
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50">
       <AppHeader
@@ -36,6 +47,24 @@ const Index = () => {
         onLocationDetect={handleLocationDetect}
         onPostItem={handlePostItem}
       />
+
+      {/* Platform Announcement */}
+      {!settingsLoading && settings.announcementText && (
+        <div className="container mx-auto px-4 pt-4">
+          <PlatformAnnouncement message={settings.announcementText} />
+        </div>
+      )}
+
+      {/* Welcome Message */}
+      {!settingsLoading && settings.welcomeMessage && settings.welcomeMessage !== "Welcome to SwapBoard!" && (
+        <div className="bg-white/50 backdrop-blur-sm border-b border-emerald-100">
+          <div className="container mx-auto px-4 py-2">
+            <p className="text-center text-emerald-700 font-medium">
+              {settings.welcomeMessage}
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* Content Controls */}
       {displayMode !== "swipe" || !isMobile ? (

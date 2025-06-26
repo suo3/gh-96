@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,20 +8,14 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Settings, Save, Database } from "lucide-react";
 import { toast } from "sonner";
+import { usePlatformSettings } from "@/hooks/usePlatformSettings";
 
 interface AdminSettingsProps {
   adminRole: string | null;
 }
 
 export const AdminSettings = ({ adminRole }: AdminSettingsProps) => {
-  const [settings, setSettings] = useState({
-    maintenanceMode: false,
-    maxListingsPerUser: 10,
-    requireApproval: false,
-    allowAnonymous: false,
-    welcomeMessage: "Welcome to SwapBoard!",
-    announcementText: ""
-  });
+  const { settings, loading: settingsLoading, updateSettings } = usePlatformSettings();
 
   const [dbStats, setDbStats] = useState({
     totalTables: 0,
@@ -77,13 +70,11 @@ export const AdminSettings = ({ adminRole }: AdminSettingsProps) => {
     }
   };
 
-  const handleSaveSettings = () => {
-    try {
-      // In a real app, these would be saved to a settings table
-      console.log('Saving settings:', settings);
+  const handleSaveSettings = async () => {
+    const success = await updateSettings(settings);
+    if (success) {
       toast.success('Settings saved successfully');
-    } catch (error) {
-      console.error('Error saving settings:', error);
+    } else {
       toast.error('Failed to save settings');
     }
   };
@@ -139,6 +130,16 @@ export const AdminSettings = ({ adminRole }: AdminSettingsProps) => {
     );
   }
 
+  if (settingsLoading) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Loading settings...</CardTitle>
+        </CardHeader>
+      </Card>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <Card>
@@ -160,7 +161,7 @@ export const AdminSettings = ({ adminRole }: AdminSettingsProps) => {
                   id="maintenance"
                   checked={settings.maintenanceMode}
                   onCheckedChange={(checked) =>
-                    setSettings(prev => ({ ...prev, maintenanceMode: checked }))
+                    updateSettings({ ...settings, maintenanceMode: checked })
                   }
                 />
               </div>
@@ -171,7 +172,7 @@ export const AdminSettings = ({ adminRole }: AdminSettingsProps) => {
                   id="approval"
                   checked={settings.requireApproval}
                   onCheckedChange={(checked) =>
-                    setSettings(prev => ({ ...prev, requireApproval: checked }))
+                    updateSettings({ ...settings, requireApproval: checked })
                   }
                 />
               </div>
@@ -182,7 +183,7 @@ export const AdminSettings = ({ adminRole }: AdminSettingsProps) => {
                   id="anonymous"
                   checked={settings.allowAnonymous}
                   onCheckedChange={(checked) =>
-                    setSettings(prev => ({ ...prev, allowAnonymous: checked }))
+                    updateSettings({ ...settings, allowAnonymous: checked })
                   }
                 />
               </div>
@@ -198,7 +199,7 @@ export const AdminSettings = ({ adminRole }: AdminSettingsProps) => {
                   max="100"
                   value={settings.maxListingsPerUser}
                   onChange={(e) =>
-                    setSettings(prev => ({ ...prev, maxListingsPerUser: parseInt(e.target.value) || 10 }))
+                    updateSettings({ ...settings, maxListingsPerUser: parseInt(e.target.value) || 10 })
                   }
                 />
               </div>
@@ -209,7 +210,7 @@ export const AdminSettings = ({ adminRole }: AdminSettingsProps) => {
                   id="welcome"
                   value={settings.welcomeMessage}
                   onChange={(e) =>
-                    setSettings(prev => ({ ...prev, welcomeMessage: e.target.value }))
+                    updateSettings({ ...settings, welcomeMessage: e.target.value })
                   }
                   placeholder="Enter welcome message..."
                 />
@@ -224,7 +225,7 @@ export const AdminSettings = ({ adminRole }: AdminSettingsProps) => {
               placeholder="Enter any platform-wide announcements..."
               value={settings.announcementText}
               onChange={(e) =>
-                setSettings(prev => ({ ...prev, announcementText: e.target.value }))
+                updateSettings({ ...settings, announcementText: e.target.value })
               }
               className="min-h-[100px]"
             />
