@@ -35,28 +35,61 @@ export const AdminListingModeration = () => {
 
   const fetchReports = async () => {
     try {
-      const { data, error } = await supabase
+      // First get the reported listings
+      const { data: reportedListings, error: reportsError } = await supabase
         .from('reported_listings')
-        .select(`
-          *,
-          listings!inner(title, category),
-          profiles!reporter_id(username)
-        `)
+        .select('*')
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (reportsError) throw reportsError;
 
-      const formattedReports: ReportedListing[] = data.map(report => ({
-        id: report.id,
-        listing_id: report.listing_id,
-        listing_title: (report.listings as any)?.title || 'Unknown',
-        listing_category: (report.listings as any)?.category || 'Unknown',
-        reporter_username: (report.profiles as any)?.username || 'Unknown',
-        reason: report.reason,
-        description: report.description || '',
-        status: report.status,
-        created_at: report.created_at
-      }));
+      if (!reportedListings || reportedListings.length === 0) {
+        setReports([]);
+        setLoading(false);
+        return;
+      }
+
+      // Get unique listing IDs and reporter IDs
+      const listingIds = [...new Set(reportedListings.map(r => r.listing_id))];
+      const reporterIds = [...new Set(reportedListings.map(r => r.reporter_id))];
+
+      // Fetch listings data
+      const { data: listings, error: listingsError } = await supabase
+        .from('listings')
+        .select('id, title, category')
+        .in('id', listingIds);
+
+      if (listingsError) throw listingsError;
+
+      // Fetch reporter profiles
+      const { data: profiles, error: profilesError } = await supabase
+        .from('profiles')
+        .select('id, username')
+        .in('id', reporterIds);
+
+      if (profilesError) throw profilesError;
+
+      // Create lookup maps
+      const listingMap = new Map(listings?.map(l => [l.id, l]) || []);
+      const profileMap = new Map(profiles?.map(p => [p.id, p]) || []);
+
+      // Combine the data
+      const formattedReports: ReportedListing[] = reportedListings.map(report => {
+        const listing = listingMap.get(report.listing_id);
+        const profile = profileMap.get(report.reporter_id);
+
+        return {
+          id: report.id,
+          listing_id: report.listing_id,
+          listing_title: listing?.title || 'Unknown Listing',
+          listing_category: listing?.category || 'Unknown',
+          reporter_username: profile?.username || 'Unknown User',
+          reason: report.reason,
+          description: report.description || '',
+          status: report.status,
+          created_at: report.created_at
+        };
+      });
 
       setReports(formattedReports);
     } catch (error) {
