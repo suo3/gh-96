@@ -244,9 +244,10 @@ export const ItemList = ({ items, onItemLike }: ItemListProps) => {
 
       <ItemDetailModal
         item={selectedItem}
-        open={modalOpen}
-        onOpenChange={setModalOpen}
+        isOpen={modalOpen}
+        onClose={() => setModalOpen(false)}
         onItemLike={handleSwapClick}
+        onStartConversation={handleSwapClick}
       />
     </>
   );
