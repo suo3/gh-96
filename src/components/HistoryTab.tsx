@@ -1,189 +1,122 @@
 
-import { useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { MessageCircle, RotateCcw, Calendar, User } from "lucide-react";
+import { useMessageStore } from "@/stores/messageStore";
 import { useSwapStore } from "@/stores/swapStore";
 import { useAuthStore } from "@/stores/authStore";
-import { Award, RotateCcw, Star, Loader2, MessageCircle } from "lucide-react";
-
-const iconMap = {
-  Award,
-  RotateCcw,
-  Star
-};
-
-const colorMap = {
-  emerald: 'bg-emerald-500 text-emerald-700 bg-emerald-50',
-  blue: 'bg-blue-500 text-blue-700 bg-blue-50',
-  yellow: 'bg-yellow-500 text-yellow-700 bg-yellow-50'
-};
+import { useEffect } from "react";
 
 export const HistoryTab = () => {
-  const { swaps, pendingSwaps, achievements, isLoading, fetchUserSwaps } = useSwapStore();
+  const { conversations, fetchConversations } = useMessageStore();
+  const { swaps, fetchUserSwaps } = useSwapStore();
   const { user } = useAuthStore();
 
   useEffect(() => {
+    fetchConversations();
     if (user?.id) {
-      console.log('Fetching swaps for user:', user.id);
       fetchUserSwaps(user.id);
     }
-  }, [user?.id, fetchUserSwaps]);
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center p-8">
-        <Loader2 className="w-6 h-6 animate-spin" />
-        <span className="ml-2">Loading history...</span>
-      </div>
-    );
-  }
-
-  const getSwapPartner = (swap: any) => {
-    if (!user) return 'Unknown';
-    return swap.user1_id === user.id ? 'User 2' : 'User 1';
-  };
-
-  const getUserSwapItem = (swap: any) => {
-    // For pending swaps, we only have item_title
-    if (swap.item_title) {
-      return swap.item_title;
-    }
-    // For completed swaps, we have item1_title and item2_title
-    if (!user) return swap.item1_title;
-    return swap.user1_id === user.id ? swap.item1_title : swap.item2_title;
-  };
-
-  const getPartnerSwapItem = (swap: any) => {
-    // For pending swaps, we don't have partner item info yet
-    if (swap.item_title) {
-      return 'Pending...';
-    }
-    // For completed swaps
-    if (!user) return swap.item2_title;
-    return swap.user1_id === user.id ? swap.item2_title : swap.item1_title;
-  };
+  }, [fetchConversations, fetchUserSwaps, user?.id]);
 
   // Combine and sort all activities
   const allActivities = [
-    ...swaps.map(swap => ({ ...swap, type: 'completed' })),
-    ...pendingSwaps.map(swap => ({ ...swap, type: 'pending' }))
-  ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+    ...swaps.map(swap => ({
+      id: swap.id,
+      type: 'swap' as const,
+      title: `Swapped ${swap.item1Title} for ${swap.item2Title}`,
+      description: `Completed swap with ${swap.item1UserId === user?.id ? swap.item2UserName : swap.item1UserName}`,
+      date: new Date(swap.createdAt),
+      status: swap.status,
+      partner: swap.item1UserId === user?.id ? swap.item2UserName : swap.item1UserName
+    })),
+    ...conversations.map(conv => ({
+      id: conv.id,
+      type: 'conversation' as const,
+      title: `Started conversation about "${conv.item}"`,
+      description: `With ${conv.partner}`,
+      date: new Date(conv.time),
+      status: conv.status,
+      partner: conv.partner
+    }))
+  ].sort((a, b) => b.date.getTime() - a.date.getTime());
 
-  const totalActivities = allActivities.length;
+  const recentActivities = allActivities.slice(0, 5);
+  const remainingCount = Math.max(0, allActivities.length - 5);
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-      {/* Recent Activities */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center">
-            <RotateCcw className="w-5 h-5 mr-2 text-emerald-600" />
-            Recent Activities ({totalActivities})
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {totalActivities === 0 ? (
-            <div className="text-center py-8 text-gray-500">
-              <RotateCcw className="w-12 h-12 mx-auto mb-4 opacity-50" />
-              <p>No swap activity yet</p>
-              <p className="text-sm">Start swapping to see your history here!</p>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {allActivities.slice(0, 5).map((activity) => (
-                <div key={activity.id} className="border rounded-lg p-4 bg-gray-50">
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="font-medium text-gray-900">{getUserSwapItem(activity)}</div>
-                    <div className="flex items-center gap-2">
-                      <Badge variant="secondary">
-                        {new Date(activity.created_at).toLocaleDateString()}
-                      </Badge>
-                      {activity.type === 'pending' && (
-                        <MessageCircle className="w-4 h-4 text-blue-500" />
-                      )}
-                    </div>
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center">
+          <Calendar className="w-5 h-5 mr-2 text-blue-500" />
+          Recent Activities
+          {allActivities.length > 0 && (
+            <Badge variant="outline" className="ml-2">
+              {allActivities.length} total
+            </Badge>
+          )}
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        {allActivities.length === 0 ? (
+          <div className="text-center py-8 text-gray-500">
+            <MessageCircle className="w-12 h-12 mx-auto mb-4 opacity-50" />
+            <p>No activities yet</p>
+            <p className="text-sm">Start trading to see your activity history!</p>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {recentActivities.map((activity) => (
+              <div
+                key={activity.id}
+                className="flex items-start space-x-3 p-4 rounded-lg border hover:bg-gray-50 transition-colors"
+              >
+                <div className="flex-shrink-0 mt-1">
+                  {activity.type === 'swap' ? (
+                    <RotateCcw className="w-5 h-5 text-green-600" />
+                  ) : (
+                    <MessageCircle className="w-5 h-5 text-blue-600" />
+                  )}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="font-medium text-gray-900 mb-1">
+                    {activity.title}
+                  </p>
+                  <div className="flex items-center space-x-2 mb-2">
+                    <User className="w-3 h-3 text-gray-400" />
+                    <p className="text-sm text-gray-600">
+                      {activity.description}
+                    </p>
                   </div>
-                  <div className="text-sm text-gray-600">
-                    {activity.type === 'completed' ? (
-                      <>
-                        <div className="flex items-center">
-                          <RotateCcw className="w-4 h-4 mr-1" />
-                          Swapped for: <span className="font-medium ml-1">{getPartnerSwapItem(activity)}</span>
-                        </div>
-                        <div className="mt-1">With {getSwapPartner(activity)}</div>
-                      </>
-                    ) : (
-                      <>
-                        <div className="flex items-center">
-                          <MessageCircle className="w-4 h-4 mr-1" />
-                          Conversation started about this item
-                        </div>
-                        <div className="mt-1">With {getSwapPartner(activity)}</div>
-                      </>
-                    )}
-                    <div className="mt-1">
-                      <Badge 
-                        variant={
-                          activity.status === 'completed' ? 'default' : 
-                          activity.status === 'pending' ? 'secondary' : 
-                          'destructive'
-                        }
-                        className="text-xs"
-                      >
-                        {activity.status}
-                      </Badge>
-                    </div>
+                  <div className="flex items-center justify-between">
+                    <p className="text-xs text-gray-400">
+                      {activity.date.toLocaleDateString()} at {activity.date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    </p>
+                    <Badge 
+                      variant={
+                        activity.status === 'completed' ? 'default' : 
+                        activity.status === 'matched' ? 'secondary' : 
+                        'outline'
+                      }
+                      className={
+                        activity.status === 'completed' ? 'bg-green-100 text-green-800' : ''
+                      }
+                    >
+                      {activity.status}
+                    </Badge>
                   </div>
                 </div>
-              ))}
-              {totalActivities > 5 && (
-                <div className="text-center text-sm text-gray-500 mt-4">
-                  And {totalActivities - 5} more activities...
-                </div>
-              )}
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Achievements */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center">
-            <Award className="w-5 h-5 mr-2 text-yellow-600" />
-            Achievements ({achievements.length})
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {achievements.length === 0 ? (
-            <div className="text-center py-8 text-gray-500">
-              <Award className="w-12 h-12 mx-auto mb-4 opacity-50" />
-              <p>No achievements yet</p>
-              <p className="text-sm">Start conversations and complete swaps to unlock achievements!</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 gap-4">
-              {achievements.map((achievement) => {
-                const IconComponent = iconMap[achievement.icon as keyof typeof iconMap];
-                const colors = colorMap[achievement.color as keyof typeof colorMap].split(' ');
-                
-                return (
-                  <div key={achievement.id} className={`text-center p-4 ${colors[2]} rounded-lg`}>
-                    <div className={`w-12 h-12 ${colors[0]} rounded-full flex items-center justify-center mx-auto mb-2`}>
-                      <IconComponent className="w-6 h-6 text-white" />
-                    </div>
-                    <div className={`font-semibold ${colors[1]}`}>{achievement.title}</div>
-                    <div className={`text-sm ${colors[1]}`}>{achievement.description}</div>
-                    <div className="text-xs text-gray-500 mt-1">
-                      Unlocked: {achievement.unlockedAt.toLocaleDateString()}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </CardContent>
-      </Card>
-    </div>
+              </div>
+            ))}
+            
+            {remainingCount > 0 && (
+              <div className="text-center py-2 text-sm text-gray-500 border-t">
+                and {remainingCount} more activities...
+              </div>
+            )}
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 };
