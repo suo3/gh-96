@@ -9,6 +9,7 @@ import { Slider } from "@/components/ui/slider";
 import { MapPin, X, Star, MessageCircle, Navigation } from "lucide-react";
 import { useListingStore } from "@/stores/listingStore";
 import { useAuthStore } from "@/stores/authStore";
+import { supabase } from "@/integrations/supabase/client";
 
 interface FilterPanelProps {
   onFilterChange: (filters: {
@@ -21,6 +22,21 @@ interface FilterPanelProps {
   isVisible: boolean;
   isMobile?: boolean;
   showSearch?: boolean;
+}
+
+interface Category {
+  id: string;
+  name: string;
+  display_order: number;
+  is_active: boolean;
+}
+
+interface Condition {
+  id: string;
+  name: string;
+  value: string;
+  display_order: number;
+  is_active: boolean;
 }
 
 export const FilterPanel = ({ onFilterChange, isVisible, isMobile = false, showSearch = true }: FilterPanelProps) => {
@@ -40,6 +56,49 @@ export const FilterPanel = ({ onFilterChange, isVisible, isMobile = false, showS
   
   const [selectedRadius, setSelectedRadius] = useState([maxDistance]);
   const [selectedMinRating, setSelectedMinRating] = useState([minRating]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [conditions, setConditions] = useState<Condition[]>([]);
+  const [isLoadingOptions, setIsLoadingOptions] = useState(true);
+
+  // Fetch categories and conditions from database
+  useEffect(() => {
+    const fetchOptions = async () => {
+      setIsLoadingOptions(true);
+      try {
+        // Fetch categories
+        const { data: categoriesData, error: categoriesError } = await supabase
+          .from('categories')
+          .select('*')
+          .eq('is_active', true)
+          .order('display_order');
+
+        if (categoriesError) {
+          console.error('Error fetching categories:', categoriesError);
+        } else {
+          setCategories(categoriesData || []);
+        }
+
+        // Fetch conditions
+        const { data: conditionsData, error: conditionsError } = await supabase
+          .from('conditions')
+          .select('*')
+          .eq('is_active', true)
+          .order('display_order');
+
+        if (conditionsError) {
+          console.error('Error fetching conditions:', conditionsError);
+        } else {
+          setConditions(conditionsData || []);
+        }
+      } catch (error) {
+        console.error('Error fetching options:', error);
+      } finally {
+        setIsLoadingOptions(false);
+      }
+    };
+
+    fetchOptions();
+  }, []);
 
   // Initialize user location from profile
   useEffect(() => {
@@ -54,26 +113,6 @@ export const FilterPanel = ({ onFilterChange, isVisible, isMobile = false, showS
     
     initializeUserLocation();
   }, [user?.location, userLocation, geocodeLocation, setUserLocation]);
-
-  const categories = [
-    { value: "all", label: "All Categories" },
-    { value: "Electronics", label: "Electronics" },
-    { value: "Books", label: "Books" },
-    { value: "Kitchen", label: "Kitchen" },
-    { value: "Fitness", label: "Fitness" },
-    { value: "Clothing", label: "Clothing" },
-    { value: "Home & Garden", label: "Home & Garden" },
-    { value: "Tools", label: "Tools" },
-    { value: "Sports", label: "Sports" }
-  ];
-
-  const conditions = [
-    { value: "all", label: "All Conditions" },
-    { value: "Like New", label: "Like New" },
-    { value: "Good", label: "Good" },
-    { value: "Fair", label: "Fair" },
-    { value: "Needs Repair", label: "Needs Repair" }
-  ];
 
   const swapStatuses = [
     { value: "all", label: "All Items" },
@@ -161,14 +200,15 @@ export const FilterPanel = ({ onFilterChange, isVisible, isMobile = false, showS
           <Select value={selectedCategory} onValueChange={(value) => {
             setSelectedCategory(value);
             setTimeout(applyFilters, 0);
-          }}>
+          }} disabled={isLoadingOptions}>
             <SelectTrigger className="bg-white/80 backdrop-blur-sm border-emerald-200">
-              <SelectValue placeholder="Category" />
+              <SelectValue placeholder={isLoadingOptions ? "Loading..." : "Category"} />
             </SelectTrigger>
             <SelectContent className="bg-white/95 backdrop-blur-sm">
+              <SelectItem value="all">All Categories</SelectItem>
               {categories.map((category) => (
-                <SelectItem key={category.value} value={category.value}>
-                  {category.label}
+                <SelectItem key={category.id} value={category.name}>
+                  {category.name}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -178,14 +218,15 @@ export const FilterPanel = ({ onFilterChange, isVisible, isMobile = false, showS
           <Select value={selectedCondition} onValueChange={(value) => {
             setSelectedCondition(value);
             setTimeout(applyFilters, 0);
-          }}>
+          }} disabled={isLoadingOptions}>
             <SelectTrigger className="bg-white/80 backdrop-blur-sm border-emerald-200">
-              <SelectValue placeholder="Condition" />
+              <SelectValue placeholder={isLoadingOptions ? "Loading..." : "Condition"} />
             </SelectTrigger>
             <SelectContent className="bg-white/95 backdrop-blur-sm">
+              <SelectItem value="all">All Conditions</SelectItem>
               {conditions.map((condition) => (
-                <SelectItem key={condition.value} value={condition.value}>
-                  {condition.label}
+                <SelectItem key={condition.id} value={condition.value}>
+                  {condition.name}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -274,12 +315,12 @@ export const FilterPanel = ({ onFilterChange, isVisible, isMobile = false, showS
             )}
             {selectedCategory && selectedCategory !== "all" && (
               <Badge variant="secondary" className="bg-emerald-100 text-emerald-800">
-                {categories.find(c => c.value === selectedCategory)?.label}
+                {categories.find(c => c.name === selectedCategory)?.name || selectedCategory}
               </Badge>
             )}
             {selectedCondition && selectedCondition !== "all" && (
               <Badge variant="secondary" className="bg-emerald-100 text-emerald-800">
-                {conditions.find(c => c.value === selectedCondition)?.label}
+                {conditions.find(c => c.value === selectedCondition)?.name || selectedCondition}
               </Badge>
             )}
             {swapFilter !== "all" && (
