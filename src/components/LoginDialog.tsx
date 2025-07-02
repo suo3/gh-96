@@ -12,6 +12,8 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { loginSchema, signupSchema, LoginFormData, SignupFormData } from "@/lib/validations";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { useLocationDetection } from "@/hooks/useLocationDetection";
+import { MapPin, Navigation } from "lucide-react";
 
 interface LoginDialogProps {
   open: boolean;
@@ -24,6 +26,7 @@ export const LoginDialog = ({ open, onOpenChange }: LoginDialogProps) => {
   const [isLoginLoading, setIsLoginLoading] = useState(false);
   const [isSignupLoading, setIsSignupLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("login");
+  const { isDetecting, requestLocationPermission } = useLocationDetection();
 
   const loginForm = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
@@ -45,6 +48,17 @@ export const LoginDialog = ({ open, onOpenChange }: LoginDialogProps) => {
       location: ''
     },
   });
+
+  const handleLocationDetect = async () => {
+    const location = await requestLocationPermission();
+    if (location) {
+      signupForm.setValue('location', location);
+      toast({
+        title: "Location detected",
+        description: `Set your location to ${location}`,
+      });
+    }
+  };
 
   const handleLogin = async (data: LoginFormData) => {
     setIsLoginLoading(true);
@@ -252,7 +266,23 @@ export const LoginDialog = ({ open, onOpenChange }: LoginDialogProps) => {
                     <FormItem>
                       <FormLabel>Location</FormLabel>
                       <FormControl>
-                        <Input placeholder="City, State" {...field} />
+                        <div className="flex gap-2">
+                          <Input placeholder="City, State" {...field} />
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={handleLocationDetect}
+                            disabled={isDetecting}
+                            className="px-3"
+                          >
+                            {isDetecting ? (
+                              <MapPin className="w-4 h-4 animate-pulse" />
+                            ) : (
+                              <Navigation className="w-4 h-4" />
+                            )}
+                          </Button>
+                        </div>
                       </FormControl>
                       <FormMessage />
                     </FormItem>
