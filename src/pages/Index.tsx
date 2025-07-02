@@ -92,11 +92,11 @@ const Index = () => {
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
-        {/* Filters - Only show on desktop and when not in swipe mode */}
-        {!isMobile && (
+        {/* Filters - Only show on desktop when showFilters is true and not in swipe mode */}
+        {!isMobile && showFilters && displayMode !== "swipe" && (
           <FilterPanel 
             onFilterChange={handleFilterChange}
-            isVisible={showFilters && displayMode !== "swipe"}
+            isVisible={true}
           />
         )}
 

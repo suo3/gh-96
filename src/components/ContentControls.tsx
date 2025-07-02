@@ -45,7 +45,7 @@ export const ContentControls = ({
             <SheetContent side="bottom" className="h-[80vh] overflow-y-auto">
               <SheetHeader>
                 <SheetTitle className="text-lg font-semibold text-emerald-800">
-                  More Filters
+                  Filters
                 </SheetTitle>
               </SheetHeader>
               <div className="mt-6">
