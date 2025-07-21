@@ -29,7 +29,7 @@ export const AdminAnalytics = () => {
       const [usersResult, listingsResult, swapsResult, messagesResult] = await Promise.all([
         supabase.from('profiles').select('id', { count: 'exact', head: true }),
         supabase.from('listings').select('id', { count: 'exact', head: true }),
-        supabase.from('swaps').select('id', { count: 'exact', head: true }),
+        supabase.from('swaps').select('id', { count: 'exact', head: true }).eq('status', 'completed'),
         supabase.from('messages').select('id', { count: 'exact', head: true })
       ]);
 
@@ -49,6 +49,7 @@ export const AdminAnalytics = () => {
       const { data: swapActivityData } = await supabase
         .from('swaps')
         .select('created_at')
+        .eq('status', 'completed')
         .gte('created_at', new Date(Date.now() - 6 * 30 * 24 * 60 * 60 * 1000).toISOString());
 
       // Process category data
