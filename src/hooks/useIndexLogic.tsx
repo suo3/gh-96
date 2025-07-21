@@ -6,6 +6,7 @@ import { useListingStore } from "@/stores/listingStore";
 import { useLocationDetection } from "@/hooks/useLocationDetection";
 import { useToast } from "@/components/ui/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { usePlatformSettings } from "@/hooks/usePlatformSettings";
 
 interface Location {
   latitude: number;
@@ -34,6 +35,7 @@ export const useIndexLogic = () => {
   } = useListingStore();
   const { requestLocationPermission } = useLocationDetection();
   const { toast } = useToast();
+  const { settings: platformSettings } = usePlatformSettings();
 
   // Check for login parameter in URL
   useEffect(() => {
@@ -61,6 +63,13 @@ export const useIndexLogic = () => {
       fetchConversations();
     }
   }, [isAuthenticated, fetchConversations]);
+
+  // Enforce anonymous browsing setting
+  useEffect(() => {
+    if (platformSettings && !platformSettings.allowAnonymous && !isAuthenticated) {
+      setShowLoginDialog(true);
+    }
+  }, [platformSettings, isAuthenticated]);
 
   useEffect(() => {
     const initializeLocation = async () => {

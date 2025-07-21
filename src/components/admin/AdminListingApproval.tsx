@@ -1,0 +1,255 @@
+import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Clock, Eye, Check, X } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+
+interface PendingListing {
+  id: string;
+  title: string;
+  category: string;
+  condition: string;
+  location: string;
+  user_username: string;
+  status: string;
+  created_at: string;
+  description: string;
+  images: string[];
+}
+
+export const AdminListingApproval = () => {
+  const [listings, setListings] = useState<PendingListing[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [statusFilter, setStatusFilter] = useState("pending");
+  const [searchTerm, setSearchTerm] = useState("");
+  const { toast } = useToast();
+
+  useEffect(() => {
+    fetchPendingListings();
+  }, []);
+
+  const fetchPendingListings = async () => {
+    try {
+      // Get listings first
+      const { data: listingsData, error: listingsError } = await supabase
+        .from('listings')
+        .select('*')
+        .in('status', ['pending', 'active', 'rejected'])
+        .order('created_at', { ascending: false });
+
+      if (listingsError) throw listingsError;
+
+      if (!listingsData || listingsData.length === 0) {
+        setListings([]);
+        setLoading(false);
+        return;
+      }
+
+      // Get unique user IDs
+      const userIds = [...new Set(listingsData.map(l => l.user_id).filter(Boolean))];
+
+      // Fetch user profiles
+      const { data: profiles, error: profilesError } = await supabase
+        .from('profiles')
+        .select('id, username')
+        .in('id', userIds);
+
+      if (profilesError) throw profilesError;
+
+      // Create lookup map
+      const profileMap = new Map(profiles?.map(p => [p.id, p]) || []);
+
+      const formattedListings: PendingListing[] = listingsData.map(listing => {
+        const profile = profileMap.get(listing.user_id);
+        
+        return {
+          id: listing.id,
+          title: listing.title,
+          category: listing.category,
+          condition: listing.condition,
+          location: listing.location || 'Not specified',
+          user_username: profile?.username || 'Unknown User',
+          status: listing.status,
+          created_at: listing.created_at,
+          description: listing.description || '',
+          images: listing.images || []
+        };
+      });
+
+      setListings(formattedListings);
+    } catch (error) {
+      console.error('Error fetching pending listings:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load pending listings",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const updateListingStatus = async (listingId: string, status: string) => {
+    try {
+      const { error } = await supabase
+        .from('listings')
+        .update({ status })
+        .eq('id', listingId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: `Listing ${status} successfully`,
+      });
+      fetchPendingListings();
+    } catch (error) {
+      console.error('Error updating listing:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update listing",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const filteredListings = listings.filter(listing => {
+    const matchesStatus = statusFilter === "all" || listing.status === statusFilter;
+    const matchesSearch = listing.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         listing.user_username.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         listing.category.toLowerCase().includes(searchTerm.toLowerCase());
+
+    return matchesStatus && matchesSearch;
+  });
+
+  if (loading) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Loading pending listings...</CardTitle>
+        </CardHeader>
+      </Card>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Clock className="w-5 h-5" />
+            Listing Approval
+          </CardTitle>
+          <CardDescription>
+            Review and approve pending listings
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-col sm:flex-row gap-4 mb-6">
+            <Input
+              placeholder="Search listings..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="flex-1"
+            />
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger className="w-full sm:w-48">
+                <SelectValue placeholder="Filter by status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Listings</SelectItem>
+                <SelectItem value="pending">Pending</SelectItem>
+                <SelectItem value="active">Approved</SelectItem>
+                <SelectItem value="rejected">Rejected</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Title</TableHead>
+                  <TableHead>User</TableHead>
+                  <TableHead>Category</TableHead>
+                  <TableHead>Condition</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Date</TableHead>
+                  <TableHead>Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredListings.map((listing) => (
+                  <TableRow key={listing.id}>
+                    <TableCell>
+                      <div>
+                        <div className="font-medium">{listing.title}</div>
+                        {listing.description && (
+                          <div className="text-sm text-muted-foreground mt-1 max-w-xs truncate">
+                            {listing.description}
+                          </div>
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell>@{listing.user_username}</TableCell>
+                    <TableCell>{listing.category}</TableCell>
+                    <TableCell>{listing.condition}</TableCell>
+                    <TableCell>
+                      <Badge 
+                        variant={
+                          listing.status === 'pending' ? 'secondary' :
+                          listing.status === 'active' ? 'default' : 'destructive'
+                        }
+                      >
+                        {listing.status === 'pending' && <Clock className="w-3 h-3 mr-1" />}
+                        {listing.status}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      {new Date(listing.created_at).toLocaleDateString()}
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex gap-2">
+                        {listing.status === 'pending' && (
+                          <>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => updateListingStatus(listing.id, 'active')}
+                            >
+                              <Check className="w-4 h-4 mr-1" />
+                              Approve
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => updateListingStatus(listing.id, 'rejected')}
+                            >
+                              <X className="w-4 h-4 mr-1" />
+                              Reject
+                            </Button>
+                          </>
+                        )}
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+
+          {filteredListings.length === 0 && (
+            <div className="text-center py-8 text-muted-foreground">
+              No listings found matching your criteria.
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  );
+};

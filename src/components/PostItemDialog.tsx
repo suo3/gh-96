@@ -166,13 +166,30 @@ export const PostItemDialog = ({ open, onOpenChange }: PostItemDialogProps) => {
       });
       form.reset();
       onOpenChange(false);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error posting item:', error);
-      toast({
-        title: "Error",
-        description: "Failed to post your item. Please try again.",
-        variant: "destructive"
-      });
+      
+      // Handle specific error cases
+      if (error?.message?.includes('can_create_listing')) {
+        toast({
+          title: "Listing Limit Reached",
+          description: "You've reached your maximum allowed listings. Please delete some existing listings or upgrade your account.",
+          variant: "destructive"
+        });
+      } else if (error?.message?.includes('requires_approval')) {
+        toast({
+          title: "Listing Submitted for Review",
+          description: "Your listing has been submitted and is pending approval by an administrator.",
+        });
+        form.reset();
+        onOpenChange(false);
+      } else {
+        toast({
+          title: "Error",
+          description: "Failed to post your item. Please try again.",
+          variant: "destructive"
+        });
+      }
     } finally {
       setIsPending(false);
     }

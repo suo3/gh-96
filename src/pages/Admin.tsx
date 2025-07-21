@@ -5,9 +5,10 @@ import { useAuthStore } from "@/stores/authStore";
 import { supabase } from "@/integrations/supabase/client";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Shield, Users, Flag, BarChart3, Settings } from "lucide-react";
+import { Shield, Users, Flag, BarChart3, Settings, CheckCircle } from "lucide-react";
 import { AdminUserManagement } from "@/components/admin/AdminUserManagement";
 import { AdminListingModeration } from "@/components/admin/AdminListingModeration";
+import { AdminListingApproval } from "@/components/admin/AdminListingApproval";
 import { AdminAnalytics } from "@/components/admin/AdminAnalytics";
 import { AdminSettings } from "@/components/admin/AdminSettings";
 
@@ -80,7 +81,7 @@ const Admin = () => {
         </div>
 
         <Tabs defaultValue="analytics" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4 lg:w-auto lg:grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5 lg:w-auto lg:grid-cols-5">
             <TabsTrigger value="analytics" className="flex items-center gap-2">
               <BarChart3 className="w-4 h-4" />
               Analytics
@@ -89,9 +90,13 @@ const Admin = () => {
               <Users className="w-4 h-4" />
               Users
             </TabsTrigger>
+            <TabsTrigger value="approval" className="flex items-center gap-2">
+              <CheckCircle className="w-4 h-4" />
+              Listings
+            </TabsTrigger>
             <TabsTrigger value="moderation" className="flex items-center gap-2">
               <Flag className="w-4 h-4" />
-              Moderation
+              Reports
             </TabsTrigger>
             <TabsTrigger value="settings" className="flex items-center gap-2">
               <Settings className="w-4 h-4" />
@@ -106,7 +111,11 @@ const Admin = () => {
           <TabsContent value="users">
             <AdminUserManagement adminRole={adminRole} />
           </TabsContent>
-
+          
+          <TabsContent value="approval">
+            <AdminListingApproval />
+          </TabsContent>
+          
           <TabsContent value="moderation">
             <AdminListingModeration />
           </TabsContent>
