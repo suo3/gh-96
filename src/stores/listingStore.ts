@@ -24,6 +24,7 @@ export interface Listing {
     last_name?: string;
     username?: string;
     avatar?: string;
+    phone_number?: string;
   };
   hasActiveMessage?: boolean;
 }
@@ -275,7 +276,7 @@ export const useListingStore = create<ListingStore>((set, get) => ({
     set({ isLoading: true, error: null });
     
     try {
-      // First fetch listings without profiles to avoid the relation error
+      // First fetch listings
       const { data, error } = await supabase
         .from('listings')
         .select('*')
@@ -284,9 +285,25 @@ export const useListingStore = create<ListingStore>((set, get) => ({
 
       if (error) throw error;
 
+      // Then fetch profiles for each listing user
+      const listingsWithProfiles = await Promise.all(
+        (data || []).map(async (listing) => {
+          let profiles = null;
+          if (listing.user_id) {
+            const { data: profileData } = await supabase
+              .from('profiles')
+              .select('first_name, last_name, username, avatar, phone_number')
+              .eq('id', listing.user_id)
+              .single();
+            profiles = profileData;
+          }
+          return { ...listing, profiles };
+        })
+      );
+
       // Check conversation status for each listing
       const listingsWithConversationStatus = await Promise.all(
-        (data || []).map(async (listing) => {
+        listingsWithProfiles.map(async (listing) => {
           try {
             const { data: hasConversation } = await supabase
               .rpc('listing_has_active_conversation', { listing_uuid: listing.id });

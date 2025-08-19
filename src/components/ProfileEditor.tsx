@@ -27,6 +27,7 @@ export const ProfileEditor = () => {
     firstName: '',
     lastName: '',
     username: '',
+    phoneNumber: '',
     location: '',
     bio: '',
     profileImageUrl: ''
@@ -38,6 +39,7 @@ export const ProfileEditor = () => {
         firstName: user.firstName || '',
         lastName: user.lastName || '',
         username: user.username || '',
+        phoneNumber: user.phoneNumber || '',
         location: user.location || '',
         bio: user.bio || '',
         profileImageUrl: user.profileImageUrl || ''
@@ -125,6 +127,19 @@ export const ProfileEditor = () => {
               value={formData.username}
               onChange={(e) => setFormData(prev => ({ ...prev, username: e.target.value }))}
             />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="phoneNumber">Phone Number (Ghana)</Label>
+            <Input
+              id="phoneNumber"
+              placeholder="+233 or 0 (e.g., +233241234567 or 0241234567)"
+              value={formData.phoneNumber}
+              onChange={(e) => setFormData(prev => ({ ...prev, phoneNumber: e.target.value }))}
+            />
+            <p className="text-sm text-muted-foreground">
+              Your phone number will be used for WhatsApp contact on your listings
+            </p>
           </div>
 
           <div className="space-y-2">

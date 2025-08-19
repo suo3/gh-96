@@ -10,6 +10,7 @@ export interface UserProfile {
   avatar?: string;
   firstName: string;
   lastName: string;
+  phoneNumber?: string;
   location: string;
   bio?: string;
   profileImageUrl?: string;
@@ -67,6 +68,7 @@ export const useAuthStore = create<AuthState>()(
               username: profile.username || '',
               firstName: profile.first_name || '',
               lastName: profile.last_name || '',
+              phoneNumber: profile.phone_number || '',
               location: profile.location || '',
               bio: profile.bio || '',
               profileImageUrl: profile.profile_image_url || '',
@@ -116,6 +118,7 @@ export const useAuthStore = create<AuthState>()(
                       username: profile.username || '',
                       firstName: profile.first_name || '',
                       lastName: profile.last_name || '',
+                      phoneNumber: profile.phone_number || '',
                       location: profile.location || '',
                       bio: profile.bio || '',
                       profileImageUrl: profile.profile_image_url || '',
@@ -191,6 +194,7 @@ export const useAuthStore = create<AuthState>()(
                 username: profile.username || '',
                 firstName: profile.first_name || '',
                 lastName: profile.last_name || '',
+                phoneNumber: profile.phone_number || '',
                 location: profile.location || '',
                 bio: profile.bio || '',
                 profileImageUrl: profile.profile_image_url || '',
@@ -266,6 +270,7 @@ export const useAuthStore = create<AuthState>()(
                 username: userData.username,
                 first_name: userData.firstName,
                 last_name: userData.lastName,
+                phone_number: userData.phoneNumber,
                 location: userData.location,
               }
             }
@@ -306,6 +311,7 @@ export const useAuthStore = create<AuthState>()(
               username: updates.username,
               first_name: updates.firstName,
               last_name: updates.lastName,
+              phone_number: updates.phoneNumber,
               location: updates.location,
               bio: updates.bio,
               profile_image_url: updates.profileImageUrl,

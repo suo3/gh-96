@@ -332,6 +332,7 @@ export type Database = {
           location: string | null
           monthly_listings: number | null
           monthly_swaps: number | null
+          phone_number: string | null
           profile_image_url: string | null
           rating: number | null
           total_swaps: number | null
@@ -351,6 +352,7 @@ export type Database = {
           location?: string | null
           monthly_listings?: number | null
           monthly_swaps?: number | null
+          phone_number?: string | null
           profile_image_url?: string | null
           rating?: number | null
           total_swaps?: number | null
@@ -370,6 +372,7 @@ export type Database = {
           location?: string | null
           monthly_listings?: number | null
           monthly_swaps?: number | null
+          phone_number?: string | null
           profile_image_url?: string | null
           rating?: number | null
           total_swaps?: number | null

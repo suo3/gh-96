@@ -1,5 +1,5 @@
 
-import { Heart, MapPin, MessageCircle, MoreVertical } from "lucide-react";
+import { Heart, MapPin, MessageCircle, MoreVertical, MessageSquare } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -30,6 +30,39 @@ export const ItemCard = ({ item, onItemClick, onItemLike }: ItemCardProps) => {
       return item.profiles.username.charAt(0).toUpperCase();
     }
     return 'U';
+  };
+
+  const formatPhoneForWhatsApp = (phoneNumber: string) => {
+    // Remove all non-digit characters
+    const digits = phoneNumber.replace(/\D/g, '');
+    
+    // If starts with 0, replace with 233 (Ghana country code)
+    if (digits.startsWith('0')) {
+      return '233' + digits.substring(1);
+    }
+    
+    // If starts with 233, use as is
+    if (digits.startsWith('233')) {
+      return digits;
+    }
+    
+    // If 9 digits, assume it's without country code
+    if (digits.length === 9) {
+      return '233' + digits;
+    }
+    
+    return digits;
+  };
+
+  const openWhatsApp = () => {
+    const phoneNumber = item.profiles?.phone_number;
+    if (!phoneNumber) return;
+    
+    const formattedPhone = formatPhoneForWhatsApp(phoneNumber);
+    const message = encodeURIComponent(`Hi! I'm interested in your item "${item.title}" on the marketplace. Is it still available?`);
+    const whatsappUrl = `https://wa.me/${formattedPhone}?text=${message}`;
+    
+    window.open(whatsappUrl, '_blank');
   };
 
   const getItemImages = (item: Listing) => {
@@ -130,7 +163,21 @@ export const ItemCard = ({ item, onItemClick, onItemLike }: ItemCardProps) => {
         </CardContent>
       </div>
       
-      <div className="px-4 pb-4">
+      <div className="px-4 pb-4 space-y-2">
+        {/* WhatsApp contact button - only show if seller has phone number */}
+        {item.profiles?.phone_number && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              openWhatsApp();
+            }}
+            className="w-full flex items-center justify-center space-x-2 py-2 px-4 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
+          >
+            <MessageSquare className="w-4 h-4" />
+            <span>Contact on WhatsApp</span>
+          </button>
+        )}
+        
         <button
           onClick={(e) => {
             e.stopPropagation();
