@@ -246,6 +246,51 @@ export type Database = {
           },
         ]
       }
+      mobile_money_transactions: {
+        Row: {
+          amount: number
+          coin_amount: number
+          created_at: string
+          currency: string
+          external_reference: string | null
+          id: string
+          phone_number: string
+          plan_type: string
+          provider: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          coin_amount: number
+          created_at?: string
+          currency?: string
+          external_reference?: string | null
+          id?: string
+          phone_number: string
+          plan_type: string
+          provider: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          coin_amount?: number
+          created_at?: string
+          currency?: string
+          external_reference?: string | null
+          id?: string
+          phone_number?: string
+          plan_type?: string
+          provider?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       platform_settings: {
         Row: {
           created_at: string
