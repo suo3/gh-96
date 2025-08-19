@@ -25,26 +25,31 @@ export const useLocationDetection = () => {
 
   const reverseGeocode = async (lat: number, lng: number): Promise<string | null> => {
     try {
-      // Using a free geocoding service (OpenStreetMap Nominatim)
+      // Using a free geocoding service (OpenStreetMap Nominatim) with Ghana focus
       const response = await fetch(
-        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=10&addressdetails=1`
+        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=10&addressdetails=1&countrycodes=gh`
       );
       
       if (!response.ok) throw new Error('Geocoding failed');
       
       const data = await response.json();
       
-      // Extract city and state/country for a clean location string
+      // Extract city and region for Ghana-specific location string
       const city = data.address?.city || data.address?.town || data.address?.village;
-      const state = data.address?.state;
+      const region = data.address?.state || data.address?.state_district || data.address?.county;
       const country = data.address?.country;
       
-      if (city && state) {
-        return `${city}, ${state}`;
-      } else if (city && country) {
-        return `${city}, ${country}`;
+      // For Ghana, prioritize city and region format
+      if (city && region && country === 'Ghana') {
+        return `${city}, ${region}`;
+      } else if (city && country === 'Ghana') {
+        return `${city}, Ghana`;
+      } else if (region && country === 'Ghana') {
+        return `${region}, Ghana`;
       } else {
-        return data.display_name?.split(',').slice(0, 2).join(',').trim() || null;
+        // Fallback to display name for Ghana
+        const parts = data.display_name?.split(',') || [];
+        return parts.slice(0, 2).join(',').trim() || 'Ghana';
       }
     } catch (error) {
       console.error('Reverse geocoding error:', error);
