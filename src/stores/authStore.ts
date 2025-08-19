@@ -21,6 +21,13 @@ export interface UserProfile {
   monthlyListings: number;
   monthlySwaps: number;
   achievements?: string[];
+  // Ghana-specific fields
+  preferredLanguage?: string;
+  region?: string;
+  city?: string;
+  businessType?: string;
+  preferredContactMethod?: string;
+  isVerified?: boolean;
 }
 
 interface AuthState {
@@ -79,7 +86,14 @@ export const useAuthStore = create<AuthState>()(
               monthlyListings: profile.monthly_listings || 0,
               monthlySwaps: profile.monthly_swaps || 0,
               avatar: profile.avatar || '',
-              achievements: profile.achievements || []
+              achievements: profile.achievements || [],
+              // Ghana-specific fields
+              preferredLanguage: profile.preferred_language || 'en',
+              region: profile.region || '',
+              city: profile.city || '',
+              businessType: profile.business_type || '',
+              preferredContactMethod: profile.preferred_contact_method || 'whatsapp',
+              isVerified: profile.is_verified || false
             };
 
             set({ user: updatedUser });
@@ -129,7 +143,14 @@ export const useAuthStore = create<AuthState>()(
                       monthlyListings: profile.monthly_listings || 0,
                       monthlySwaps: profile.monthly_swaps || 0,
                       avatar: profile.avatar || '',
-                      achievements: profile.achievements || []
+                      achievements: profile.achievements || [],
+                      // Ghana-specific fields
+                      preferredLanguage: profile.preferred_language || 'en',
+                      region: profile.region || '',
+                      city: profile.city || '',
+                      businessType: profile.business_type || '',
+                      preferredContactMethod: profile.preferred_contact_method || 'whatsapp',
+                      isVerified: profile.is_verified || false
                     };
 
                     set({ 
@@ -205,7 +226,14 @@ export const useAuthStore = create<AuthState>()(
                 monthlyListings: profile.monthly_listings || 0,
                 monthlySwaps: profile.monthly_swaps || 0,
                 avatar: profile.avatar || '',
-                achievements: profile.achievements || []
+                achievements: profile.achievements || [],
+                // Ghana-specific fields
+                preferredLanguage: profile.preferred_language || 'en',
+                region: profile.region || '',
+                city: profile.city || '',
+                businessType: profile.business_type || '',
+                preferredContactMethod: profile.preferred_contact_method || 'whatsapp',
+                isVerified: profile.is_verified || false
               };
 
               set({ 
@@ -272,6 +300,11 @@ export const useAuthStore = create<AuthState>()(
                 last_name: userData.lastName,
                 phone_number: userData.phoneNumber,
                 location: userData.location,
+                preferred_language: userData.preferredLanguage || 'en',
+                region: userData.region,
+                city: userData.city,
+                business_type: userData.businessType,
+                preferred_contact_method: userData.preferredContactMethod || 'whatsapp',
               }
             }
           });
@@ -319,6 +352,12 @@ export const useAuthStore = create<AuthState>()(
               monthly_swaps: updates.monthlySwaps,
               total_swaps: updates.totalSwaps,
               coins: updates.coins,
+              // Ghana-specific fields
+              preferred_language: updates.preferredLanguage,
+              region: updates.region,
+              city: updates.city,
+              business_type: updates.businessType,
+              preferred_contact_method: updates.preferredContactMethod,
             })
             .eq('id', user.id);
 

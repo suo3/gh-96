@@ -160,6 +160,27 @@ export type Database = {
           },
         ]
       }
+      ghana_regions: {
+        Row: {
+          cities: string[]
+          created_at: string | null
+          id: string
+          name: string
+        }
+        Insert: {
+          cities?: string[]
+          created_at?: string | null
+          id?: string
+          name: string
+        }
+        Update: {
+          cities?: string[]
+          created_at?: string | null
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
       listings: {
         Row: {
           category: string
@@ -323,61 +344,85 @@ export type Database = {
           achievements: string[] | null
           avatar: string | null
           bio: string | null
+          business_type: string | null
+          city: string | null
           coins: number
           created_at: string | null
           first_name: string | null
           id: string
+          is_verified: boolean | null
           joined_date: string | null
           last_name: string | null
           location: string | null
           monthly_listings: number | null
           monthly_swaps: number | null
           phone_number: string | null
+          preferred_contact_method: string | null
+          preferred_language: string | null
           profile_image_url: string | null
           rating: number | null
+          region: string | null
+          social_media_handles: Json | null
           total_swaps: number | null
           updated_at: string | null
           username: string | null
+          verification_documents: string[] | null
         }
         Insert: {
           achievements?: string[] | null
           avatar?: string | null
           bio?: string | null
+          business_type?: string | null
+          city?: string | null
           coins?: number
           created_at?: string | null
           first_name?: string | null
           id: string
+          is_verified?: boolean | null
           joined_date?: string | null
           last_name?: string | null
           location?: string | null
           monthly_listings?: number | null
           monthly_swaps?: number | null
           phone_number?: string | null
+          preferred_contact_method?: string | null
+          preferred_language?: string | null
           profile_image_url?: string | null
           rating?: number | null
+          region?: string | null
+          social_media_handles?: Json | null
           total_swaps?: number | null
           updated_at?: string | null
           username?: string | null
+          verification_documents?: string[] | null
         }
         Update: {
           achievements?: string[] | null
           avatar?: string | null
           bio?: string | null
+          business_type?: string | null
+          city?: string | null
           coins?: number
           created_at?: string | null
           first_name?: string | null
           id?: string
+          is_verified?: boolean | null
           joined_date?: string | null
           last_name?: string | null
           location?: string | null
           monthly_listings?: number | null
           monthly_swaps?: number | null
           phone_number?: string | null
+          preferred_contact_method?: string | null
+          preferred_language?: string | null
           profile_image_url?: string | null
           rating?: number | null
+          region?: string | null
+          social_media_handles?: Json | null
           total_swaps?: number | null
           updated_at?: string | null
           username?: string | null
+          verification_documents?: string[] | null
         }
         Relationships: []
       }

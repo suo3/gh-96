@@ -105,6 +105,22 @@ export const UserProfile = ({ onBack }: UserProfileProps) => {
                         <Calendar className="w-4 h-4 mr-1" />
                         Joined {userStats.joinDate}
                       </div>
+                      {/* Show business type if available */}
+                      {(user as any).businessType && (
+                        <div className="flex items-center">
+                          <Badge variant="outline" className="text-xs">
+                            {(user as any).businessType.replace('_', ' ')}
+                          </Badge>
+                        </div>
+                      )}
+                      {/* Show verification status */}
+                      {(user as any).isVerified && (
+                        <div className="flex items-center">
+                          <Badge className="text-xs bg-emerald-100 text-emerald-700">
+                            ✓ Verified
+                          </Badge>
+                        </div>
+                      )}
                     </div>
                   </div>
 
