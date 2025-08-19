@@ -7,7 +7,7 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instanciate createClient with right options
+  // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "12.2.3 (519615d)"
@@ -542,31 +542,31 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: {
           conv_id: string
-          item_title: string
           created_at: string
+          item_title: string
+          last_message: string
+          last_message_time: string
+          partner_avatar: string
+          partner_name: string
+          partner_username: string
+          unread_count: number
           updated_at: string
           user1_id: string
           user2_id: string
-          last_message: string
-          last_message_time: string
-          unread_count: number
-          partner_name: string
-          partner_username: string
-          partner_avatar: string
         }[]
       }
       get_conversations_with_unread: {
         Args: Record<PropertyKey, never>
         Returns: {
           conv_id: string
-          item_title: string
           created_at: string
-          updated_at: string
-          user1_id: string
-          user2_id: string
+          item_title: string
           last_message: string
           last_message_time: string
           unread_count: number
+          updated_at: string
+          user1_id: string
+          user2_id: string
         }[]
       }
       get_user_average_rating: {
