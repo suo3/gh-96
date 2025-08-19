@@ -11,6 +11,7 @@ import { HistoryTab } from "./HistoryTab";
 import { UserRatingDisplay } from "./UserRatingDisplay";
 import { AllRatingsModal } from "./AllRatingsModal";
 import { AchievementsDisplay } from "./AchievementsDisplay";
+import { CoinPurchase } from "./CoinPurchase";
 import { useAuthStore } from "@/stores/authStore";
 import { useRatingStore } from "@/stores/ratingStore";
 import { useEffect } from "react";
@@ -216,10 +217,14 @@ export const UserProfile = ({ onBack }: UserProfileProps) => {
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-3 mb-6">
+          <TabsList className="grid w-full grid-cols-4 mb-6">
             <TabsTrigger value="profile" className="flex items-center">
               <User className="w-4 h-4 mr-2" />
               Profile
+            </TabsTrigger>
+            <TabsTrigger value="coins" className="flex items-center">
+              <Coins className="w-4 h-4 mr-2" />
+              Buy Coins
             </TabsTrigger>
             <TabsTrigger value="listings" className="flex items-center">
               <List className="w-4 h-4 mr-2" />
@@ -233,6 +238,10 @@ export const UserProfile = ({ onBack }: UserProfileProps) => {
 
           <TabsContent value="profile">
             <ProfileEditor />
+          </TabsContent>
+
+          <TabsContent value="coins">
+            <CoinPurchase />
           </TabsContent>
 
           <TabsContent value="listings">

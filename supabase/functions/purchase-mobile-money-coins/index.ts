@@ -132,11 +132,13 @@ serve(async (req) => {
     console.log(`Initiating ${providerConfig.name} payment:`, paymentRequest);
 
     // In a real implementation, you would call the mobile money provider's API here
-    // For demonstration, we'll update the transaction as initiated
+    // For demonstration purposes, we'll simulate successful payment and add coins
+    
+    // Update transaction status to completed and add coins to user account
     const { error: updateError } = await supabaseService
       .from("mobile_money_transactions")
       .update({ 
-        status: "initiated",
+        status: "completed",
         external_reference: `MM_${transactionId}`,
         updated_at: new Date().toISOString(),
       })
@@ -145,6 +147,18 @@ serve(async (req) => {
     if (updateError) {
       console.error("Error updating transaction:", updateError);
       throw new Error("Failed to update transaction status");
+    }
+
+    // Add coins to user's account
+    const { error: coinError } = await supabaseService.rpc('add_coins', {
+      coin_amount: coins,
+      description: `Mobile money purchase - ${planType} plan`,
+      payment_intent_id: transactionId
+    });
+
+    if (coinError) {
+      console.error("Error adding coins:", coinError);
+      throw new Error("Failed to add coins to user account");
     }
 
     // Return success response

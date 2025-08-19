@@ -57,7 +57,7 @@ const MOBILE_PROVIDERS = [
 ];
 
 export const MobileMoneyPayment = () => {
-  const { user, purchaseMobileMoneyCoins } = useAuthStore();
+  const { user, purchaseMobileMoneyCoins, refreshUserProfile } = useAuthStore();
   const { toast } = useToast();
   const [processingPlan, setProcessingPlan] = useState<string | null>(null);
   const [phoneNumber, setPhoneNumber] = useState("");
@@ -105,13 +105,15 @@ export const MobileMoneyPayment = () => {
       
       if (success) {
         toast({
-          title: "Payment Initiated",
-          description: `Please check your phone for the mobile money prompt to complete the payment of GHS ${plan.price}.`,
+          title: "Payment Completed",
+          description: `Successfully added ${plan.coins} coins to your account! Payment of GHS ${plan.price} processed.`,
         });
+        // Refresh user profile to update coin balance
+        refreshUserProfile();
       } else {
         toast({
           title: "Payment Failed",
-          description: "There was an issue initiating the payment. Please try again.",
+          description: "There was an issue processing the payment. Please try again.",
           variant: "destructive",
         });
       }
