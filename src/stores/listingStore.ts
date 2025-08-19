@@ -151,7 +151,7 @@ export const useListingStore = create<ListingStore>((set, get) => ({
   },
 
   addListing: async (listing) => {
-    const { session } = useAuthStore.getState();
+    const { session, spendCoins, refreshUserProfile } = useAuthStore.getState();
     if (!session?.user) {
       throw new Error('User not authenticated');
     }
@@ -160,6 +160,12 @@ export const useListingStore = create<ListingStore>((set, get) => ({
     
     try {
       console.log('Adding listing with data:', listing);
+      
+      // First spend coins for creating the listing
+      const coinSpent = await spendCoins(1, 'Created new listing');
+      if (!coinSpent) {
+        throw new Error('Insufficient coins to create listing');
+      }
       
       const { data, error } = await supabase
         .from('listings')
@@ -178,6 +184,9 @@ export const useListingStore = create<ListingStore>((set, get) => ({
       }
 
       console.log('Listing created successfully:', data);
+
+      // Refresh user profile to get updated coin balance
+      await refreshUserProfile();
 
       set(state => ({
         listings: [data, ...state.listings],
