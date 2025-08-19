@@ -37,6 +37,7 @@ export const listingSchema = z.object({
   condition: z.enum(['new', 'like_new', 'good', 'fair', 'poor'], {
     errorMap: () => ({ message: 'Please select a condition' })
   }),
+  price: z.number().min(0, 'Price must be positive').max(100000, 'Price must be less than $100,000').optional(),
   estimatedValue: z.number().min(0, 'Value must be positive').max(10000, 'Value must be less than $10,000'),
   location: z.string().min(1, 'Location is required').max(100, 'Location must be less than 100 characters'),
 });

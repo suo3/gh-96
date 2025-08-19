@@ -44,6 +44,13 @@ const formSchema = z.object({
   condition: z.string().min(1, {
     message: "Please select a condition.",
   }),
+  price: z.string().optional().refine((val) => {
+    if (!val || val === "") return true;
+    const num = parseFloat(val);
+    return !isNaN(num) && num >= 0;
+  }, {
+    message: "Price must be a valid positive number.",
+  }),
   location: z.string().min(2, {
     message: "Location must be at least 2 characters.",
   }),
@@ -89,6 +96,7 @@ export const PostItemDialog = ({ open, onOpenChange }: PostItemDialogProps) => {
       description: "",
       category: "",
       condition: "",
+      price: "",
       location: "",
       wantedItems: "",
       images: [],
@@ -155,6 +163,7 @@ export const PostItemDialog = ({ open, onOpenChange }: PostItemDialogProps) => {
         description: values.description,
         category: values.category,
         condition: values.condition,
+        price: values.price ? parseFloat(values.price) : undefined,
         location: values.location,
         wanted_items: values.wantedItems ? [values.wantedItems] : [],
         images: values.images || []
@@ -256,6 +265,33 @@ export const PostItemDialog = ({ open, onOpenChange }: PostItemDialogProps) => {
                   </FormControl>
                   <FormDescription>
                     Upload up to 4 images of your item
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <FormField
+              control={form.control}
+              name="price"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Price (Optional)</FormLabel>
+                  <FormControl>
+                    <div className="relative">
+                      <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground">$</span>
+                      <Input 
+                        placeholder="0.00" 
+                        className="pl-8"
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        {...field} 
+                      />
+                    </div>
+                  </FormControl>
+                  <FormDescription>
+                    Set a price if you're open to selling instead of swapping
                   </FormDescription>
                   <FormMessage />
                 </FormItem>

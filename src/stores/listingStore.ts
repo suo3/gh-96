@@ -9,6 +9,7 @@ export interface Listing {
   description: string;
   category: string;
   condition: string;
+  price?: number;
   location: string;
   images: string[];
   wanted_items: string[];
