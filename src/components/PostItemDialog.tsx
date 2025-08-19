@@ -279,7 +279,7 @@ export const PostItemDialog = ({ open, onOpenChange }: PostItemDialogProps) => {
                   <FormLabel>Price (Optional)</FormLabel>
                   <FormControl>
                     <div className="relative">
-                      <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground">$</span>
+                      <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground">₵</span>
                       <Input 
                         placeholder="0.00" 
                         className="pl-8"

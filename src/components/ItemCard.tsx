@@ -88,7 +88,7 @@ export const ItemCard = ({ item, onItemClick, onItemLike }: ItemCardProps) => {
                 <h3 className="font-semibold text-lg line-clamp-2 flex-1">{item.title}</h3>
                 {item.price && (
                   <span className="text-lg font-bold text-emerald-600 ml-2">
-                    ${item.price.toFixed(2)}
+                    ₵{item.price.toFixed(2)}
                   </span>
                 )}
               </div>
