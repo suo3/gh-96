@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Heart, MapPin, MessageCircle, X, ChevronLeft, ChevronRight } from "lucide-react";
+import { Heart, MapPin, MessageCircle, X, ChevronLeft, ChevronRight, MessageSquare } from "lucide-react";
 import { Listing } from "@/stores/listingStore";
 import { UserRatingDisplay } from "./UserRatingDisplay";
 import { ReportListingDialog } from "./ReportListingDialog";
@@ -43,6 +43,39 @@ export const ItemDetailModal = ({
       return item.profiles.username.charAt(0).toUpperCase();
     }
     return 'U';
+  };
+
+  const formatPhoneForWhatsApp = (phoneNumber: string) => {
+    // Remove all non-digit characters
+    const digits = phoneNumber.replace(/\D/g, '');
+    
+    // If starts with 0, replace with 233 (Ghana country code)
+    if (digits.startsWith('0')) {
+      return '233' + digits.substring(1);
+    }
+    
+    // If starts with 233, use as is
+    if (digits.startsWith('233')) {
+      return digits;
+    }
+    
+    // If 9 digits, assume it's without country code
+    if (digits.length === 9) {
+      return '233' + digits;
+    }
+    
+    return digits;
+  };
+
+  const openWhatsApp = () => {
+    const phoneNumber = item.profiles?.phone_number;
+    if (!phoneNumber) return;
+    
+    const formattedPhone = formatPhoneForWhatsApp(phoneNumber);
+    const message = encodeURIComponent(`Hi! I'm interested in your item "${item.title}" on the marketplace. Is it still available?`);
+    const whatsappUrl = `https://wa.me/${formattedPhone}?text=${message}`;
+    
+    window.open(whatsappUrl, '_blank');
   };
 
   const getItemImages = (item: Listing) => {
@@ -126,7 +159,14 @@ export const ItemDetailModal = ({
             <div className="space-y-6">
               {/* Header */}
               <div>
-                <h2 className="text-2xl font-bold text-gray-900 mb-2">{item.title}</h2>
+                <div className="flex items-center justify-between mb-2">
+                  <h2 className="text-2xl font-bold text-gray-900 flex-1">{item.title}</h2>
+                  {item.price && (
+                    <span className="text-2xl font-bold text-emerald-600 ml-4">
+                      ₵{item.price.toFixed(2)}
+                    </span>
+                  )}
+                </div>
                 <div className="flex flex-wrap gap-2 mb-4">
                   <Badge className="bg-emerald-600">
                     {item.category}
@@ -194,6 +234,17 @@ export const ItemDetailModal = ({
 
               {/* Action Buttons */}
               <div className="flex flex-col sm:flex-row gap-3">
+                {/* WhatsApp contact button - only show if seller has phone number */}
+                {item.profiles?.phone_number && (
+                  <Button
+                    onClick={openWhatsApp}
+                    className="flex-1 bg-green-500 hover:bg-green-600 text-white"
+                  >
+                    <MessageSquare className="w-4 h-4 mr-2" />
+                    Contact on WhatsApp
+                  </Button>
+                )}
+                
                 <Button
                   onClick={() => onItemLike(item)}
                   className="flex-1 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600"
