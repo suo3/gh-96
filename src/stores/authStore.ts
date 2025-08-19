@@ -387,13 +387,15 @@ export const useAuthStore = create<AuthState>()(
       canCreateListing: () => {
         const { user } = get();
         if (!user) return false;
-        return user.coins >= 1; // Costs 1 coin to create a listing
+        // Note: This checks against current coins, but actual cost is fetched dynamically
+        return user.coins >= 1; // Minimum check - actual cost verified in addListing
       },
 
       canMakeSwap: () => {
         const { user } = get();
         if (!user) return false;
-        return user.coins >= 2; // Costs 2 coins to make a swap
+        // Note: This checks against current coins, but actual cost is fetched dynamically
+        return user.coins >= 2; // Minimum check - actual cost verified when making swap
       },
 
       spendCoins: async (amount: number, description: string) => {

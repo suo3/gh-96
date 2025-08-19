@@ -65,6 +65,54 @@ export type Database = {
         }
         Relationships: []
       }
+      coin_pricing: {
+        Row: {
+          coins: number
+          created_at: string
+          currency: string
+          display_order: number | null
+          features: string[]
+          id: string
+          is_active: boolean | null
+          is_popular: boolean | null
+          name: string
+          plan_id: string
+          price: number
+          savings: string | null
+          updated_at: string
+        }
+        Insert: {
+          coins: number
+          created_at?: string
+          currency?: string
+          display_order?: number | null
+          features?: string[]
+          id?: string
+          is_active?: boolean | null
+          is_popular?: boolean | null
+          name: string
+          plan_id: string
+          price: number
+          savings?: string | null
+          updated_at?: string
+        }
+        Update: {
+          coins?: number
+          created_at?: string
+          currency?: string
+          display_order?: number | null
+          features?: string[]
+          id?: string
+          is_active?: boolean | null
+          is_popular?: boolean | null
+          name?: string
+          plan_id?: string
+          price?: number
+          savings?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       coin_transactions: {
         Row: {
           amount: number
@@ -664,6 +712,18 @@ export type Database = {
           user1_id: string
           user2_id: string
         }[]
+      }
+      get_default_starting_coins: {
+        Args: Record<PropertyKey, never>
+        Returns: number
+      }
+      get_listing_cost: {
+        Args: Record<PropertyKey, never>
+        Returns: number
+      }
+      get_swap_cost: {
+        Args: Record<PropertyKey, never>
+        Returns: number
       }
       get_user_average_rating: {
         Args: { user_uuid: string }

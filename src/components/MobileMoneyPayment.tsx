@@ -8,47 +8,7 @@ import { Label } from "@/components/ui/label";
 import { useAuthStore } from "@/stores/authStore";
 import { useToast } from "@/hooks/use-toast";
 import { Coins, Check, Zap, Smartphone } from "lucide-react";
-
-interface PricingPlan {
-  id: string;
-  name: string;
-  coins: number;
-  price: number;
-  currency: string;
-  savings?: string;
-  features: string[];
-  popular?: boolean;
-}
-
-const GHANA_PRICING: PricingPlan[] = [
-  {
-    id: "starter",
-    name: "Starter Pack", 
-    coins: 25,
-    price: 20,
-    currency: "GHS",
-    features: ["25 listing posts", "12 swap opportunities"]
-  },
-  {
-    id: "value",
-    name: "Value Pack",
-    coins: 60, 
-    price: 40,
-    currency: "GHS",
-    savings: "Save 17%",
-    features: ["60 listing posts", "30 swap opportunities"],
-    popular: true
-  },
-  {
-    id: "power", 
-    name: "Power Pack",
-    coins: 150,
-    price: 80,
-    currency: "GHS", 
-    savings: "Save 33%",
-    features: ["150 listing posts", "75 swap opportunities"]
-  }
-];
+import { useCoinPricing, usePlatformCosts } from "@/hooks/useCoinPricing";
 
 const MOBILE_PROVIDERS = [
   { id: "mtn", name: "MTN Mobile Money", prefixes: ["024", "054", "055", "059"] },
@@ -57,13 +17,15 @@ const MOBILE_PROVIDERS = [
 ];
 
 export const MobileMoneyPayment = () => {
+  const { data: pricingPlans = [], isLoading: loadingPricing } = useCoinPricing();
+  const { data: platformCosts } = usePlatformCosts();
   const { user, purchaseMobileMoneyCoins, refreshUserProfile } = useAuthStore();
   const { toast } = useToast();
   const [processingPlan, setProcessingPlan] = useState<string | null>(null);
   const [phoneNumber, setPhoneNumber] = useState("");
   const [provider, setProvider] = useState("");
 
-  const handlePurchase = async (plan: PricingPlan) => {
+  const handlePurchase = async (plan: any) => {
     if (!user) {
       toast({
         title: "Authentication Required",
@@ -101,7 +63,7 @@ export const MobileMoneyPayment = () => {
     setProcessingPlan(plan.id);
     
     try {
-      const success = await purchaseMobileMoneyCoins(plan.coins, plan.id, cleanPhone, provider);
+      const success = await purchaseMobileMoneyCoins(plan.coins, plan.plan_id, cleanPhone, provider);
       
       if (success) {
         toast({
@@ -137,6 +99,21 @@ export const MobileMoneyPayment = () => {
         <CardContent>
           <p className="text-center text-muted-foreground">
             Please log in to purchase coins.
+          </p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (loadingPricing) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Loading...</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-center text-muted-foreground">
+            Loading pricing plans...
           </p>
         </CardContent>
       </Card>
@@ -203,63 +180,67 @@ export const MobileMoneyPayment = () => {
       </Card>
 
       {/* Pricing Plans */}
-      <div className="grid md:grid-cols-3 gap-6">
-        {GHANA_PRICING.map((plan) => (
-          <Card key={plan.id} className={plan.popular ? "relative border-2 border-emerald-500" : ""}>
-            {plan.popular && (
-              <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                <Badge className="bg-emerald-500">Most Popular</Badge>
-              </div>
+      <div className="grid gap-4 md:grid-cols-3">
+        {pricingPlans.map((plan) => (
+          <Card 
+            key={plan.id} 
+            className={`relative border-2 transition-all hover:shadow-lg ${
+              plan.is_popular 
+                ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-950' 
+                : 'border-gray-200 hover:border-emerald-300'
+            }`}
+          >
+            {plan.is_popular && (
+              <Badge className="absolute -top-2 left-1/2 transform -translate-x-1/2 bg-emerald-500 text-white">
+                Most Popular
+              </Badge>
             )}
-            <CardHeader>
-              <CardTitle className="flex items-center justify-between">
-                {plan.name}
-                <Badge variant="outline">GHS {plan.price}</Badge>
-              </CardTitle>
+            <CardHeader className="text-center pb-2">
+              <CardTitle className="text-lg">{plan.name}</CardTitle>
+              {plan.savings && (
+                <Badge variant="secondary" className="w-fit mx-auto">
+                  {plan.savings}
+                </Badge>
+              )}
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="text-center">
-                <div className={`text-3xl font-bold ${plan.popular ? 'text-emerald-600' : 'text-primary'}`}>
-                  {plan.coins}
-                </div>
-                <div className="text-sm text-muted-foreground">Coins</div>
-                <div className="text-xs text-muted-foreground mt-1">
-                  GHS {(plan.price / plan.coins).toFixed(2)} per coin
-                </div>
+            <CardContent className="text-center">
+              <div className="text-3xl font-bold text-emerald-600 mb-2">
+                {plan.coins}
               </div>
-              <div className="space-y-2">
-                {plan.features.map((feature, index) => (
-                  <div key={index} className="flex items-center">
-                    <Check className="w-4 h-4 text-green-500 mr-2" />
-                    <span className="text-sm">{feature}</span>
-                  </div>
-                ))}
-                {plan.savings && (
-                  <div className="flex items-center">
-                    <Zap className={`w-4 h-4 mr-2 ${plan.popular ? 'text-emerald-500' : 'text-primary'}`} />
-                    <span className={`text-sm font-medium ${plan.popular ? 'text-emerald-600' : 'text-primary'}`}>
-                      {plan.savings}
-                    </span>
-                  </div>
-                )}
+              <div className="text-sm text-muted-foreground">Coins</div>
+              <div className="text-lg font-semibold mt-2">
+                GHS {(plan.price / plan.coins).toFixed(2)} per coin
               </div>
+              <div className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4">
+                GHS {plan.price}
+              </div>
+              
               <LoadingButton 
                 onClick={() => handlePurchase(plan)}
                 loading={processingPlan === plan.id}
                 loadingText="Processing..."
-                className={`w-full ${plan.popular ? 'bg-emerald-500 hover:bg-emerald-600' : ''}`}
+                className={`w-full mb-4 ${plan.is_popular ? 'bg-emerald-500 hover:bg-emerald-600' : ''}`}
                 disabled={!phoneNumber || !provider}
               >
                 Purchase {plan.name}
               </LoadingButton>
+              
+              <div className="text-left text-sm text-muted-foreground">
+                {plan.features.map((feature, index) => (
+                  <div key={index} className="flex items-center mb-1">
+                    <Check className="w-3 h-3 text-green-500 mr-2 flex-shrink-0" />
+                    {feature}
+                  </div>
+                ))}
+              </div>
             </CardContent>
           </Card>
         ))}
       </div>
 
       <div className="text-center text-sm text-muted-foreground">
-        <p>• 1 coin = 1 listing post</p>
-        <p>• 2 coins = 1 swap opportunity</p>
+        <p>• {platformCosts?.listingCost || 1} coin = 1 listing post</p>
+        <p>• {platformCosts?.swapCost || 2} coins = 1 swap opportunity</p>
         <p>• Current balance: {user.coins} coins</p>
         <p>• Payment via mobile money (MTN, Vodafone Cash, AirtelTigo)</p>
       </div>

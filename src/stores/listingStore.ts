@@ -161,8 +161,12 @@ export const useListingStore = create<ListingStore>((set, get) => ({
     try {
       console.log('Adding listing with data:', listing);
       
+      // Get listing cost from database
+      const { data: listingCost } = await supabase.rpc('get_listing_cost');
+      const coinCost = listingCost || 1;
+      
       // First spend coins for creating the listing
-      const coinSpent = await spendCoins(1, 'Created new listing');
+      const coinSpent = await spendCoins(coinCost, 'Created new listing');
       if (!coinSpent) {
         throw new Error('Insufficient coins to create listing');
       }
