@@ -6,22 +6,32 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+// Business Mobile Money Accounts - where payments should be sent
+const BUSINESS_ACCOUNTS = {
+  mtn: "0244000000", // Replace with actual business MTN account
+  vodafone: "0200000000", // Replace with actual business Vodafone account
+  airteltigo: "0270000000", // Replace with actual business AirtelTigo account
+};
+
 // Mobile Money provider configurations for Ghana
 const MOBILE_MONEY_PROVIDERS = {
   mtn: {
     name: "MTN Mobile Money",
     prefixes: ["024", "054", "055", "059"],
-    apiEndpoint: "https://api.mtn.com/v1/momo", // Example - replace with actual MTN MoMo API
+    apiEndpoint: "https://api.mtn.com/v1/momo", // Replace with actual MTN MoMo API
+    businessAccount: BUSINESS_ACCOUNTS.mtn,
   },
   vodafone: {
     name: "Vodafone Cash",
     prefixes: ["020", "050"],
-    apiEndpoint: "https://api.vodafone.com/v1/cash", // Example - replace with actual Vodafone Cash API
+    apiEndpoint: "https://api.vodafone.com/v1/cash", // Replace with actual Vodafone Cash API
+    businessAccount: BUSINESS_ACCOUNTS.vodafone,
   },
   airteltigo: {
     name: "AirtelTigo Money",
     prefixes: ["027", "057", "026", "056"],
-    apiEndpoint: "https://api.airteltigo.com/v1/money", // Example - replace with actual AirtelTigo API
+    apiEndpoint: "https://api.airteltigo.com/v1/money", // Replace with actual AirtelTigo API
+    businessAccount: BUSINESS_ACCOUNTS.airteltigo,
   },
 };
 
@@ -116,23 +126,36 @@ serve(async (req) => {
       throw new Error("Failed to create transaction record");
     }
 
-    // Here you would integrate with the actual mobile money API
-    // For now, we'll simulate the payment process
-    
-    // Example mobile money payment request (replace with actual API call)
+    // Prepare payment request to mobile money provider
     const paymentRequest = {
       amount: priceGHS,
       currency: "GHS",
-      phoneNumber: cleanPhoneNumber,
+      fromPhoneNumber: cleanPhoneNumber, // Customer's phone number
+      toPhoneNumber: providerConfig.businessAccount, // Business account
       reference: transactionId,
-      description: `Purchase ${coins} Swap Coins`,
+      description: `SwapBoard: Purchase ${coins} Swap Coins`,
       callbackUrl: `${req.headers.get("origin")}/api/mobile-money-callback`,
+      // Additional fields required by mobile money APIs
+      externalId: transactionId,
+      payerMessage: `Payment for ${coins} coins`,
+      payeeNote: `Coin purchase - ${planType} plan`,
     };
 
-    console.log(`Initiating ${providerConfig.name} payment:`, paymentRequest);
+    console.log(`Initiating ${providerConfig.name} payment from ${cleanPhoneNumber} to ${providerConfig.businessAccount}:`, paymentRequest);
 
-    // In a real implementation, you would call the mobile money provider's API here
-    // For demonstration purposes, we'll simulate successful payment and add coins
+    // TODO: Replace this simulation with actual mobile money API integration
+    // Example API calls would look like:
+    // const response = await fetch(providerConfig.apiEndpoint + '/payments', {
+    //   method: 'POST',
+    //   headers: {
+    //     'Authorization': `Bearer ${Deno.env.get('MOBILE_MONEY_API_KEY')}`,
+    //     'Content-Type': 'application/json',
+    //   },
+    //   body: JSON.stringify(paymentRequest)
+    // });
+    
+    // For demonstration purposes, we'll simulate the payment initiation
+    // In production, you would wait for the mobile money provider's callback
     
     // Update transaction status to completed and add coins to user account
     const { error: updateError } = await supabaseService
@@ -165,8 +188,9 @@ serve(async (req) => {
     return new Response(JSON.stringify({ 
       success: true, 
       transactionId,
-      message: `Payment request sent to ${cleanPhoneNumber}. Please check your phone for the mobile money prompt.`,
+      message: `Payment request sent to ${cleanPhoneNumber}. You will be prompted to pay GHS ${priceGHS} to ${providerConfig.businessAccount} (SwapBoard). Please check your phone for the mobile money prompt.`,
       provider: providerConfig.name,
+      businessAccount: providerConfig.businessAccount,
       amount: priceGHS,
       currency: "GHS",
       coins: coins
