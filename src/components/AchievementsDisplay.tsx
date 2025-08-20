@@ -2,6 +2,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Award, Trophy, Star, Target, Zap, Heart } from "lucide-react";
+import { useAchievementThresholds } from "@/hooks/useAchievementThresholds";
 
 interface AchievementsDisplayProps {
   achievements: string[];
@@ -9,7 +10,7 @@ interface AchievementsDisplayProps {
   rating: number;
 }
 
-const ACHIEVEMENT_CONFIG = {
+const getAchievementConfig = (thresholds: any) => ({
   'first_swap': {
     icon: Target,
     title: 'First Swap',
@@ -19,46 +20,50 @@ const ACHIEVEMENT_CONFIG = {
   'swap_master': {
     icon: Trophy,
     title: 'Swap Master',
-    description: 'Completed 10+ successful swaps',
+    description: `Completed ${thresholds.swapMasterCount}+ successful swaps`,
     color: 'bg-yellow-100 text-yellow-800 border-yellow-300'
   },
   'highly_rated': {
     icon: Star,
     title: 'Highly Rated',
-    description: 'Maintained 4.5+ star rating',
+    description: `Maintained ${thresholds.highRatingThreshold}+ star rating`,
     color: 'bg-purple-100 text-purple-800 border-purple-300'
   },
   'community_favorite': {
     icon: Heart,
     title: 'Community Favorite',
-    description: 'Received 50+ positive ratings',
+    description: `Received ${thresholds.communityFavoriteCount}+ positive ratings`,
     color: 'bg-pink-100 text-pink-800 border-pink-300'
   },
   'speed_swapper': {
     icon: Zap,
     title: 'Speed Swapper',
-    description: 'Completed 5 swaps in one week',
+    description: `Completed ${thresholds.speedSwapperCount} swaps in ${thresholds.speedSwapperDays} days`,
     color: 'bg-green-100 text-green-800 border-green-300'
   },
   'trusted_trader': {
     icon: Award,
     title: 'Trusted Trader',
-    description: 'Zero reported issues in 20+ swaps',
+    description: `Zero reported issues in ${thresholds.trustedTraderCount}+ swaps`,
     color: 'bg-emerald-100 text-emerald-800 border-emerald-300'
   }
-};
+});
 
 export const AchievementsDisplay = ({ 
   achievements, 
   totalSwaps, 
   rating 
 }: AchievementsDisplayProps) => {
-  // Auto-calculate achievements based on user stats
+  const thresholds = useAchievementThresholds();
+  
+  // Auto-calculate achievements based on user stats and dynamic thresholds
   const calculatedAchievements = new Set(achievements || []);
   
-  if (totalSwaps >= 1) calculatedAchievements.add('first_swap');
-  if (totalSwaps >= 10) calculatedAchievements.add('swap_master');
-  if (rating >= 4.5) calculatedAchievements.add('highly_rated');
+  if (totalSwaps >= thresholds.firstSwapCount) calculatedAchievements.add('first_swap');
+  if (totalSwaps >= thresholds.swapMasterCount) calculatedAchievements.add('swap_master');
+  if (rating >= thresholds.highRatingThreshold) calculatedAchievements.add('highly_rated');
+
+  const achievementConfig = getAchievementConfig(thresholds);
 
   const achievementsList = Array.from(calculatedAchievements);
 
@@ -92,7 +97,7 @@ export const AchievementsDisplay = ({
       <CardContent>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {achievementsList.map((achievementKey) => {
-            const config = ACHIEVEMENT_CONFIG[achievementKey as keyof typeof ACHIEVEMENT_CONFIG];
+            const config = achievementConfig[achievementKey as keyof typeof achievementConfig];
             if (!config) return null;
 
             const IconComponent = config.icon;
