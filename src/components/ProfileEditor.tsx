@@ -52,11 +52,11 @@ export const ProfileEditor = () => {
         location: user.location || '',
         bio: user.bio || '',
         profileImageUrl: user.profileImageUrl || '',
-        preferredLanguage: (user as any).preferredLanguage || 'en',
-        region: (user as any).region || '',
-        city: (user as any).city || '',
-        businessType: (user as any).businessType || '',
-        preferredContactMethod: (user as any).preferredContactMethod || 'whatsapp'
+        preferredLanguage: user.preferredLanguage || 'en',
+        region: user.region || '',
+        city: user.city || '',
+        businessType: user.businessType || '',
+        preferredContactMethod: user.preferredContactMethod || 'whatsapp'
       });
     }
   }, [user]);

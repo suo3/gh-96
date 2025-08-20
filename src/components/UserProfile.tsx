@@ -14,6 +14,7 @@ import { AchievementsDisplay } from "./AchievementsDisplay";
 import { CoinPurchase } from "./CoinPurchase";
 import { useAuthStore } from "@/stores/authStore";
 import { useRatingStore } from "@/stores/ratingStore";
+import { useUserStats } from "@/hooks/useUserStats";
 import { useEffect } from "react";
 
 interface UserProfileProps {
@@ -23,6 +24,7 @@ interface UserProfileProps {
 export const UserProfile = ({ onBack }: UserProfileProps) => {
   const { user } = useAuthStore();
   const { userRatings, fetchUserRatings } = useRatingStore();
+  const { activeListings, totalViews, loading: statsLoading } = useUserStats();
   const [activeTab, setActiveTab] = useState("profile");
   const [showAllRatings, setShowAllRatings] = useState(false);
 
@@ -43,8 +45,8 @@ export const UserProfile = ({ onBack }: UserProfileProps) => {
     location: user.location,
     successfulSwaps: user.totalSwaps,
     rating: user.rating,
-    activeListings: 3,
-    totalViews: 156,
+    activeListings: user.monthlyListings || 0,
+    totalViews: 0, // TODO: Implement view tracking
     coins: user.coins
   };
 
@@ -106,15 +108,15 @@ export const UserProfile = ({ onBack }: UserProfileProps) => {
                         Joined {userStats.joinDate}
                       </div>
                       {/* Show business type if available */}
-                      {(user as any).businessType && (
+                      {user.businessType && (
                         <div className="flex items-center">
                           <Badge variant="outline" className="text-xs">
-                            {(user as any).businessType.replace('_', ' ')}
+                            {user.businessType.replace('_', ' ')}
                           </Badge>
                         </div>
                       )}
                       {/* Show verification status */}
-                      {(user as any).isVerified && (
+                      {user.isVerified && (
                         <div className="flex items-center">
                           <Badge className="text-xs bg-emerald-100 text-emerald-700">
                             ✓ Verified
@@ -147,7 +149,9 @@ export const UserProfile = ({ onBack }: UserProfileProps) => {
                     <div className="text-sm text-blue-700 mt-1">Rating</div>
                   </div>
                   <div className="bg-purple-50 rounded-lg p-4 text-center border border-purple-200">
-                    <div className="text-2xl font-bold text-purple-600">{userStats.activeListings}</div>
+                    <div className="text-2xl font-bold text-purple-600">
+                      {statsLoading ? '...' : userStats.activeListings}
+                    </div>
                     <div className="text-sm text-purple-700">Active Listings</div>
                   </div>
                   <div className="bg-gray-50 rounded-lg p-4 text-center border border-gray-200">
