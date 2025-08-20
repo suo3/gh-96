@@ -36,31 +36,58 @@ export const ListingManager = () => {
   };
 
   const handleMarkComplete = async (id: string, title: string) => {
-    await markAsCompleted(id);
-    await loadUserListings();
-    toast({
-      title: "Listing Completed",
-      description: `${title} has been marked as completed.`,
-    });
+    try {
+      await markAsCompleted(id);
+      await loadUserListings();
+      toast({
+        title: "Listing Completed",
+        description: `${title} has been marked as completed.`,
+      });
+    } catch (error) {
+      console.error('Error marking listing as complete:', error);
+      toast({
+        title: "Error",
+        description: "Failed to mark listing as completed. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleDelete = async (id: string, title: string) => {
-    await deleteListing(id);
-    await loadUserListings();
-    toast({
-      title: "Listing Deleted",
-      description: `${title} has been deleted.`,
-    });
+    try {
+      await deleteListing(id);
+      await loadUserListings();
+      toast({
+        title: "Listing Deleted",
+        description: `${title} has been deleted.`,
+      });
+    } catch (error) {
+      console.error('Error deleting listing:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete listing. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleToggleStatus = async (id: string, currentStatus: string, title: string) => {
-    const newStatus = currentStatus === 'active' ? 'paused' : 'active';
-    await updateListing(id, { status: newStatus });
-    await loadUserListings();
-    toast({
-      title: `Listing ${newStatus === 'active' ? 'Resumed' : 'Paused'}`,
-      description: `${title} is now ${newStatus}.`,
-    });
+    try {
+      const newStatus = currentStatus === 'active' ? 'paused' : 'active';
+      await updateListing(id, { status: newStatus });
+      await loadUserListings();
+      toast({
+        title: `Listing ${newStatus === 'active' ? 'Resumed' : 'Paused'}`,
+        description: `${title} is now ${newStatus}.`,
+      });
+    } catch (error) {
+      console.error('Error toggling listing status:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update listing status. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   if (isLoading) {
