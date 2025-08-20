@@ -245,10 +245,11 @@ export const ItemGrid = ({ items, onItemLike }: ItemGridProps) => {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        {item.profiles?.phone_number && (
+                        {item.profiles?.phone_number ? (
                           <DropdownMenuItem onClick={(e) => {
                             e.stopPropagation();
                             const phoneNumber = item.profiles?.phone_number;
+                            console.log('Phone number found:', phoneNumber);
                             if (!phoneNumber) return;
                             const digits = phoneNumber.replace(/\D/g, '');
                             const formattedPhone = digits.startsWith('0') ? '233' + digits.substring(1) : digits.startsWith('233') ? digits : digits.length === 9 ? '233' + digits : digits;
@@ -259,6 +260,10 @@ export const ItemGrid = ({ items, onItemLike }: ItemGridProps) => {
                             <MessageSquare className="w-4 h-4 mr-2" />
                             Contact on WhatsApp
                           </DropdownMenuItem>
+                        ) : (
+                          <div className="px-4 py-2 text-sm text-gray-500">
+                            No WhatsApp number available
+                          </div>
                         )}
                         <DropdownMenuItem onClick={() => handleSwapClick(item)}>
                           <Heart className="w-4 h-4 mr-2" />
