@@ -3,10 +3,12 @@ import { useState, useEffect } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Heart, MapPin, MessageCircle, X, ChevronLeft, ChevronRight, MessageSquare } from "lucide-react";
+import { Heart, MapPin, MessageCircle, X, ChevronLeft, ChevronRight, MessageSquare, Star } from "lucide-react";
 import { Listing } from "@/stores/listingStore";
 import { UserRatingDisplay } from "./UserRatingDisplay";
 import { ReportListingDialog } from "./ReportListingDialog";
+import { UserRating } from "./UserRating";
+import { useAuthStore } from "@/stores/authStore";
 
 interface ItemDetailModalProps {
   item: Listing | null;
@@ -24,6 +26,8 @@ export const ItemDetailModal = ({
   onStartConversation 
 }: ItemDetailModalProps) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [showRating, setShowRating] = useState(false);
+  const { user } = useAuthStore();
 
   useEffect(() => {
     setCurrentImageIndex(0);
@@ -233,42 +237,72 @@ export const ItemDetailModal = ({
               </div>
 
               {/* Action Buttons */}
-              <div className="flex flex-col sm:flex-row gap-3">
-                {/* WhatsApp contact button - only show if seller has phone number */}
-                {item.profiles?.phone_number && (
+              <div className="space-y-3">
+                <div className="flex flex-col sm:flex-row gap-3">
+                  {/* WhatsApp contact button - only show if seller has phone number */}
+                  {item.profiles?.phone_number && (
+                    <Button
+                      onClick={openWhatsApp}
+                      className="flex-1 bg-green-500 hover:bg-green-600 text-white"
+                    >
+                      <MessageSquare className="w-4 h-4 mr-2" />
+                      Contact on WhatsApp
+                    </Button>
+                  )}
+                  
                   <Button
-                    onClick={openWhatsApp}
-                    className="flex-1 bg-green-500 hover:bg-green-600 text-white"
+                    onClick={() => onItemLike(item)}
+                    className="flex-1 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600"
                   >
-                    <MessageSquare className="w-4 h-4 mr-2" />
-                    Contact on WhatsApp
+                    <Heart className="w-4 h-4 mr-2" />
+                    Interested
                   </Button>
-                )}
+                  <Button
+                    onClick={() => onStartConversation(item)}
+                    variant="outline"
+                    className="flex-1 border-emerald-200 text-emerald-700 hover:bg-emerald-50"
+                  >
+                    <MessageCircle className="w-4 h-4 mr-2" />
+                    Start Chat
+                  </Button>
+                </div>
                 
-                <Button
-                  onClick={() => onItemLike(item)}
-                  className="flex-1 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600"
-                >
-                  <Heart className="w-4 h-4 mr-2" />
-                  Interested
-                </Button>
-                <Button
-                  onClick={() => onStartConversation(item)}
-                  variant="outline"
-                  className="flex-1 border-emerald-200 text-emerald-700 hover:bg-emerald-50"
-                >
-                  <MessageCircle className="w-4 h-4 mr-2" />
-                  Start Chat
-                </Button>
-                <ReportListingDialog 
-                  listingId={item.id} 
-                  listingTitle={item.title}
-                />
+                <div className="flex gap-3">
+                  {/* Rate Owner button - only show if user is logged in and not viewing their own item */}
+                  {user && user.id !== item.user_id && (
+                    <Button
+                      onClick={() => setShowRating(true)}
+                      variant="outline"
+                      className="flex-1 border-yellow-200 text-yellow-700 hover:bg-yellow-50"
+                    >
+                      <Star className="w-4 h-4 mr-2" />
+                      Rate Owner
+                    </Button>
+                  )}
+                  
+                  <div className="flex-1">
+                    <ReportListingDialog 
+                      listingId={item.id} 
+                      listingTitle={item.title}
+                    />
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </DialogContent>
+      
+      {/* Rating Dialog */}
+      {item.user_id && (
+        <UserRating
+          open={showRating}
+          onOpenChange={setShowRating}
+          ratedUserId={item.user_id}
+          ratedUserName={getUserDisplayName(item)}
+          itemTitle={item.title}
+        />
+      )}
     </Dialog>
   );
 };
