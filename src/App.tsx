@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { useAuthInit } from "@/hooks/useAuthInit";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { HealthCheck } from "@/components/HealthCheck";
+import { UITestingPanel } from "@/components/UITestingPanel";
 import { Helmet } from "react-helmet";
 import { SEO_CONFIG } from "@/constants/seo";
 import Index from "./pages/Index";
@@ -70,6 +71,7 @@ const App = () => {
             </Routes>
           </BrowserRouter>
           <HealthCheck />
+          <UITestingPanel />
         </TooltipProvider>
       </QueryClientProvider>
     </ErrorBoundary>
