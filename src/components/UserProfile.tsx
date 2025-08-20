@@ -23,8 +23,8 @@ interface UserProfileProps {
 
 export const UserProfile = ({ onBack }: UserProfileProps) => {
   const { user } = useAuthStore();
-  const { userRatings, fetchUserRatings } = useRatingStore();
-  const { activeListings, totalViews, loading: statsLoading } = useUserStats();
+  const { userRatings, fetchUserRatings, getAverageRating } = useRatingStore();
+  const { activeListings, totalViews, loading: statsLoading, totalSwaps, monthlyListings, monthlySwaps } = useUserStats();
   const [activeTab, setActiveTab] = useState("profile");
   const [showAllRatings, setShowAllRatings] = useState(false);
 
@@ -43,10 +43,10 @@ export const UserProfile = ({ onBack }: UserProfileProps) => {
     name: `${user.firstName} ${user.lastName}`,
     joinDate: joinedDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
     location: user.location,
-    successfulSwaps: user.totalSwaps,
-    rating: user.rating,
-    activeListings: user.monthlyListings || 0,
-    totalViews: 0, // TODO: Implement view tracking
+    successfulSwaps: statsLoading ? 0 : totalSwaps,
+    rating: getAverageRating(user.id),
+    activeListings: statsLoading ? 0 : activeListings,
+    totalViews: statsLoading ? 0 : totalViews,
     coins: user.coins
   };
 
@@ -156,7 +156,7 @@ export const UserProfile = ({ onBack }: UserProfileProps) => {
                   </div>
                   <div className="bg-gray-50 rounded-lg p-4 text-center border border-gray-200">
                     <div className="text-lg font-semibold text-gray-600">
-                      {user.monthlyListings || 0} / {user.monthlySwaps || 0}
+                      {statsLoading ? '...' : `${monthlyListings} / ${monthlySwaps}`}
                     </div>
                     <div className="text-xs text-gray-600">Monthly L/S</div>
                   </div>
@@ -172,8 +172,8 @@ export const UserProfile = ({ onBack }: UserProfileProps) => {
           <div className="lg:col-span-2">
             <AchievementsDisplay 
               achievements={user.achievements || []}
-              totalSwaps={user.totalSwaps}
-              rating={user.rating}
+              totalSwaps={statsLoading ? 0 : totalSwaps}
+              rating={getAverageRating(user.id)}
             />
           </div>
 
