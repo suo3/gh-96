@@ -6,11 +6,15 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { useAuthInit } from "@/hooks/useAuthInit";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { HealthCheck } from "@/components/HealthCheck";
+import { Helmet } from "react-helmet";
+import { SEO_CONFIG } from "@/constants/seo";
 import Index from "./pages/Index";
 import Messages from "./pages/Messages";
 import Profile from "./pages/Profile";
 import PostItem from "./pages/PostItem";
 import Admin from "./pages/Admin";
+import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -39,6 +43,18 @@ const App = () => {
 
   return (
     <ErrorBoundary>
+      <Helmet>
+        <title>{SEO_CONFIG.siteName}</title>
+        <meta name="description" content={SEO_CONFIG.siteDescription} />
+        <meta name="keywords" content={SEO_CONFIG.keywords.join(', ')} />
+        <meta property="og:title" content={SEO_CONFIG.siteName} />
+        <meta property="og:description" content={SEO_CONFIG.siteDescription} />
+        <meta property="og:type" content="website" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link rel="canonical" href={SEO_CONFIG.siteUrl} />
+      </Helmet>
+      
       <QueryClientProvider client={queryClient}>
         <TooltipProvider>
           <Toaster />
@@ -50,8 +66,10 @@ const App = () => {
               <Route path="/profile" element={<Profile />} />
               <Route path="/post" element={<PostItem />} />
               <Route path="/admin" element={<Admin />} />
+              <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>
+          <HealthCheck />
         </TooltipProvider>
       </QueryClientProvider>
     </ErrorBoundary>

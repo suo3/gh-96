@@ -1,8 +1,13 @@
+# SwapBoard Ghana - Robots.txt
+# For SEO optimization and respectful crawling
+
 User-agent: Googlebot
 Allow: /
+Crawl-delay: 1
 
 User-agent: Bingbot
 Allow: /
+Crawl-delay: 1
 
 User-agent: Twitterbot
 Allow: /
@@ -12,3 +17,11 @@ Allow: /
 
 User-agent: *
 Allow: /
+Crawl-delay: 2
+
+# Block sensitive areas
+Disallow: /admin/
+Disallow: /api/
+
+# Sitemap location (update with actual domain)
+Sitemap: https://swapboard.gh/sitemap.xml

@@ -1,0 +1,38 @@
+{
+  "name": "SwapBoard Ghana",
+  "short_name": "SwapBoard",
+  "description": "Ghana's premier marketplace for swapping and trading items",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#059669",
+  "orientation": "portrait-primary",
+  "categories": ["shopping", "marketplace", "lifestyle"],
+  "lang": "en-GH",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "48x48",
+      "type": "image/x-icon"
+    },
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/screenshot-desktop.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide"
+    },
+    {
+      "src": "/screenshot-mobile.png", 
+      "sizes": "320x568",
+      "type": "image/png",
+      "form_factor": "narrow"
+    }
+  ]
+}

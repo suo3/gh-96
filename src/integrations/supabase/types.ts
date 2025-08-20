@@ -721,6 +721,23 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: number
       }
+      get_public_profile: {
+        Args: { profile_id: string }
+        Returns: {
+          achievements: string[]
+          avatar: string
+          city: string
+          first_name: string
+          id: string
+          is_verified: boolean
+          joined_date: string
+          last_name: string
+          rating: number
+          region: string
+          total_swaps: number
+          username: string
+        }[]
+      }
       get_swap_cost: {
         Args: Record<PropertyKey, never>
         Returns: number
