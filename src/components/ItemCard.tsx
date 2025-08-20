@@ -163,31 +163,33 @@ export const ItemCard = ({ item, onItemClick, onItemLike }: ItemCardProps) => {
         </CardContent>
       </div>
       
-      <div className="px-4 pb-4 space-y-2">
-        {/* WhatsApp contact button - only show if seller has phone number */}
-        {item.profiles?.phone_number && (
-          <button
-            onClick={(e) => {
+      <div className="px-4 pb-4">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+            <Button className="w-full bg-gradient-to-r from-emerald-500 to-teal-500 text-white hover:from-emerald-600 hover:to-teal-600">
+              <MessageCircle className="w-4 h-4 mr-2" />
+              Contact Seller
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="center" className="w-56">
+            {item.profiles?.phone_number && (
+              <DropdownMenuItem onClick={(e) => {
+                e.stopPropagation();
+                openWhatsApp();
+              }}>
+                <MessageSquare className="w-4 h-4 mr-2" />
+                Contact on WhatsApp
+              </DropdownMenuItem>
+            )}
+            <DropdownMenuItem onClick={(e) => {
               e.stopPropagation();
-              openWhatsApp();
-            }}
-            className="w-full flex items-center justify-center space-x-2 py-2 px-4 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
-          >
-            <MessageSquare className="w-4 h-4" />
-            <span>Contact on WhatsApp</span>
-          </button>
-        )}
-        
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onItemLike(item);
-          }}
-          className="w-full flex items-center justify-center space-x-2 py-2 px-4 bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-lg hover:from-emerald-600 hover:to-teal-600 transition-colors"
-        >
-          <Heart className="w-4 h-4" />
-          <span>Interested</span>
-        </button>
+              onItemLike(item);
+            }}>
+              <Heart className="w-4 h-4 mr-2" />
+              Message in App
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
       {/* Report Dialog */}
