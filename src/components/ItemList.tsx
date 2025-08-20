@@ -1,9 +1,10 @@
 
 import { useState, useEffect } from "react";
-import { Card, CardContent } from "@/components/ui/card";
+import { Heart, MapPin, MessageCircle, Eye, MessageSquare } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { MapPin, Heart, MessageCircle, Eye } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { ItemDetailModal } from "./ItemDetailModal";
 import { Listing, useListingStore } from "@/stores/listingStore";
 import { useMessageStore } from "@/stores/messageStore";
@@ -158,8 +159,15 @@ export const ItemList = ({ items, onItemLike }: ItemListProps) => {
                   />
                   <div className="flex-1">
                     <div className="flex items-start justify-between mb-2">
-                      <div>
-                        <h3 className="font-semibold text-gray-900">{item.title}</h3>
+                      <div className="flex-1">
+                        <div className="flex items-center justify-between">
+                          <h3 className="font-semibold text-gray-900">{item.title}</h3>
+                          {item.price && (
+                            <span className="text-lg font-bold text-emerald-600 ml-2">
+                              ₵{item.price.toFixed(2)}
+                            </span>
+                          )}
+                        </div>
                         <div className="flex items-center text-sm text-gray-600 mt-1">
                           <MapPin className="w-4 h-4 mr-1" />
                           {item.location || "Location not specified"}
@@ -210,28 +218,48 @@ export const ItemList = ({ items, onItemLike }: ItemListProps) => {
                         >
                           Details
                         </Button>
-                        <Button
-                          size="sm"
-                          className={`${
-                            item.hasActiveMessage 
-                              ? 'bg-gray-400 cursor-not-allowed' 
-                              : 'bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600'
-                          }`}
-                          onClick={() => handleSwapClick(item)}
-                          disabled={item.hasActiveMessage}
-                        >
-                          {item.hasActiveMessage ? (
-                            <>
-                              <MessageCircle className="w-4 h-4 mr-1" />
-                              Active Chat
-                            </>
-                          ) : (
-                            <>
-                              <Heart className="w-4 h-4 mr-1" />
-                              Swap
-                            </>
-                          )}
-                        </Button>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button
+                              size="sm"
+                              className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600"
+                              disabled={item.hasActiveMessage}
+                            >
+                              {item.hasActiveMessage ? (
+                                <>
+                                  <MessageCircle className="w-4 h-4 mr-1" />
+                                  Active Chat
+                                </>
+                              ) : (
+                                <>
+                                  <MessageCircle className="w-4 h-4 mr-1" />
+                                  Contact
+                                </>
+                              )}
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            {item.profiles?.phone_number && (
+                              <DropdownMenuItem onClick={(e) => {
+                                e.stopPropagation();
+                                const phoneNumber = item.profiles?.phone_number;
+                                if (!phoneNumber) return;
+                                const digits = phoneNumber.replace(/\D/g, '');
+                                const formattedPhone = digits.startsWith('0') ? '233' + digits.substring(1) : digits.startsWith('233') ? digits : digits.length === 9 ? '233' + digits : digits;
+                                const message = encodeURIComponent(`Hi! I'm interested in your item "${item.title}" on the marketplace. Is it still available?`);
+                                const whatsappUrl = `https://wa.me/${formattedPhone}?text=${message}`;
+                                window.open(whatsappUrl, '_blank');
+                              }}>
+                                <MessageSquare className="w-4 h-4 mr-2" />
+                                Contact on WhatsApp
+                              </DropdownMenuItem>
+                            )}
+                            <DropdownMenuItem onClick={() => handleSwapClick(item)}>
+                              <Heart className="w-4 h-4 mr-2" />
+                              Message in App
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       </div>
                     </div>
                   </div>
