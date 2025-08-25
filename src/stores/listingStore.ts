@@ -501,13 +501,73 @@ export const useListingStore = create<ListingStore>((set, get) => ({
   },
 
   geocodeLocation: async (address: string) => {
-    // Mock geocoding for now - in production you'd use a real geocoding service
     try {
-      // Return mock coordinates for now
-      return { lat: 37.7749, lng: -122.4194 }; // San Francisco coordinates
+      console.log('Geocoding address:', address);
+      
+      // Enhanced location mapping for better geocoding
+      const locationMap: { [key: string]: { lat: number; lng: number } } = {
+        // US Cities
+        'seattle': { lat: 47.6062, lng: -122.3321 },
+        'portland': { lat: 45.5152, lng: -122.6784 },
+        'san francisco': { lat: 37.7749, lng: -122.4194 },
+        'los angeles': { lat: 34.0522, lng: -118.2437 },
+        'new york': { lat: 40.7128, lng: -74.0060 },
+        'chicago': { lat: 41.8781, lng: -87.6298 },
+        'boston': { lat: 42.3601, lng: -71.0589 },
+        'miami': { lat: 25.7617, lng: -80.1918 },
+        'philadelphia': { lat: 39.9526, lng: -75.1652 },
+        'phoenix': { lat: 33.4484, lng: -112.0740 },
+        'houston': { lat: 29.7604, lng: -95.3698 },
+        'dallas': { lat: 32.7767, lng: -96.7970 },
+        'denver': { lat: 39.7392, lng: -104.9903 },
+        'atlanta': { lat: 33.7490, lng: -84.3880 },
+        'las vegas': { lat: 36.1699, lng: -115.1398 },
+        'detroit': { lat: 42.3314, lng: -83.0458 },
+        
+        // Ghana Cities
+        'accra': { lat: 5.6037, lng: -0.1870 },
+        'kumasi': { lat: 6.6885, lng: -1.6244 },
+        'tamale': { lat: 9.4075, lng: -0.8533 },
+        'cape coast': { lat: 5.1053, lng: -1.2466 },
+        'takoradi': { lat: 4.8845, lng: -1.7554 },
+        'ho': { lat: 6.6107, lng: 0.4718 },
+        'sunyani': { lat: 7.3386, lng: -2.3266 },
+        'koforidua': { lat: 6.0898, lng: -0.2594 },
+        'tema': { lat: 5.6698, lng: -0.0166 },
+        'bolgatanga': { lat: 10.7856, lng: -0.8515 },
+        
+        // States/Regions
+        'greater accra': { lat: 5.6037, lng: -0.1870 },
+        'ashanti': { lat: 6.6885, lng: -1.6244 },
+        'northern region': { lat: 9.4075, lng: -0.8533 },
+        'california': { lat: 36.7783, lng: -119.4179 },
+        'pennsylvania': { lat: 41.2033, lng: -77.1945 },
+        'texas': { lat: 31.9686, lng: -99.9018 },
+        'florida': { lat: 27.7663, lng: -82.6404 },
+      };
+
+      const addressLower = address.toLowerCase();
+      
+      // First try exact match
+      if (locationMap[addressLower]) {
+        console.log('Found exact match for:', address, locationMap[addressLower]);
+        return locationMap[addressLower];
+      }
+      
+      // Then try partial matches
+      for (const [location, coords] of Object.entries(locationMap)) {
+        if (addressLower.includes(location) || location.includes(addressLower)) {
+          console.log('Found partial match for:', address, 'with', location, coords);
+          return coords;
+        }
+      }
+      
+      // If no match found, return default coordinates (Accra, Ghana)
+      console.log('No match found for:', address, 'using default coordinates');
+      return { lat: 5.6037, lng: -0.1870 }; // Accra coordinates as default
     } catch (error) {
       console.error('Error geocoding location:', error);
-      return null;
+      return { lat: 5.6037, lng: -0.1870 }; // Fallback to Accra
     }
   },
 
@@ -608,17 +668,14 @@ export const useListingStore = create<ListingStore>((set, get) => ({
       console.log('After swapped filter:', filtered.length);
     }
 
-    // Apply distance filter - NEW FUNCTIONALITY
+    // Apply distance filter - Enhanced with better location mapping
     if (state.userLocation && state.maxDistance) {
       filtered = filtered.filter(item => {
         if (!item.location) return true; // Include items without location data
         
-        // For now, we'll use a simple geocoding approach
-        // In production, you'd want to store coordinates in the database
-        // or use a proper geocoding service
-        
-        // Mock coordinates for different cities for demonstration
+        // Use the same enhanced location mapping as geocodeLocation
         const locationCoords: { [key: string]: { lat: number; lng: number } } = {
+          // US Cities
           'seattle': { lat: 47.6062, lng: -122.3321 },
           'portland': { lat: 45.5152, lng: -122.6784 },
           'san francisco': { lat: 37.7749, lng: -122.4194 },
@@ -626,22 +683,58 @@ export const useListingStore = create<ListingStore>((set, get) => ({
           'new york': { lat: 40.7128, lng: -74.0060 },
           'chicago': { lat: 41.8781, lng: -87.6298 },
           'boston': { lat: 42.3601, lng: -71.0589 },
-          'miami': { lat: 25.7617, lng: -80.1918 }
+          'miami': { lat: 25.7617, lng: -80.1918 },
+          'philadelphia': { lat: 39.9526, lng: -75.1652 },
+          'phoenix': { lat: 33.4484, lng: -112.0740 },
+          'houston': { lat: 29.7604, lng: -95.3698 },
+          'dallas': { lat: 32.7767, lng: -96.7970 },
+          'denver': { lat: 39.7392, lng: -104.9903 },
+          'atlanta': { lat: 33.7490, lng: -84.3880 },
+          'las vegas': { lat: 36.1699, lng: -115.1398 },
+          'detroit': { lat: 42.3314, lng: -83.0458 },
+          
+          // Ghana Cities
+          'accra': { lat: 5.6037, lng: -0.1870 },
+          'kumasi': { lat: 6.6885, lng: -1.6244 },
+          'tamale': { lat: 9.4075, lng: -0.8533 },
+          'cape coast': { lat: 5.1053, lng: -1.2466 },
+          'takoradi': { lat: 4.8845, lng: -1.7554 },
+          'ho': { lat: 6.6107, lng: 0.4718 },
+          'sunyani': { lat: 7.3386, lng: -2.3266 },
+          'koforidua': { lat: 6.0898, lng: -0.2594 },
+          'tema': { lat: 5.6698, lng: -0.0166 },
+          'bolgatanga': { lat: 10.7856, lng: -0.8515 },
+          
+          // States/Regions
+          'greater accra': { lat: 5.6037, lng: -0.1870 },
+          'ashanti': { lat: 6.6885, lng: -1.6244 },
+          'northern region': { lat: 9.4075, lng: -0.8533 },
+          'california': { lat: 36.7783, lng: -119.4179 },
+          'pennsylvania': { lat: 41.2033, lng: -77.1945 },
+          'texas': { lat: 31.9686, lng: -99.9018 },
+          'florida': { lat: 27.7663, lng: -82.6404 },
         };
         
         // Try to find coordinates for the item location
         const itemLocationKey = item.location.toLowerCase();
         let itemCoords = null;
         
-        for (const [city, coords] of Object.entries(locationCoords)) {
-          if (itemLocationKey.includes(city)) {
-            itemCoords = coords;
-            break;
+        // First try exact match
+        if (locationCoords[itemLocationKey]) {
+          itemCoords = locationCoords[itemLocationKey];
+        } else {
+          // Then try partial matches
+          for (const [location, coords] of Object.entries(locationCoords)) {
+            if (itemLocationKey.includes(location) || location.includes(itemLocationKey)) {
+              itemCoords = coords;
+              break;
+            }
           }
         }
         
         if (!itemCoords) {
-          // If we can't determine coordinates, include the item
+          // If we can't determine coordinates, include the item (don't filter out)
+          console.log(`No coordinates found for location: ${item.location}, including in results`);
           return true;
         }
         
@@ -672,8 +765,9 @@ export const useListingStore = create<ListingStore>((set, get) => ({
       case 'distance':
         if (state.userLocation) {
           filtered.sort((a, b) => {
-            // Mock distance calculation for sorting
+            // Use the same enhanced location mapping for sorting
             const locationCoords: { [key: string]: { lat: number; lng: number } } = {
+              // US Cities
               'seattle': { lat: 47.6062, lng: -122.3321 },
               'portland': { lat: 45.5152, lng: -122.6784 },
               'san francisco': { lat: 37.7749, lng: -122.4194 },
@@ -681,14 +775,55 @@ export const useListingStore = create<ListingStore>((set, get) => ({
               'new york': { lat: 40.7128, lng: -74.0060 },
               'chicago': { lat: 41.8781, lng: -87.6298 },
               'boston': { lat: 42.3601, lng: -71.0589 },
-              'miami': { lat: 25.7617, lng: -80.1918 }
+              'miami': { lat: 25.7617, lng: -80.1918 },
+              'philadelphia': { lat: 39.9526, lng: -75.1652 },
+              'phoenix': { lat: 33.4484, lng: -112.0740 },
+              'houston': { lat: 29.7604, lng: -95.3698 },
+              'dallas': { lat: 32.7767, lng: -96.7970 },
+              'denver': { lat: 39.7392, lng: -104.9903 },
+              'atlanta': { lat: 33.7490, lng: -84.3880 },
+              'las vegas': { lat: 36.1699, lng: -115.1398 },
+              'detroit': { lat: 42.3314, lng: -83.0458 },
+              
+              // Ghana Cities
+              'accra': { lat: 5.6037, lng: -0.1870 },
+              'kumasi': { lat: 6.6885, lng: -1.6244 },
+              'tamale': { lat: 9.4075, lng: -0.8533 },
+              'cape coast': { lat: 5.1053, lng: -1.2466 },
+              'takoradi': { lat: 4.8845, lng: -1.7554 },
+              'ho': { lat: 6.6107, lng: 0.4718 },
+              'sunyani': { lat: 7.3386, lng: -2.3266 },
+              'koforidua': { lat: 6.0898, lng: -0.2594 },
+              'tema': { lat: 5.6698, lng: -0.0166 },
+              'bolgatanga': { lat: 10.7856, lng: -0.8515 },
+              
+              // States/Regions
+              'greater accra': { lat: 5.6037, lng: -0.1870 },
+              'ashanti': { lat: 6.6885, lng: -1.6244 },
+              'northern region': { lat: 9.4075, lng: -0.8533 },
+              'california': { lat: 36.7783, lng: -119.4179 },
+              'pennsylvania': { lat: 41.2033, lng: -77.1945 },
+              'texas': { lat: 31.9686, lng: -99.9018 },
+              'florida': { lat: 27.7663, lng: -82.6404 },
             };
             
             const getDistance = (item: Listing) => {
               if (!item.location) return Infinity;
               const itemLocationKey = item.location.toLowerCase();
-              for (const [city, coords] of Object.entries(locationCoords)) {
-                if (itemLocationKey.includes(city)) {
+              
+              // First try exact match
+              if (locationCoords[itemLocationKey]) {
+                return calculateDistance(
+                  state.userLocation!.lat,
+                  state.userLocation!.lng,
+                  locationCoords[itemLocationKey].lat,
+                  locationCoords[itemLocationKey].lng
+                );
+              }
+              
+              // Then try partial matches
+              for (const [location, coords] of Object.entries(locationCoords)) {
+                if (itemLocationKey.includes(location) || location.includes(itemLocationKey)) {
                   return calculateDistance(
                     state.userLocation!.lat,
                     state.userLocation!.lng,
@@ -697,6 +832,7 @@ export const useListingStore = create<ListingStore>((set, get) => ({
                   );
                 }
               }
+              
               return Infinity;
             };
             
