@@ -504,46 +504,46 @@ export const useListingStore = create<ListingStore>((set, get) => ({
     try {
       console.log('Geocoding address:', address);
       
-      // Enhanced location mapping for better geocoding
+      // Ghana cities location mapping for better geocoding
       const locationMap: { [key: string]: { lat: number; lng: number } } = {
-        // US Cities
-        'seattle': { lat: 47.6062, lng: -122.3321 },
-        'portland': { lat: 45.5152, lng: -122.6784 },
-        'san francisco': { lat: 37.7749, lng: -122.4194 },
-        'los angeles': { lat: 34.0522, lng: -118.2437 },
-        'new york': { lat: 40.7128, lng: -74.0060 },
-        'chicago': { lat: 41.8781, lng: -87.6298 },
-        'boston': { lat: 42.3601, lng: -71.0589 },
-        'miami': { lat: 25.7617, lng: -80.1918 },
-        'philadelphia': { lat: 39.9526, lng: -75.1652 },
-        'phoenix': { lat: 33.4484, lng: -112.0740 },
-        'houston': { lat: 29.7604, lng: -95.3698 },
-        'dallas': { lat: 32.7767, lng: -96.7970 },
-        'denver': { lat: 39.7392, lng: -104.9903 },
-        'atlanta': { lat: 33.7490, lng: -84.3880 },
-        'las vegas': { lat: 36.1699, lng: -115.1398 },
-        'detroit': { lat: 42.3314, lng: -83.0458 },
-        
-        // Ghana Cities
+        // Major Ghana Cities
         'accra': { lat: 5.6037, lng: -0.1870 },
         'kumasi': { lat: 6.6885, lng: -1.6244 },
-        'tamale': { lat: 9.4075, lng: -0.8533 },
+        'tamale': { lat: 9.4034, lng: -0.8424 },
         'cape coast': { lat: 5.1053, lng: -1.2466 },
+        'sekondi': { lat: 4.9344, lng: -1.7195 },
         'takoradi': { lat: 4.8845, lng: -1.7554 },
-        'ho': { lat: 6.6107, lng: 0.4718 },
-        'sunyani': { lat: 7.3386, lng: -2.3266 },
-        'koforidua': { lat: 6.0898, lng: -0.2594 },
-        'tema': { lat: 5.6698, lng: -0.0166 },
-        'bolgatanga': { lat: 10.7856, lng: -0.8515 },
+        'sekondi-takoradi': { lat: 4.9094, lng: -1.7375 },
+        'tema': { lat: 5.6698, lng: 0.0166 },
+        'ho': { lat: 6.6112, lng: 0.4719 },
+        'sunyani': { lat: 7.3379, lng: -2.3265 },
+        'koforidua': { lat: 6.0940, lng: -0.2501 },
+        'wa': { lat: 10.0606, lng: -2.5057 },
+        'bolgatanga': { lat: 10.7856, lng: -0.8516 },
+        'tarkwa': { lat: 5.3006, lng: -1.9986 },
+        'obuasi': { lat: 6.2073, lng: -1.6647 },
+        'techiman': { lat: 7.5933, lng: -1.9336 },
+        'nkawkaw': { lat: 6.5525, lng: -0.7681 },
+        'yendi': { lat: 9.4427, lng: -0.0093 },
+        'kintampo': { lat: 8.0548, lng: -1.7321 },
+        'winneba': { lat: 5.3511, lng: -0.6136 },
+        'axim': { lat: 4.8693, lng: -2.2397 },
+        'elmina': { lat: 5.0831, lng: -1.3491 },
+        'keta': { lat: 5.9181, lng: 0.9854 },
+        'bawku': { lat: 11.0522, lng: -0.2325 },
+        'navrongo': { lat: 10.8956, lng: -1.0923 },
         
-        // States/Regions
+        // Ghana Regions (for broader location matching)
         'greater accra': { lat: 5.6037, lng: -0.1870 },
         'ashanti': { lat: 6.6885, lng: -1.6244 },
-        'northern region': { lat: 9.4075, lng: -0.8533 },
-        'california': { lat: 36.7783, lng: -119.4179 },
-        'pennsylvania': { lat: 41.2033, lng: -77.1945 },
-        'texas': { lat: 31.9686, lng: -99.9018 },
-        'florida': { lat: 27.7663, lng: -82.6404 },
+        'northern': { lat: 9.4034, lng: -0.8424 },
+        'central': { lat: 5.1053, lng: -1.2466 },
+        'western': { lat: 4.8845, lng: -1.7554 },
+        'volta': { lat: 6.6112, lng: 0.4719 },
+        'bono': { lat: 7.3379, lng: -2.3265 },
+        'eastern': { lat: 6.0940, lng: -0.2501 },
+        'upper west': { lat: 10.0606, lng: -2.5057 },
+        'upper east': { lat: 10.7856, lng: -0.8516 }
       };
 
       const addressLower = address.toLowerCase();
@@ -673,46 +673,46 @@ export const useListingStore = create<ListingStore>((set, get) => ({
       filtered = filtered.filter(item => {
         if (!item.location) return true; // Include items without location data
         
-        // Use the same enhanced location mapping as geocodeLocation
+        // Use Ghana cities location mapping for distance filtering
         const locationCoords: { [key: string]: { lat: number; lng: number } } = {
-          // US Cities
-          'seattle': { lat: 47.6062, lng: -122.3321 },
-          'portland': { lat: 45.5152, lng: -122.6784 },
-          'san francisco': { lat: 37.7749, lng: -122.4194 },
-          'los angeles': { lat: 34.0522, lng: -118.2437 },
-          'new york': { lat: 40.7128, lng: -74.0060 },
-          'chicago': { lat: 41.8781, lng: -87.6298 },
-          'boston': { lat: 42.3601, lng: -71.0589 },
-          'miami': { lat: 25.7617, lng: -80.1918 },
-          'philadelphia': { lat: 39.9526, lng: -75.1652 },
-          'phoenix': { lat: 33.4484, lng: -112.0740 },
-          'houston': { lat: 29.7604, lng: -95.3698 },
-          'dallas': { lat: 32.7767, lng: -96.7970 },
-          'denver': { lat: 39.7392, lng: -104.9903 },
-          'atlanta': { lat: 33.7490, lng: -84.3880 },
-          'las vegas': { lat: 36.1699, lng: -115.1398 },
-          'detroit': { lat: 42.3314, lng: -83.0458 },
-          
-          // Ghana Cities
+          // Major Ghana Cities
           'accra': { lat: 5.6037, lng: -0.1870 },
           'kumasi': { lat: 6.6885, lng: -1.6244 },
-          'tamale': { lat: 9.4075, lng: -0.8533 },
+          'tamale': { lat: 9.4034, lng: -0.8424 },
           'cape coast': { lat: 5.1053, lng: -1.2466 },
+          'sekondi': { lat: 4.9344, lng: -1.7195 },
           'takoradi': { lat: 4.8845, lng: -1.7554 },
-          'ho': { lat: 6.6107, lng: 0.4718 },
-          'sunyani': { lat: 7.3386, lng: -2.3266 },
-          'koforidua': { lat: 6.0898, lng: -0.2594 },
-          'tema': { lat: 5.6698, lng: -0.0166 },
-          'bolgatanga': { lat: 10.7856, lng: -0.8515 },
+          'sekondi-takoradi': { lat: 4.9094, lng: -1.7375 },
+          'tema': { lat: 5.6698, lng: 0.0166 },
+          'ho': { lat: 6.6112, lng: 0.4719 },
+          'sunyani': { lat: 7.3379, lng: -2.3265 },
+          'koforidua': { lat: 6.0940, lng: -0.2501 },
+          'wa': { lat: 10.0606, lng: -2.5057 },
+          'bolgatanga': { lat: 10.7856, lng: -0.8516 },
+          'tarkwa': { lat: 5.3006, lng: -1.9986 },
+          'obuasi': { lat: 6.2073, lng: -1.6647 },
+          'techiman': { lat: 7.5933, lng: -1.9336 },
+          'nkawkaw': { lat: 6.5525, lng: -0.7681 },
+          'yendi': { lat: 9.4427, lng: -0.0093 },
+          'kintampo': { lat: 8.0548, lng: -1.7321 },
+          'winneba': { lat: 5.3511, lng: -0.6136 },
+          'axim': { lat: 4.8693, lng: -2.2397 },
+          'elmina': { lat: 5.0831, lng: -1.3491 },
+          'keta': { lat: 5.9181, lng: 0.9854 },
+          'bawku': { lat: 11.0522, lng: -0.2325 },
+          'navrongo': { lat: 10.8956, lng: -1.0923 },
           
-          // States/Regions
+          // Ghana Regions (for broader location matching)
           'greater accra': { lat: 5.6037, lng: -0.1870 },
           'ashanti': { lat: 6.6885, lng: -1.6244 },
-          'northern region': { lat: 9.4075, lng: -0.8533 },
-          'california': { lat: 36.7783, lng: -119.4179 },
-          'pennsylvania': { lat: 41.2033, lng: -77.1945 },
-          'texas': { lat: 31.9686, lng: -99.9018 },
-          'florida': { lat: 27.7663, lng: -82.6404 },
+          'northern': { lat: 9.4034, lng: -0.8424 },
+          'central': { lat: 5.1053, lng: -1.2466 },
+          'western': { lat: 4.8845, lng: -1.7554 },
+          'volta': { lat: 6.6112, lng: 0.4719 },
+          'bono': { lat: 7.3379, lng: -2.3265 },
+          'eastern': { lat: 6.0940, lng: -0.2501 },
+          'upper west': { lat: 10.0606, lng: -2.5057 },
+          'upper east': { lat: 10.7856, lng: -0.8516 }
         };
         
         // Try to find coordinates for the item location
@@ -765,46 +765,46 @@ export const useListingStore = create<ListingStore>((set, get) => ({
       case 'distance':
         if (state.userLocation) {
           filtered.sort((a, b) => {
-            // Use the same enhanced location mapping for sorting
+            // Use Ghana cities location mapping for distance sorting
             const locationCoords: { [key: string]: { lat: number; lng: number } } = {
-              // US Cities
-              'seattle': { lat: 47.6062, lng: -122.3321 },
-              'portland': { lat: 45.5152, lng: -122.6784 },
-              'san francisco': { lat: 37.7749, lng: -122.4194 },
-              'los angeles': { lat: 34.0522, lng: -118.2437 },
-              'new york': { lat: 40.7128, lng: -74.0060 },
-              'chicago': { lat: 41.8781, lng: -87.6298 },
-              'boston': { lat: 42.3601, lng: -71.0589 },
-              'miami': { lat: 25.7617, lng: -80.1918 },
-              'philadelphia': { lat: 39.9526, lng: -75.1652 },
-              'phoenix': { lat: 33.4484, lng: -112.0740 },
-              'houston': { lat: 29.7604, lng: -95.3698 },
-              'dallas': { lat: 32.7767, lng: -96.7970 },
-              'denver': { lat: 39.7392, lng: -104.9903 },
-              'atlanta': { lat: 33.7490, lng: -84.3880 },
-              'las vegas': { lat: 36.1699, lng: -115.1398 },
-              'detroit': { lat: 42.3314, lng: -83.0458 },
-              
-              // Ghana Cities
+              // Major Ghana Cities
               'accra': { lat: 5.6037, lng: -0.1870 },
               'kumasi': { lat: 6.6885, lng: -1.6244 },
-              'tamale': { lat: 9.4075, lng: -0.8533 },
+              'tamale': { lat: 9.4034, lng: -0.8424 },
               'cape coast': { lat: 5.1053, lng: -1.2466 },
+              'sekondi': { lat: 4.9344, lng: -1.7195 },
               'takoradi': { lat: 4.8845, lng: -1.7554 },
-              'ho': { lat: 6.6107, lng: 0.4718 },
-              'sunyani': { lat: 7.3386, lng: -2.3266 },
-              'koforidua': { lat: 6.0898, lng: -0.2594 },
-              'tema': { lat: 5.6698, lng: -0.0166 },
-              'bolgatanga': { lat: 10.7856, lng: -0.8515 },
+              'sekondi-takoradi': { lat: 4.9094, lng: -1.7375 },
+              'tema': { lat: 5.6698, lng: 0.0166 },
+              'ho': { lat: 6.6112, lng: 0.4719 },
+              'sunyani': { lat: 7.3379, lng: -2.3265 },
+              'koforidua': { lat: 6.0940, lng: -0.2501 },
+              'wa': { lat: 10.0606, lng: -2.5057 },
+              'bolgatanga': { lat: 10.7856, lng: -0.8516 },
+              'tarkwa': { lat: 5.3006, lng: -1.9986 },
+              'obuasi': { lat: 6.2073, lng: -1.6647 },
+              'techiman': { lat: 7.5933, lng: -1.9336 },
+              'nkawkaw': { lat: 6.5525, lng: -0.7681 },
+              'yendi': { lat: 9.4427, lng: -0.0093 },
+              'kintampo': { lat: 8.0548, lng: -1.7321 },
+              'winneba': { lat: 5.3511, lng: -0.6136 },
+              'axim': { lat: 4.8693, lng: -2.2397 },
+              'elmina': { lat: 5.0831, lng: -1.3491 },
+              'keta': { lat: 5.9181, lng: 0.9854 },
+              'bawku': { lat: 11.0522, lng: -0.2325 },
+              'navrongo': { lat: 10.8956, lng: -1.0923 },
               
-              // States/Regions
+              // Ghana Regions (for broader location matching)
               'greater accra': { lat: 5.6037, lng: -0.1870 },
               'ashanti': { lat: 6.6885, lng: -1.6244 },
-              'northern region': { lat: 9.4075, lng: -0.8533 },
-              'california': { lat: 36.7783, lng: -119.4179 },
-              'pennsylvania': { lat: 41.2033, lng: -77.1945 },
-              'texas': { lat: 31.9686, lng: -99.9018 },
-              'florida': { lat: 27.7663, lng: -82.6404 },
+              'northern': { lat: 9.4034, lng: -0.8424 },
+              'central': { lat: 5.1053, lng: -1.2466 },
+              'western': { lat: 4.8845, lng: -1.7554 },
+              'volta': { lat: 6.6112, lng: 0.4719 },
+              'bono': { lat: 7.3379, lng: -2.3265 },
+              'eastern': { lat: 6.0940, lng: -0.2501 },
+              'upper west': { lat: 10.0606, lng: -2.5057 },
+              'upper east': { lat: 10.7856, lng: -0.8516 }
             };
             
             const getDistance = (item: Listing) => {
