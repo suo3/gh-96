@@ -97,8 +97,8 @@ export const ItemCard = ({ item, onItemClick, onItemLike }: ItemCardProps) => {
   const firstImage = images.length > 0 ? images[0] : "https://images.unsplash.com/photo-1649972904349-6e44c42644a7?w=400&h=300&fit=crop";
 
   return (
-    <Card className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer">
-      <div onClick={handleItemClick}>
+    <Card className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer" onClick={handleItemClick}>
+      <div>
         <div className="relative">
           <img
             src={firstImage}
