@@ -225,7 +225,6 @@ export const useListingStore = create<ListingStore>((set, get) => ({
         .from('listings')
         .update(updatePayload)
         .eq('id', id)
-        .eq('user_id', session.user.id)
         .select()
         .single();
 
