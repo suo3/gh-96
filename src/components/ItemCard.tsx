@@ -100,8 +100,9 @@ export const ItemCard = ({ item, onItemClick, onItemLike }: ItemCardProps) => {
   const firstImage = images.length > 0 ? images[0] : "https://images.unsplash.com/photo-1649972904349-6e44c42644a7?w=400&h=300&fit=crop";
 
   return (
-    <Card className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer" onClick={handleItemClick}>
-      <div>
+    <Card className="overflow-hidden hover:shadow-lg transition-shadow">
+      {/* Main clickable area */}
+      <div className="cursor-pointer" onClick={handleItemClick}>
         <div className="relative">
           <img
             src={firstImage}
@@ -201,11 +202,13 @@ export const ItemCard = ({ item, onItemClick, onItemLike }: ItemCardProps) => {
         </CardContent>
       </div>
       
-      <div className="px-4 pb-4" onClick={(e) => e.stopPropagation()}>
+      {/* Action buttons - not clickable for main navigation */}
+      <div className="px-4 pb-4">
         <div className="flex gap-2">
           <Button 
             onClick={(e) => {
               e.stopPropagation();
+              console.log('View Details clicked for item:', item.id);
               handleItemClick();
             }}
             variant="outline" 
@@ -214,7 +217,7 @@ export const ItemCard = ({ item, onItemClick, onItemLike }: ItemCardProps) => {
             View Details
           </Button>
           <DropdownMenu>
-            <DropdownMenuTrigger asChild>
+            <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
               <Button className="bg-gradient-to-r from-emerald-500 to-teal-500 text-white hover:from-emerald-600 hover:to-teal-600">
                 <MessageCircle className="w-4 h-4 mr-2" />
                 Contact
