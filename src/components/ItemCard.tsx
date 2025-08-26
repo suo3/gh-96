@@ -23,9 +23,11 @@ export const ItemCard = ({ item, onItemClick, onItemLike }: ItemCardProps) => {
   const [showReportDialog, setShowReportDialog] = useState(false);
 
   const handleItemClick = () => {
+    console.log('handleItemClick called', item.id);
     if (onItemClick) {
       onItemClick(item);
     } else {
+      console.log('Navigating to:', `/item/${item.id}`);
       navigate(`/item/${item.id}`);
     }
   };
