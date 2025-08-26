@@ -32,6 +32,7 @@ export const ItemCard = ({ item, onItemClick, onItemLike }: ItemCardProps) => {
 
   const handleFavoriteClick = async (e: React.MouseEvent) => {
     e.stopPropagation();
+    e.preventDefault();
     if (onItemLike) {
       onItemLike(item);
     } else {
@@ -198,37 +199,49 @@ export const ItemCard = ({ item, onItemClick, onItemLike }: ItemCardProps) => {
         </CardContent>
       </div>
       
-      <div className="px-4 pb-4">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-            <Button className="w-full bg-gradient-to-r from-emerald-500 to-teal-500 text-white hover:from-emerald-600 hover:to-teal-600">
-              <MessageCircle className="w-4 h-4 mr-2" />
-              Contact Seller
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="center" className="w-56">
-            {item.profiles?.phone_number && (
+      <div className="px-4 pb-4" onClick={(e) => e.stopPropagation()}>
+        <div className="flex gap-2">
+          <Button 
+            onClick={(e) => {
+              e.stopPropagation();
+              handleItemClick();
+            }}
+            variant="outline" 
+            className="flex-1"
+          >
+            View Details
+          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button className="bg-gradient-to-r from-emerald-500 to-teal-500 text-white hover:from-emerald-600 hover:to-teal-600">
+                <MessageCircle className="w-4 h-4 mr-2" />
+                Contact
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="center" className="w-56">
+              {item.profiles?.phone_number && (
+                <DropdownMenuItem onClick={(e) => {
+                  e.stopPropagation();
+                  openWhatsApp();
+                }}>
+                  <MessageSquare className="w-4 h-4 mr-2" />
+                  Contact on WhatsApp
+                </DropdownMenuItem>
+              )}
               <DropdownMenuItem onClick={(e) => {
                 e.stopPropagation();
-                openWhatsApp();
+                if (onItemLike) {
+                  onItemLike(item);
+                } else {
+                  navigate('/messages');
+                }
               }}>
-                <MessageSquare className="w-4 h-4 mr-2" />
-                Contact on WhatsApp
+                <MessageCircle className="w-4 h-4 mr-2" />
+                Message in App
               </DropdownMenuItem>
-            )}
-            <DropdownMenuItem onClick={(e) => {
-              e.stopPropagation();
-              if (onItemLike) {
-                onItemLike(item);
-              } else {
-                navigate('/messages');
-              }
-            }}>
-              <MessageCircle className="w-4 h-4 mr-2" />
-              Message in App
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       </div>
 
       {/* Report Dialog */}
