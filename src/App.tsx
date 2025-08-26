@@ -16,6 +16,8 @@ import Profile from "./pages/Profile";
 import PostItem from "./pages/PostItem";
 import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
+import ItemDetail from "./pages/ItemDetail";
+import Favorites from "./pages/Favorites";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -67,6 +69,8 @@ const App = () => {
               <Route path="/profile" element={<Profile />} />
               <Route path="/post" element={<PostItem />} />
               <Route path="/admin" element={<Admin />} />
+              <Route path="/item/:id" element={<ItemDetail />} />
+              <Route path="/favorites" element={<Favorites />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>

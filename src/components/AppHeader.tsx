@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { MapPin, Plus, Bell, User, Shield, Coins } from "lucide-react";
+import { MapPin, Plus, Bell, User, Shield, Coins, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -58,6 +58,10 @@ export const AppHeader = ({ userLocation, onLocationDetect, onPostItem }: AppHea
 
   const handleAdmin = () => {
     navigate("/admin");
+  };
+
+  const handleFavorites = () => {
+    navigate("/favorites");
   };
 
   const handleLocationSubmit = () => {
@@ -167,6 +171,10 @@ export const AppHeader = ({ userLocation, onLocationDetect, onPostItem }: AppHea
                     <DropdownMenuItem onClick={handleProfile}>
                       <User className="mr-2 h-4 w-4" />
                       Profile
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={handleFavorites}>
+                      <Heart className="mr-2 h-4 w-4" />
+                      Favorites
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={handleMessages} className="sm:hidden">
                       <Bell className="mr-2 h-4 w-4" />
