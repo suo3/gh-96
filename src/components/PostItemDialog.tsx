@@ -29,7 +29,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/components/ui/use-toast";
 import { useListingStore } from "@/stores/listingStore";
 import { useLocationDetection } from "@/hooks/useLocationDetection";
+import { useGhanaLocation } from "@/hooks/useGhanaLocation";
 import { ImageUpload } from "./ImageUpload";
+import { LocationInput } from "./LocationInput";
 import { MapPin, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -88,6 +90,7 @@ export const PostItemDialog = ({ open, onOpenChange }: PostItemDialogProps) => {
   const [conditions, setConditions] = useState<Condition[]>([]);
   const [isLoadingOptions, setIsLoadingOptions] = useState(true);
   const { detectLocation, isDetecting, detectedLocation } = useLocationDetection();
+  const { regions, formatLocationString } = useGhanaLocation();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -353,10 +356,15 @@ export const PostItemDialog = ({ open, onOpenChange }: PostItemDialogProps) => {
               name="location"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Location</FormLabel>
+                  <FormLabel>Location in Ghana</FormLabel>
                   <div className="flex gap-2">
                     <FormControl>
-                      <Input placeholder="City, State" {...field} />
+                      <LocationInput 
+                        placeholder="e.g., Accra, Greater Accra or Kumasi, Ashanti"
+                        value={field.value}
+                        onChange={field.onChange}
+                        className="flex-1"
+                      />
                     </FormControl>
                     <Button
                       type="button"
@@ -364,6 +372,7 @@ export const PostItemDialog = ({ open, onOpenChange }: PostItemDialogProps) => {
                       size="icon"
                       onClick={handleDetectLocation}
                       disabled={isDetecting}
+                      title="Detect my current location in Ghana"
                     >
                       {isDetecting ? (
                         <Loader2 className="w-4 h-4 animate-spin" />
@@ -374,9 +383,12 @@ export const PostItemDialog = ({ open, onOpenChange }: PostItemDialogProps) => {
                   </div>
                   {detectedLocation && (
                     <FormDescription className="text-green-600">
-                      Location detected: {detectedLocation}
+                      📍 Location detected: {detectedLocation}
                     </FormDescription>
                   )}
+                  <FormDescription>
+                    Select from common Ghana locations or use GPS to detect your current location
+                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
