@@ -215,14 +215,42 @@ export const useListingStore = create<ListingStore>((set, get) => ({
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('User not authenticated');
 
+      console.log('UpdateListing Debug:', {
+        id,
+        updatedListing,
+        userId: user.id
+      });
+
+      // First, let's check if the current user owns this listing
+      const { data: currentListing, error: fetchError } = await supabase
+        .from('listings')
+        .select('user_id')
+        .eq('id', id)
+        .single();
+
+      if (fetchError) {
+        console.error('Error fetching current listing:', fetchError);
+        throw fetchError;
+      }
+
+      console.log('Current listing ownership:', {
+        listingUserId: currentListing?.user_id,
+        currentUserId: user.id,
+        matches: currentListing?.user_id === user.id
+      });
+
       const { data, error } = await supabase
         .from('listings')
         .update(updatedListing)
         .eq('id', id)
+        .eq('user_id', user.id) // Add explicit user_id filter
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Update error details:', error);
+        throw error;
+      }
 
       set(state => ({
         listings: state.listings.map(listing => 
