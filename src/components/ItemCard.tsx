@@ -7,16 +7,37 @@ import { Button } from "@/components/ui/button";
 import { Listing } from "@/stores/listingStore";
 import { UserRatingDisplay } from "./UserRatingDisplay";
 import { ReportListingDialog } from "./ReportListingDialog";
+import { useFavorites } from "@/hooks/useFavorites";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 interface ItemCardProps {
   item: Listing;
-  onItemClick: (item: Listing) => void;
-  onItemLike: (item: Listing) => void;
+  onItemClick?: (item: Listing) => void;
+  onItemLike?: (item: Listing) => void;
 }
 
 export const ItemCard = ({ item, onItemClick, onItemLike }: ItemCardProps) => {
+  const navigate = useNavigate();
+  const { isFavorited, toggleFavorite } = useFavorites();
   const [showReportDialog, setShowReportDialog] = useState(false);
+
+  const handleItemClick = () => {
+    if (onItemClick) {
+      onItemClick(item);
+    } else {
+      navigate(`/item/${item.id}`);
+    }
+  };
+
+  const handleFavoriteClick = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (onItemLike) {
+      onItemLike(item);
+    } else {
+      await toggleFavorite(item.id);
+    }
+  };
 
   const getUserDisplayName = (item: Listing) => {
     return item.profiles?.first_name || item.profiles?.username || 'Anonymous User';
@@ -77,7 +98,7 @@ export const ItemCard = ({ item, onItemClick, onItemLike }: ItemCardProps) => {
 
   return (
     <Card className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer">
-      <div onClick={() => onItemClick(item)}>
+      <div onClick={handleItemClick}>
         <div className="relative">
           <img
             src={firstImage}
@@ -87,8 +108,22 @@ export const ItemCard = ({ item, onItemClick, onItemLike }: ItemCardProps) => {
               e.currentTarget.src = "https://images.unsplash.com/photo-1649972904349-6e44c42644a7?w=400&h=300&fit=crop";
             }}
           />
+          {/* Favorite button */}
+          <Button
+            variant="secondary"
+            size="sm"
+            className={`absolute top-2 right-2 w-8 h-8 p-0 ${
+              isFavorited(item.id) 
+                ? 'bg-red-500 hover:bg-red-600 text-white' 
+                : 'bg-white/80 hover:bg-white text-gray-600'
+            }`}
+            onClick={handleFavoriteClick}
+          >
+            <Heart className={`w-4 h-4 ${isFavorited(item.id) ? 'fill-current' : ''}`} />
+          </Button>
+
           {item.hasActiveMessage && (
-            <Badge className="absolute top-2 right-2 bg-blue-600">
+            <Badge className="absolute top-2 right-12 bg-blue-600">
               <MessageCircle className="w-3 h-3 mr-1" />
               Active
             </Badge>
@@ -183,9 +218,13 @@ export const ItemCard = ({ item, onItemClick, onItemLike }: ItemCardProps) => {
             )}
             <DropdownMenuItem onClick={(e) => {
               e.stopPropagation();
-              onItemLike(item);
+              if (onItemLike) {
+                onItemLike(item);
+              } else {
+                navigate('/messages');
+              }
             }}>
-              <Heart className="w-4 h-4 mr-2" />
+              <MessageCircle className="w-4 h-4 mr-2" />
               Message in App
             </DropdownMenuItem>
           </DropdownMenuContent>
