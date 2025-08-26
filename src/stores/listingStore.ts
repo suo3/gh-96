@@ -211,13 +211,13 @@ export const useListingStore = create<ListingStore>((set, get) => ({
     set({ isLoading: true, error: null });
     
     try {
-      // Get current user to ensure user_id is included
+      // Get current user for authentication
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('User not authenticated');
 
       const { data, error } = await supabase
         .from('listings')
-        .update({ ...updatedListing, user_id: user.id })
+        .update(updatedListing)
         .eq('id', id)
         .select()
         .single();
