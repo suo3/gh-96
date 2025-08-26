@@ -211,18 +211,21 @@ export const useListingStore = create<ListingStore>((set, get) => ({
     set({ isLoading: true, error: null });
     
     try {
-      // Get current user for authentication
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('User not authenticated');
+      // Use auth store session instead of getUser()
+      const { session } = useAuthStore.getState();
+      if (!session?.user) throw new Error('User not authenticated');
 
-      // Remove user_id and other sensitive fields that should not be updated
-      const { user_id, id: listingId, created_at, ...cleanUpdatedListing } = updatedListing;
+      // Only update the status field to avoid RLS policy violations
+      const updatePayload = {
+        status: updatedListing.status,
+        updated_at: new Date().toISOString()
+      };
 
       const { data, error } = await supabase
         .from('listings')
-        .update(cleanUpdatedListing)
+        .update(updatePayload)
         .eq('id', id)
-        .eq('user_id', user.id)
+        .eq('user_id', session.user.id)
         .select()
         .single();
 
