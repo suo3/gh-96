@@ -653,6 +653,27 @@ export type Database = {
           },
         ]
       }
+      user_favorites: {
+        Row: {
+          created_at: string
+          id: string
+          listing_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          listing_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          listing_id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -746,6 +767,10 @@ export type Database = {
         Args: { user_uuid: string }
         Returns: number
       }
+      get_user_favorites_count: {
+        Args: { user_uuid?: string }
+        Returns: number
+      }
       get_user_rating_count: {
         Args: { user_uuid: string }
         Returns: number
@@ -764,6 +789,10 @@ export type Database = {
       }
       is_anonymous_allowed: {
         Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
+      is_item_favorited: {
+        Args: { listing_uuid: string; user_uuid?: string }
         Returns: boolean
       }
       listing_has_active_conversation: {
