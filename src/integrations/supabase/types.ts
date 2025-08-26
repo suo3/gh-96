@@ -281,7 +281,15 @@ export type Database = {
           views?: number | null
           wanted_items?: string[] | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "listings_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       messages: {
         Row: {
