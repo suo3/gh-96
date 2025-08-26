@@ -33,11 +33,14 @@ export const ItemCard = ({ item, onItemClick, onItemLike }: ItemCardProps) => {
   };
 
   const handleFavoriteClick = async (e: React.MouseEvent) => {
+    console.log('Heart icon clicked for item:', item.id);
     e.stopPropagation();
     e.preventDefault();
     if (onItemLike) {
+      console.log('Using onItemLike prop');
       onItemLike(item);
     } else {
+      console.log('Using toggleFavorite');
       await toggleFavorite(item.id);
     }
   };

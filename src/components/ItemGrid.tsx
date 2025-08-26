@@ -13,6 +13,7 @@ import { useAuthStore } from "@/stores/authStore";
 import { useRatingStore } from "@/stores/ratingStore";
 import { useToast } from "@/hooks/use-toast";
 import { UserRatingDisplay } from "./UserRatingDisplay";
+import { useFavorites } from "@/hooks/useFavorites";
 
 interface ItemGridProps {
   items: Listing[];
@@ -26,6 +27,7 @@ export const ItemGrid = ({ items, onItemLike }: ItemGridProps) => {
   const { fetchUserRatings, getAverageRating } = useRatingStore();
   const { minRating, updateListingConversationStatus } = useListingStore();
   const { toast } = useToast();
+  const { isFavorited, toggleFavorite } = useFavorites();
 
   // Fetch ratings for all users when items change
   useEffect(() => {
@@ -114,6 +116,13 @@ export const ItemGrid = ({ items, onItemLike }: ItemGridProps) => {
     }
   };
 
+  const handleFavoriteClick = async (e: React.MouseEvent, item: Listing) => {
+    e.stopPropagation();
+    e.preventDefault();
+    console.log('Heart icon clicked for item:', item.id);
+    await toggleFavorite(item.id);
+  };
+
   const getItemImage = (item: Listing) => {
     if (item.images && item.images.length > 0 && item.images[0]) {
       return item.images[0];
@@ -166,13 +175,18 @@ export const ItemGrid = ({ items, onItemLike }: ItemGridProps) => {
                     </Badge>
                   )}
                 </div>
+                {/* Favorites heart button */}
                 <Button
-                  className="absolute top-2 left-2 w-10 h-10 rounded-full bg-white/90 hover:bg-white text-red-500 hover:text-red-600 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
-                  variant="ghost"
-                  onClick={() => handleSwapClick(item)}
-                  disabled={item.hasActiveMessage}
+                  variant="secondary"
+                  size="sm"
+                  className={`absolute top-2 left-2 w-8 h-8 p-0 ${
+                    isFavorited(item.id) 
+                      ? 'bg-red-500 hover:bg-red-600 text-white' 
+                      : 'bg-white/80 hover:bg-white text-gray-600'
+                  }`}
+                  onClick={(e) => handleFavoriteClick(e, item)}
                 >
-                  <Heart className="w-5 h-5" />
+                  <Heart className={`w-4 h-4 ${isFavorited(item.id) ? 'fill-current' : ''}`} />
                 </Button>
               </div>
               <CardContent className="p-4">

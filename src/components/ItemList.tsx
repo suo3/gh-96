@@ -13,6 +13,7 @@ import { useAuthStore } from "@/stores/authStore";
 import { useRatingStore } from "@/stores/ratingStore";
 import { useToast } from "@/hooks/use-toast";
 import { UserRatingDisplay } from "./UserRatingDisplay";
+import { useFavorites } from "@/hooks/useFavorites";
 
 interface ItemListProps {
   items: Listing[];
@@ -26,6 +27,7 @@ export const ItemList = ({ items, onItemLike }: ItemListProps) => {
   const { fetchUserRatings, getAverageRating } = useRatingStore();
   const { minRating, updateListingConversationStatus } = useListingStore();
   const { toast } = useToast();
+  const { isFavorited, toggleFavorite } = useFavorites();
 
   // Fetch ratings for all users when items change
   useEffect(() => {
@@ -114,6 +116,13 @@ export const ItemList = ({ items, onItemLike }: ItemListProps) => {
     }
   };
 
+  const handleFavoriteClick = async (e: React.MouseEvent, item: Listing) => {
+    e.stopPropagation();
+    e.preventDefault();
+    console.log('Heart icon clicked for item:', item.id);
+    await toggleFavorite(item.id);
+  };
+
   const getItemImage = (item: Listing) => {
     if (item.images && item.images.length > 0 && item.images[0]) {
       return item.images[0];
@@ -148,14 +157,29 @@ export const ItemList = ({ items, onItemLike }: ItemListProps) => {
             >
               <CardContent className="p-4">
                 <div className="flex gap-4">
-                  <img
-                    src={getItemImage(item)}
-                    alt={item.title}
-                    className="w-24 h-24 object-cover rounded-lg flex-shrink-0"
-                    onError={(e) => {
-                      e.currentTarget.src = "https://images.unsplash.com/photo-1649972904349-6e44c42644a7?w=400&h=300&fit=crop";
-                    }}
-                  />
+                  <div className="relative">
+                    <img
+                      src={getItemImage(item)}
+                      alt={item.title}
+                      className="w-24 h-24 object-cover rounded-lg flex-shrink-0"
+                      onError={(e) => {
+                        e.currentTarget.src = "https://images.unsplash.com/photo-1649972904349-6e44c42644a7?w=400&h=300&fit=crop";
+                      }}
+                    />
+                    {/* Favorites heart button */}
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      className={`absolute -top-1 -right-1 w-6 h-6 p-0 ${
+                        isFavorited(item.id) 
+                          ? 'bg-red-500 hover:bg-red-600 text-white' 
+                          : 'bg-white hover:bg-gray-100 text-gray-600'
+                      }`}
+                      onClick={(e) => handleFavoriteClick(e, item)}
+                    >
+                      <Heart className={`w-3 h-3 ${isFavorited(item.id) ? 'fill-current' : ''}`} />
+                    </Button>
+                  </div>
                   <div className="flex-1">
                     <div className="flex items-start justify-between mb-2">
                       <div className="flex-1">
