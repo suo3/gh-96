@@ -1,5 +1,6 @@
 
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Heart, MapPin, MessageCircle, Eye, MessageSquare } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -19,8 +20,7 @@ interface ItemListProps {
 }
 
 export const ItemList = ({ items, onItemLike }: ItemListProps) => {
-  const [selectedItem, setSelectedItem] = useState<Listing | null>(null);
-  const [modalOpen, setModalOpen] = useState(false);
+  const navigate = useNavigate();
   const { createConversationFromSwipe, checkListingHasActiveConversation } = useMessageStore();
   const { user } = useAuthStore();
   const { fetchUserRatings, getAverageRating } = useRatingStore();
@@ -46,8 +46,7 @@ export const ItemList = ({ items, onItemLike }: ItemListProps) => {
   });
 
   const handleDetailsClick = (item: Listing) => {
-    setSelectedItem(item);
-    setModalOpen(true);
+    navigate(`/item/${item.id}`);
   };
 
   const handleSwapClick = async (item: Listing) => {
@@ -275,13 +274,6 @@ export const ItemList = ({ items, onItemLike }: ItemListProps) => {
         })}
       </div>
 
-      <ItemDetailModal
-        item={selectedItem}
-        isOpen={modalOpen}
-        onClose={() => setModalOpen(false)}
-        onItemLike={handleSwapClick}
-        onStartConversation={handleSwapClick}
-      />
     </>
   );
 };
