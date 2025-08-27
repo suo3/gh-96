@@ -272,6 +272,12 @@ export const useIndexLogic = () => {
     navigate("/post");
   };
 
+  const handleLogoClick = () => {
+    setHasUserInteracted(false);
+    setShowHeroSection(true);
+    navigate('/');
+  };
+
   const handleFilterChange = (filters: any) => {
     console.log('Filters applied:', filters);
   };
@@ -302,6 +308,7 @@ export const useIndexLogic = () => {
     handleSwipe,
     handleItemLike,
     handlePostItem,
+    handleLogoClick,
     handleFilterChange
   };
 };

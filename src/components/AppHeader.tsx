@@ -28,9 +28,10 @@ interface AppHeaderProps {
   userLocation: Location | null;
   onLocationDetect: () => void;
   onPostItem: () => void;
+  onLogoClick: () => void;
 }
 
-export const AppHeader = ({ userLocation, onLocationDetect, onPostItem }: AppHeaderProps) => {
+export const AppHeader = ({ userLocation, onLocationDetect, onPostItem, onLogoClick }: AppHeaderProps) => {
   const { user, isAuthenticated } = useAuthStore();
   const { totalUnreadCount } = useMessageStore();
   const navigate = useNavigate();
@@ -78,7 +79,12 @@ export const AppHeader = ({ userLocation, onLocationDetect, onPostItem }: AppHea
         <div className="flex items-center justify-between">
           {/* Logo */}
           <div className="flex items-center space-x-2">
-            <h1 className="text-2xl font-bold text-emerald-600">SwapBoard</h1>
+            <button 
+              onClick={onLogoClick}
+              className="text-2xl font-bold text-emerald-600 hover:text-emerald-700 transition-colors cursor-pointer"
+            >
+              SwapBoard
+            </button>
           </div>
 
           {/* Location */}

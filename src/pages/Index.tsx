@@ -34,6 +34,7 @@ const Index = () => {
     handleSwipe,
     handleItemLike,
     handlePostItem,
+    handleLogoClick,
     handleFilterChange
   } = useIndexLogic();
 
@@ -50,6 +51,7 @@ const Index = () => {
         userLocation={userLocation}
         onLocationDetect={handleLocationDetect}
         onPostItem={handlePostItem}
+        onLogoClick={handleLogoClick}
       />
 
       {/* Platform Announcement */}
