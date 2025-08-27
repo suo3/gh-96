@@ -5,7 +5,8 @@ import { useAuthStore } from "@/stores/authStore";
 import { supabase } from "@/integrations/supabase/client";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Shield, Users, Flag, BarChart3, Settings, CheckCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Shield, Users, Flag, BarChart3, Settings, CheckCircle, ArrowLeft } from "lucide-react";
 import { AdminUserManagement } from "@/components/admin/AdminUserManagement";
 import { AdminListingModeration } from "@/components/admin/AdminListingModeration";
 import { AdminListingApproval } from "@/components/admin/AdminListingApproval";
@@ -75,6 +76,14 @@ const Admin = () => {
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50">
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8">
+          <Button 
+            variant="outline" 
+            onClick={() => navigate("/")}
+            className="mb-6"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back to Homepage
+          </Button>
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Admin Dashboard</h1>
           <p className="text-gray-600">
             Welcome back, {user?.firstName}! You have {adminRole} access.
