@@ -411,7 +411,7 @@ export type Database = {
           last_name: string | null
           location: string | null
           monthly_listings: number | null
-          monthly_swaps: number | null
+          monthly_sales: number | null
           phone_number: string | null
           preferred_contact_method: string | null
           preferred_language: string | null
@@ -419,7 +419,7 @@ export type Database = {
           rating: number | null
           region: string | null
           social_media_handles: Json | null
-          total_swaps: number | null
+          total_sales: number | null
           updated_at: string | null
           username: string | null
           verification_documents: string[] | null
@@ -439,7 +439,7 @@ export type Database = {
           last_name?: string | null
           location?: string | null
           monthly_listings?: number | null
-          monthly_swaps?: number | null
+          monthly_sales?: number | null
           phone_number?: string | null
           preferred_contact_method?: string | null
           preferred_language?: string | null
@@ -447,7 +447,7 @@ export type Database = {
           rating?: number | null
           region?: string | null
           social_media_handles?: Json | null
-          total_swaps?: number | null
+          total_sales?: number | null
           updated_at?: string | null
           username?: string | null
           verification_documents?: string[] | null
@@ -467,7 +467,7 @@ export type Database = {
           last_name?: string | null
           location?: string | null
           monthly_listings?: number | null
-          monthly_swaps?: number | null
+          monthly_sales?: number | null
           phone_number?: string | null
           preferred_contact_method?: string | null
           preferred_language?: string | null
@@ -475,7 +475,7 @@ export type Database = {
           rating?: number | null
           region?: string | null
           social_media_handles?: Json | null
-          total_swaps?: number | null
+          total_sales?: number | null
           updated_at?: string | null
           username?: string | null
           verification_documents?: string[] | null
@@ -571,43 +571,7 @@ export type Database = {
           },
         ]
       }
-      subscribers: {
-        Row: {
-          created_at: string
-          email: string
-          id: string
-          stripe_customer_id: string | null
-          subscribed: boolean
-          subscription_end: string | null
-          subscription_tier: string | null
-          updated_at: string
-          user_id: string | null
-        }
-        Insert: {
-          created_at?: string
-          email: string
-          id?: string
-          stripe_customer_id?: string | null
-          subscribed?: boolean
-          subscription_end?: string | null
-          subscription_tier?: string | null
-          updated_at?: string
-          user_id?: string | null
-        }
-        Update: {
-          created_at?: string
-          email?: string
-          id?: string
-          stripe_customer_id?: string | null
-          subscribed?: boolean
-          subscription_end?: string | null
-          subscription_tier?: string | null
-          updated_at?: string
-          user_id?: string | null
-        }
-        Relationships: []
-      }
-      swaps: {
+      sales: {
         Row: {
           created_at: string | null
           id: string
@@ -660,6 +624,42 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      subscribers: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          stripe_customer_id: string | null
+          subscribed: boolean
+          subscription_end: string | null
+          subscription_tier: string | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          stripe_customer_id?: string | null
+          subscribed?: boolean
+          subscription_end?: string | null
+          subscription_tier?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          stripe_customer_id?: string | null
+          subscribed?: boolean
+          subscription_end?: string | null
+          subscription_tier?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
       }
       user_favorites: {
         Row: {
@@ -766,6 +766,10 @@ export type Database = {
           total_swaps: number
           username: string
         }[]
+      }
+      get_sale_cost: {
+        Args: Record<PropertyKey, never>
+        Returns: number
       }
       get_swap_cost: {
         Args: Record<PropertyKey, never>

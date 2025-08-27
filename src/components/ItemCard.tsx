@@ -65,16 +65,16 @@ export const ItemCard = ({ item, onItemClick, onItemLike }: ItemCardProps) => {
     
     // Consider a seller popular if they have:
     // - High rating (4.5+ stars) with verified status, OR
-    // - Many successful swaps (10+), OR
-    // - High rating (4.8+) with at least 5 swaps
+    // - Many successful sales (10+), OR
+    // - High rating (4.8+) with at least 5 sales
     const rating = profile.rating || 0;
-    const totalSwaps = profile.total_swaps || 0;
+    const totalSales = profile.total_sales || 0;
     const isVerified = profile.is_verified || false;
     
     return (
       (rating >= 4.5 && isVerified) ||
-      totalSwaps >= 10 ||
-      (rating >= 4.8 && totalSwaps >= 5)
+      totalSales >= 10 ||
+      (rating >= 4.8 && totalSales >= 5)
     );
   };
 

@@ -26,7 +26,7 @@ export interface Listing {
     avatar?: string;
     phone_number?: string;
     rating?: number;
-    total_swaps?: number;
+    total_sales?: number;
     is_verified?: boolean;
   };
   hasActiveMessage?: boolean;
@@ -318,7 +318,7 @@ export const useListingStore = create<ListingStore>((set, get) => ({
           if (listing.user_id) {
             const { data: profileData } = await supabase
               .from('profiles')
-              .select('first_name, last_name, username, avatar, phone_number, rating, total_swaps, is_verified')
+              .select('first_name, last_name, username, avatar, phone_number, rating, total_sales, is_verified')
               .eq('id', listing.user_id)
               .single();
             profiles = profileData;

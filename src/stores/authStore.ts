@@ -17,9 +17,9 @@ export interface UserProfile {
   coins: number;
   joinedDate: Date;
   rating: number;
-  totalSwaps: number;
+  totalSales: number;
   monthlyListings: number;
-  monthlySwaps: number;
+  monthlySales: number;
   achievements?: string[];
   // Ghana-specific fields
   preferredLanguage?: string;
@@ -41,7 +41,7 @@ interface AuthState {
   updateProfile: (updates: Partial<UserProfile>) => Promise<void>;
   changePassword: (currentPassword: string, newPassword: string) => Promise<boolean>;
   canCreateListing: () => boolean;
-  canMakeSwap: () => boolean;
+  canMakeSale: () => boolean;
   spendCoins: (amount: number, description: string) => Promise<boolean>;
   purchaseCoins: (amount: number, planType: string) => Promise<boolean>;
   purchaseMobileMoneyCoins: (amount: number, planType: string, phoneNumber: string, provider: string) => Promise<boolean>;
@@ -82,9 +82,9 @@ export const useAuthStore = create<AuthState>()(
               coins: profile.coins || 0,
               joinedDate: new Date(profile.joined_date),
               rating: parseFloat(profile.rating?.toString() || '0'),
-              totalSwaps: profile.total_swaps || 0,
+              totalSales: profile.total_sales || 0,
               monthlyListings: profile.monthly_listings || 0,
-              monthlySwaps: profile.monthly_swaps || 0,
+              monthlySales: profile.monthly_sales || 0,
               avatar: profile.avatar || '',
               achievements: profile.achievements || [],
               // Ghana-specific fields
@@ -139,9 +139,9 @@ export const useAuthStore = create<AuthState>()(
                       coins: profile.coins || 0,
                       joinedDate: new Date(profile.joined_date),
                       rating: parseFloat(profile.rating?.toString() || '0'),
-                      totalSwaps: profile.total_swaps || 0,
-                      monthlyListings: profile.monthly_listings || 0,
-                      monthlySwaps: profile.monthly_swaps || 0,
+                        totalSales: profile.total_sales || 0,
+                        monthlyListings: profile.monthly_listings || 0,
+                        monthlySales: profile.monthly_sales || 0,
                       avatar: profile.avatar || '',
                       achievements: profile.achievements || [],
                       // Ghana-specific fields
@@ -222,9 +222,9 @@ export const useAuthStore = create<AuthState>()(
                 coins: profile.coins || 0,
                 joinedDate: new Date(profile.joined_date),
                 rating: parseFloat(profile.rating?.toString() || '0'),
-                totalSwaps: profile.total_swaps || 0,
+                totalSales: profile.total_sales || 0,
                 monthlyListings: profile.monthly_listings || 0,
-                monthlySwaps: profile.monthly_swaps || 0,
+                monthlySales: profile.monthly_sales || 0,
                 avatar: profile.avatar || '',
                 achievements: profile.achievements || [],
                 // Ghana-specific fields
@@ -349,8 +349,8 @@ export const useAuthStore = create<AuthState>()(
               bio: updates.bio,
               profile_image_url: updates.profileImageUrl,
               monthly_listings: updates.monthlyListings,
-              monthly_swaps: updates.monthlySwaps,
-              total_swaps: updates.totalSwaps,
+              monthly_sales: updates.monthlySales,
+              total_sales: updates.totalSales,
               coins: updates.coins,
               // Ghana-specific fields
               preferred_language: updates.preferredLanguage,
@@ -391,11 +391,11 @@ export const useAuthStore = create<AuthState>()(
         return user.coins >= 1; // Minimum check - actual cost verified in addListing
       },
 
-      canMakeSwap: () => {
+      canMakeSale: () => {
         const { user } = get();
         if (!user) return false;
         // Note: This checks against current coins, but actual cost is fetched dynamically
-        return user.coins >= 2; // Minimum check - actual cost verified when making swap
+        return user.coins >= 2; // Minimum check - actual cost verified when making sale
       },
 
       spendCoins: async (amount: number, description: string) => {

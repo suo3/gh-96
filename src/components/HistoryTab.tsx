@@ -3,31 +3,31 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { MessageCircle, RotateCcw, Calendar, User } from "lucide-react";
 import { useMessageStore } from "@/stores/messageStore";
-import { useSwapStore } from "@/stores/swapStore";
+import { useSaleStore } from "@/stores/saleStore";
 import { useAuthStore } from "@/stores/authStore";
 import { useEffect } from "react";
 
 export const HistoryTab = () => {
   const { conversations, fetchConversations } = useMessageStore();
-  const { swaps, fetchUserSwaps } = useSwapStore();
+  const { sales, fetchUserSales } = useSaleStore();
   const { user } = useAuthStore();
 
   useEffect(() => {
     fetchConversations();
     if (user?.id) {
-      fetchUserSwaps(user.id);
+      fetchUserSales(user.id);
     }
-  }, [fetchConversations, fetchUserSwaps, user?.id]);
+  }, [fetchConversations, fetchUserSales, user?.id]);
 
   // Combine and sort all activities
   const allActivities = [
-    ...swaps.map(swap => ({
-      id: swap.id,
-      type: 'swap' as const,
-      title: `Swapped ${swap.item1_title} for ${swap.item2_title}`,
-      description: `Completed swap between items`,
-      date: new Date(swap.created_at),
-      status: swap.status,
+    ...sales.map(sale => ({
+      id: sale.id,
+      type: 'sale' as const,
+      title: `Sold ${sale.item1_title} to ${sale.item2_title}`,
+      description: `Completed sale`,
+      date: new Date(sale.created_at),
+      status: sale.status,
       partner: 'Trading Partner'
     })),
     ...conversations.map(conv => ({
@@ -72,7 +72,7 @@ export const HistoryTab = () => {
                 className="flex items-start space-x-3 p-4 rounded-lg border hover:bg-gray-50 transition-colors"
               >
                 <div className="flex-shrink-0 mt-1">
-                  {activity.type === 'swap' ? (
+                  {activity.type === 'sale' ? (
                     <RotateCcw className="w-5 h-5 text-green-600" />
                   ) : (
                     <MessageCircle className="w-5 h-5 text-blue-600" />

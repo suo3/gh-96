@@ -19,7 +19,7 @@ interface User {
   location: string;
   coins: number;
   rating: number;
-  totalSwaps: number;
+  totalSales: number;
   joinedDate: string;
   isAdmin?: boolean;
   adminRole?: string;
@@ -69,7 +69,7 @@ export const AdminUserManagement = ({ adminRole }: AdminUserManagementProps) => 
         location: profile.location || '',
         coins: profile.coins || 0,
         rating: parseFloat(profile.rating?.toString() || '0'),
-        totalSwaps: profile.total_swaps || 0,
+        totalSales: profile.total_sales || 0,
         joinedDate: profile.joined_date || profile.created_at,
         isAdmin: adminMap.has(profile.id),
         adminRole: adminMap.get(profile.id)
@@ -186,7 +186,7 @@ export const AdminUserManagement = ({ adminRole }: AdminUserManagementProps) => 
                   <TableHead>Location</TableHead>
                   <TableHead>Coins</TableHead>
                   <TableHead>Rating</TableHead>
-                  <TableHead>Swaps</TableHead>
+                  <TableHead>Sales</TableHead>
                   <TableHead>Role</TableHead>
                   <TableHead>Actions</TableHead>
                 </TableRow>
@@ -207,7 +207,7 @@ export const AdminUserManagement = ({ adminRole }: AdminUserManagementProps) => 
                     <TableCell>{user.location || 'Not set'}</TableCell>
                     <TableCell>{user.coins}</TableCell>
                     <TableCell>{user.rating.toFixed(1)}</TableCell>
-                    <TableCell>{user.totalSwaps}</TableCell>
+                    <TableCell>{user.totalSales}</TableCell>
                     <TableCell>
                       {user.isAdmin ? (
                         <Badge variant="secondary">

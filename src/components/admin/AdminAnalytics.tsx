@@ -8,11 +8,11 @@ import { Users, Package, MessageSquare, TrendingUp } from "lucide-react";
 interface AnalyticsData {
   totalUsers: number;
   totalListings: number;
-  totalSwaps: number;
+  totalSales: number;
   totalMessages: number;
   userGrowth: Array<{ month: string; users: number }>;
   listingsByCategory: Array<{ category: string; count: number }>;
-  swapActivity: Array<{ month: string; swaps: number }>;
+  saleActivity: Array<{ month: string; sales: number }>;
 }
 
 export const AdminAnalytics = () => {
@@ -29,7 +29,7 @@ export const AdminAnalytics = () => {
       const [usersResult, listingsResult, swapsResult, messagesResult] = await Promise.all([
         supabase.from('profiles').select('id', { count: 'exact', head: true }),
         supabase.from('listings').select('id', { count: 'exact', head: true }),
-        supabase.from('swaps').select('id', { count: 'exact', head: true }).eq('status', 'completed'),
+        supabase.from('sales').select('id', { count: 'exact', head: true }).eq('status', 'completed'),
         supabase.from('messages').select('id', { count: 'exact', head: true })
       ]);
 
@@ -45,9 +45,9 @@ export const AdminAnalytics = () => {
         .select('created_at')
         .gte('created_at', new Date(Date.now() - 6 * 30 * 24 * 60 * 60 * 1000).toISOString());
 
-      // Fetch swap activity (last 6 months)
-      const { data: swapActivityData } = await supabase
-        .from('swaps')
+      // Fetch sale activity (last 6 months)
+      const { data: saleActivityData } = await supabase
+        .from('sales')
         .select('created_at')
         .eq('status', 'completed')
         .gte('created_at', new Date(Date.now() - 6 * 30 * 24 * 60 * 60 * 1000).toISOString());
@@ -75,26 +75,26 @@ export const AdminAnalytics = () => {
         users
       }));
 
-      // Process swap activity data
-      const swapActivityMap = new Map();
-      swapActivityData?.forEach(swap => {
-        const month = new Date(swap.created_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
-        swapActivityMap.set(month, (swapActivityMap.get(month) || 0) + 1);
+      // Process sale activity data
+      const saleActivityMap = new Map();
+      saleActivityData?.forEach(sale => {
+        const month = new Date(sale.created_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+        saleActivityMap.set(month, (saleActivityMap.get(month) || 0) + 1);
       });
 
-      const swapActivity = Array.from(swapActivityMap.entries()).map(([month, swaps]) => ({
+      const saleActivity = Array.from(saleActivityMap.entries()).map(([month, sales]) => ({
         month,
-        swaps
+        sales
       }));
 
       setAnalytics({
         totalUsers: usersResult.count || 0,
         totalListings: listingsResult.count || 0,
-        totalSwaps: swapsResult.count || 0,
+        totalSales: swapsResult.count || 0,
         totalMessages: messagesResult.count || 0,
         userGrowth,
         listingsByCategory,
-        swapActivity
+        saleActivity
       });
     } catch (error) {
       console.error('Error fetching analytics:', error);
@@ -145,11 +145,11 @@ export const AdminAnalytics = () => {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Swaps</CardTitle>
+            <CardTitle className="text-sm font-medium">Total Sales</CardTitle>
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{analytics.totalSwaps}</div>
+            <div className="text-2xl font-bold">{analytics.totalSales}</div>
           </CardContent>
         </Card>
 
@@ -214,17 +214,17 @@ export const AdminAnalytics = () => {
 
         <Card className="lg:col-span-2">
           <CardHeader>
-            <CardTitle>Swap Activity</CardTitle>
-            <CardDescription>Monthly swap completions</CardDescription>
+            <CardTitle>Sale Activity</CardTitle>
+            <CardDescription>Monthly sale completions</CardDescription>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={analytics.swapActivity}>
+              <BarChart data={analytics.saleActivity}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="month" />
                 <YAxis />
                 <Tooltip />
-                <Bar dataKey="swaps" fill="#3b82f6" />
+                <Bar dataKey="sales" fill="#3b82f6" />
               </BarChart>
             </ResponsiveContainer>
           </CardContent>
