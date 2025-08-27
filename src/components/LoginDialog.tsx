@@ -13,7 +13,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { loginSchema, signupSchema, LoginFormData, SignupFormData } from "@/lib/validations";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useLocationDetection } from "@/hooks/useLocationDetection";
-import { MapPin, Navigation } from "lucide-react";
+import { useGhanaLocation } from "@/hooks/useGhanaLocation";
+import { LocationInput } from "./LocationInput";
+import { MapPin, Navigation, Loader2 } from "lucide-react";
 
 interface LoginDialogProps {
   open: boolean;
@@ -26,7 +28,8 @@ export const LoginDialog = ({ open, onOpenChange }: LoginDialogProps) => {
   const [isLoginLoading, setIsLoginLoading] = useState(false);
   const [isSignupLoading, setIsSignupLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("login");
-  const { isDetecting, requestLocationPermission } = useLocationDetection();
+  const { isDetecting, requestLocationPermission, detectedLocation } = useLocationDetection();
+  const { regions, formatLocationString } = useGhanaLocation();
 
   const loginForm = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
@@ -264,26 +267,39 @@ export const LoginDialog = ({ open, onOpenChange }: LoginDialogProps) => {
                   name="location"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Location</FormLabel>
-                      <FormControl>
-                        <div className="flex gap-2">
-                          <Input placeholder="City, State" {...field} />
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={handleLocationDetect}
-                            disabled={isDetecting}
-                            className="px-3"
-                          >
-                            {isDetecting ? (
-                              <MapPin className="w-4 h-4 animate-pulse" />
-                            ) : (
-                              <Navigation className="w-4 h-4" />
-                            )}
-                          </Button>
-                        </div>
-                      </FormControl>
+                      <FormLabel>Location in Ghana</FormLabel>
+                      <div className="flex gap-2">
+                        <FormControl>
+                          <LocationInput 
+                            placeholder="e.g., Accra, Greater Accra or Kumasi, Ashanti"
+                            value={field.value}
+                            onChange={field.onChange}
+                            className="flex-1"
+                          />
+                        </FormControl>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="icon"
+                          onClick={handleLocationDetect}
+                          disabled={isDetecting}
+                          title="Detect my current location in Ghana"
+                        >
+                          {isDetecting ? (
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                          ) : (
+                            <Navigation className="w-4 h-4" />
+                          )}
+                        </Button>
+                      </div>
+                      {detectedLocation && (
+                        <p className="text-sm text-green-600">
+                          📍 Location detected: {detectedLocation}
+                        </p>
+                      )}
+                      <p className="text-sm text-muted-foreground">
+                        Select from common Ghana locations or use GPS to detect your current location
+                      </p>
                       <FormMessage />
                     </FormItem>
                   )}
