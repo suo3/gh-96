@@ -26,12 +26,19 @@ const ItemDetail = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isFavorited, setIsFavorited] = useState(false);
   const [isTogglingFavorite, setIsTogglingFavorite] = useState(false);
+  const [relatedItems, setRelatedItems] = useState<Listing[]>([]);
 
   useEffect(() => {
     if (id) {
       fetchItemDetails(id);
     }
   }, [id]);
+
+  useEffect(() => {
+    if (item) {
+      fetchRelatedItems();
+    }
+  }, [item]);
 
   useEffect(() => {
     if (item && user) {
@@ -86,6 +93,38 @@ const ItemDetail = () => {
       navigate('/');
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const fetchRelatedItems = async () => {
+    if (!item) return;
+
+    try {
+      const { data, error } = await supabase
+        .from('listings')
+        .select(`
+          *,
+          profiles!listings_user_id_fkey (
+            first_name,
+            last_name,
+            username,
+            avatar
+          )
+        `)
+        .eq('category', item.category)
+        .eq('status', 'active')
+        .neq('id', item.id)
+        .order('created_at', { ascending: false })
+        .limit(4);
+
+      if (error) {
+        console.error('Error fetching related items:', error);
+        return;
+      }
+
+      setRelatedItems(data || []);
+    } catch (error) {
+      console.error('Error fetching related items:', error);
     }
   };
 
@@ -465,6 +504,54 @@ const ItemDetail = () => {
               </div>
             </div>
           </div>
+
+          {/* Related Items Section */}
+          {relatedItems.length > 0 && (
+            <div className="mt-8">
+              <h2 className="text-xl font-bold text-foreground mb-4">Related Items</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                {relatedItems.map((relatedItem) => (
+                  <div 
+                    key={relatedItem.id}
+                    className="bg-card rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow cursor-pointer"
+                    onClick={() => navigate(`/item/${relatedItem.id}`)}
+                  >
+                    <div className="relative">
+                      <img
+                        src={relatedItem.images?.[0] || "https://images.unsplash.com/photo-1649972904349-6e44c42644a7?w=400&h=300&fit=crop"}
+                        alt={relatedItem.title}
+                        className="w-full h-32 object-cover"
+                        onError={(e) => {
+                          e.currentTarget.src = "https://images.unsplash.com/photo-1649972904349-6e44c42644a7?w=400&h=300&fit=crop";
+                        }}
+                      />
+                      {relatedItem.price && (
+                        <div className="absolute top-2 right-2 bg-primary text-primary-foreground px-2 py-1 rounded text-xs font-medium">
+                          ₵{relatedItem.price.toFixed(2)}
+                        </div>
+                      )}
+                    </div>
+                    <div className="p-3">
+                      <h3 className="font-medium text-foreground text-sm mb-1 line-clamp-2">
+                        {relatedItem.title}
+                      </h3>
+                      <div className="flex items-center justify-between">
+                        <Badge variant="outline" className="text-xs">
+                          {relatedItem.condition}
+                        </Badge>
+                        {relatedItem.location && (
+                          <span className="text-xs text-muted-foreground flex items-center">
+                            <MapPin className="w-3 h-3 mr-1" />
+                            {relatedItem.location.split(',')[0]}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
       
