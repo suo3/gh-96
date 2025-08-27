@@ -235,6 +235,26 @@ export const AdminListingApproval = () => {
                             </Button>
                           </>
                         )}
+                        {listing.status === 'active' && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => updateListingStatus(listing.id, 'rejected')}
+                          >
+                            <X className="w-4 h-4 mr-1" />
+                            Reject
+                          </Button>
+                        )}
+                        {listing.status === 'rejected' && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => updateListingStatus(listing.id, 'active')}
+                          >
+                            <Check className="w-4 h-4 mr-1" />
+                            Reactivate
+                          </Button>
+                        )}
                       </div>
                     </TableCell>
                   </TableRow>
