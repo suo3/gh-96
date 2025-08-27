@@ -22,6 +22,8 @@ export const useIndexLogic = () => {
   const [showFilters, setShowFilters] = useState(!isMobile);
   const [showLocationPrompt, setShowLocationPrompt] = useState(false);
   const [userLocation, setUserLocation] = useState<Location | null>(null);
+  const [showHeroSection, setShowHeroSection] = useState(true);
+  const [hasUserInteracted, setHasUserInteracted] = useState(false);
   
   const { createConversationFromSwipe, totalUnreadCount, fetchConversations } = useMessageStore();
   const { isAuthenticated, canCreateListing, canMakeSale, user } = useAuthStore();
@@ -143,6 +145,15 @@ export const useIndexLogic = () => {
     }
   };
 
+  
+  const handleBrowseItems = () => {
+    setHasUserInteracted(true);
+    setShowHeroSection(false);
+    if (displayMode === "swipe" && isMobile) {
+      setDisplayMode("grid");
+    }
+  };
+
   const handleSwipe = async (direction: 'left' | 'right') => {
     if (!isAuthenticated) {
       setShowLoginDialog(true);
@@ -195,6 +206,8 @@ export const useIndexLogic = () => {
   };
 
   const handleItemLike = async (item: any) => {
+    setHasUserInteracted(true);
+    setShowHeroSection(false);
     if (!isAuthenticated) {
       setShowLoginDialog(true);
       return;
@@ -241,6 +254,7 @@ export const useIndexLogic = () => {
   };
 
   const handlePostItem = () => {
+    setHasUserInteracted(true);
     if (!isAuthenticated) {
       setShowLoginDialog(true);
       return;
@@ -271,6 +285,8 @@ export const useIndexLogic = () => {
     userLocation,
     filteredListings,
     isMobile,
+    showHeroSection,
+    hasUserInteracted,
     
     // Setters
     setDisplayMode,
@@ -282,6 +298,7 @@ export const useIndexLogic = () => {
     handleManualLocationEntry,
     handleLocationPromptDismiss,
     handleLocationDetect,
+    handleBrowseItems,
     handleSwipe,
     handleItemLike,
     handlePostItem,

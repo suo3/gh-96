@@ -21,6 +21,8 @@ const Index = () => {
     userLocation,
     filteredListings,
     isMobile,
+    showHeroSection,
+    hasUserInteracted,
     setDisplayMode,
     setShowLoginDialog,
     setShowFilters,
@@ -28,6 +30,7 @@ const Index = () => {
     handleManualLocationEntry,
     handleLocationPromptDismiss,
     handleLocationDetect,
+    handleBrowseItems,
     handleSwipe,
     handleItemLike,
     handlePostItem,
@@ -40,12 +43,6 @@ const Index = () => {
   if (!settingsLoading && settings.maintenanceMode) {
     return <MaintenanceMode />;
   }
-
-  const handleBrowseItems = () => {
-    if (displayMode === "swipe" && isMobile) {
-      setDisplayMode("grid");
-    }
-  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -73,16 +70,16 @@ const Index = () => {
         </div>
       )}
 
-      {/* Show Hero Section if there are no listings or on initial load */}
-      {filteredListings.length === 0 && (
+      {/* Show Hero Section when appropriate */}
+      {showHeroSection && (!hasUserInteracted || filteredListings.length === 0) && (
         <HeroSection 
           onPostItem={handlePostItem}
           onBrowseItems={handleBrowseItems}
         />
       )}
 
-      {/* Content Controls - Only show when there are listings */}
-      {filteredListings.length > 0 && (displayMode !== "swipe" || !isMobile) && (
+      {/* Content Controls - Only show when there are listings and hero is not shown */}
+      {!showHeroSection && filteredListings.length > 0 && (displayMode !== "swipe" || !isMobile) && (
         <div className="bg-card/50 backdrop-blur-sm border-b border-border">
           <ContentControls
             displayMode={displayMode}
@@ -105,8 +102,8 @@ const Index = () => {
         </div>
       )}
 
-      {/* Main Content - Only show when there are listings */}
-      {filteredListings.length > 0 && (
+      {/* Main Content - Only show when there are listings and hero is not shown */}
+      {!showHeroSection && filteredListings.length > 0 && (
         <main className="container mx-auto px-4 py-8">
           {/* Filters - Only show on desktop when showFilters is true and not in swipe mode */}
           {!isMobile && showFilters && displayMode !== "swipe" && (
