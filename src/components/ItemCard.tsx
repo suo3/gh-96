@@ -1,5 +1,5 @@
 
-import { Heart, MapPin, MessageCircle, MoreVertical, MessageSquare } from "lucide-react";
+import { Heart, MapPin, MessageCircle, MoreVertical, MessageSquare, Star, Crown } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -57,6 +57,25 @@ export const ItemCard = ({ item, onItemClick, onItemLike }: ItemCardProps) => {
       return item.profiles.username.charAt(0).toUpperCase();
     }
     return 'U';
+  };
+
+  const isPopularSeller = (item: Listing) => {
+    const profile = item.profiles;
+    if (!profile) return false;
+    
+    // Consider a seller popular if they have:
+    // - High rating (4.5+ stars) with verified status, OR
+    // - Many successful swaps (10+), OR
+    // - High rating (4.8+) with at least 5 swaps
+    const rating = profile.rating || 0;
+    const totalSwaps = profile.total_swaps || 0;
+    const isVerified = profile.is_verified || false;
+    
+    return (
+      (rating >= 4.5 && isVerified) ||
+      totalSwaps >= 10 ||
+      (rating >= 4.8 && totalSwaps >= 5)
+    );
   };
 
   const formatPhoneForWhatsApp = (phoneNumber: string) => {
@@ -192,9 +211,17 @@ export const ItemCard = ({ item, onItemClick, onItemLike }: ItemCardProps) => {
                 <div className="w-6 h-6 bg-gradient-to-br from-emerald-400 to-teal-400 rounded-full flex items-center justify-center text-white text-xs font-semibold mr-2">
                   {getUserAvatar(item)}
                 </div>
-                <span className="text-sm font-medium text-gray-700">
-                  {getUserDisplayName(item)}
-                </span>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-medium text-gray-700">
+                    {getUserDisplayName(item)}
+                  </span>
+                  {isPopularSeller(item) && (
+                    <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 border-yellow-200 text-xs px-1.5 py-0.5">
+                      <Crown className="w-3 h-3 mr-1" />
+                      Popular
+                    </Badge>
+                  )}
+                </div>
               </div>
               
               {item.user_id && (
