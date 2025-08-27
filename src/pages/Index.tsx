@@ -1,5 +1,6 @@
 
 import { AppHeader } from "@/components/AppHeader";
+import { HeroSection } from "@/components/HeroSection";
 import { ContentControls } from "@/components/ContentControls";
 import { SwipeMode } from "@/components/SwipeMode";
 import { BrowseMode } from "@/components/BrowseMode";
@@ -40,8 +41,14 @@ const Index = () => {
     return <MaintenanceMode />;
   }
 
+  const handleBrowseItems = () => {
+    if (displayMode === "swipe" && isMobile) {
+      setDisplayMode("grid");
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50">
+    <div className="min-h-screen bg-background">
       <AppHeader
         userLocation={userLocation}
         onLocationDetect={handleLocationDetect}
@@ -57,18 +64,26 @@ const Index = () => {
 
       {/* Welcome Message */}
       {!settingsLoading && settings.welcomeMessage && settings.welcomeMessage !== "Welcome to SwapBoard!" && (
-        <div className="bg-white/50 backdrop-blur-sm border-b border-emerald-100">
-          <div className="container mx-auto px-4 py-2">
-            <p className="text-center text-emerald-700 font-medium">
+        <div className="bg-card/80 backdrop-blur-sm border-b border-border">
+          <div className="container mx-auto px-4 py-3">
+            <p className="text-center text-primary font-medium">
               {settings.welcomeMessage}
             </p>
           </div>
         </div>
       )}
 
-      {/* Content Controls */}
-      {displayMode !== "swipe" || !isMobile ? (
-        <div className="bg-white/50 backdrop-blur-sm border-b border-emerald-100">
+      {/* Show Hero Section if there are no listings or on initial load */}
+      {filteredListings.length === 0 && (
+        <HeroSection 
+          onPostItem={handlePostItem}
+          onBrowseItems={handleBrowseItems}
+        />
+      )}
+
+      {/* Content Controls - Only show when there are listings */}
+      {filteredListings.length > 0 && (displayMode !== "swipe" || !isMobile) && (
+        <div className="bg-card/50 backdrop-blur-sm border-b border-border">
           <ContentControls
             displayMode={displayMode}
             showFilters={showFilters}
@@ -77,7 +92,7 @@ const Index = () => {
             onFilterChange={handleFilterChange}
           />
         </div>
-      ) : null}
+      )}
 
       {/* Location Permission Prompt */}
       {showLocationPrompt && (
@@ -90,30 +105,32 @@ const Index = () => {
         </div>
       )}
 
-      {/* Main Content */}
-      <main className="container mx-auto px-4 py-8">
-        {/* Filters - Only show on desktop when showFilters is true and not in swipe mode */}
-        {!isMobile && showFilters && displayMode !== "swipe" && (
-          <FilterPanel 
-            onFilterChange={handleFilterChange}
-            isVisible={true}
-          />
-        )}
+      {/* Main Content - Only show when there are listings */}
+      {filteredListings.length > 0 && (
+        <main className="container mx-auto px-4 py-8">
+          {/* Filters - Only show on desktop when showFilters is true and not in swipe mode */}
+          {!isMobile && showFilters && displayMode !== "swipe" && (
+            <FilterPanel 
+              onFilterChange={handleFilterChange}
+              isVisible={true}
+            />
+          )}
 
-        {/* Swipe Mode */}
-        {displayMode === "swipe" && isMobile && (
-          <SwipeMode items={filteredListings} onSwipe={handleSwipe} />
-        )}
+          {/* Swipe Mode */}
+          {displayMode === "swipe" && isMobile && (
+            <SwipeMode items={filteredListings} onSwipe={handleSwipe} />
+          )}
 
-        {/* Browse Mode (Grid & List) */}
-        {(displayMode === "grid" || displayMode === "list") && (
-          <BrowseMode 
-            displayMode={displayMode}
-            items={filteredListings}
-            onItemLike={handleItemLike}
-          />
-        )}
-      </main>
+          {/* Browse Mode (Grid & List) */}
+          {(displayMode === "grid" || displayMode === "list") && (
+            <BrowseMode 
+              displayMode={displayMode}
+              items={filteredListings}
+              onItemLike={handleItemLike}
+            />
+          )}
+        </main>
+      )}
 
       <LoginDialog
         open={showLoginDialog}
