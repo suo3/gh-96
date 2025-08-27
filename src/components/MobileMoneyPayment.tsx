@@ -240,7 +240,7 @@ export const MobileMoneyPayment = () => {
 
       <div className="text-center text-sm text-muted-foreground">
         <p>• {platformCosts?.listingCost || 1} coin = 1 listing post</p>
-        <p>• {platformCosts?.swapCost || 2} coins = 1 swap opportunity</p>
+        <p>• {platformCosts?.saleCost || 2} coins = 1 sale opportunity</p>
         <p>• Current balance: {user.coins} coins</p>
         <p>• Payment via mobile money (MTN, Vodafone Cash, AirtelTigo)</p>
       </div>
