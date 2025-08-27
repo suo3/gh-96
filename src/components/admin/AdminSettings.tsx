@@ -41,7 +41,7 @@ export const AdminSettings = ({ adminRole }: AdminSettingsProps) => {
       console.log('Fetching database statistics...');
       
       // Get table counts for specific tables
-      const tables = ['profiles', 'listings', 'swaps', 'messages', 'conversations'] as const;
+      const tables = ['profiles', 'listings', 'sales', 'messages', 'conversations'] as const;
       let totalRows = 0;
 
       for (const table of tables) {

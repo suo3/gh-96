@@ -24,7 +24,7 @@ export const useIndexLogic = () => {
   const [userLocation, setUserLocation] = useState<Location | null>(null);
   
   const { createConversationFromSwipe, totalUnreadCount, fetchConversations } = useMessageStore();
-  const { isAuthenticated, canCreateListing, canMakeSwap, user } = useAuthStore();
+  const { isAuthenticated, canCreateListing, canMakeSale, user } = useAuthStore();
   const { 
     filteredListings, 
     markItemAsMessaged, 
@@ -149,7 +149,7 @@ export const useIndexLogic = () => {
       return;
     }
 
-    if (!canMakeSwap()) {
+    if (!canMakeSale()) {
       toast({
         title: "Swap Limit Reached",
         description: "You've reached your monthly swap limit. Upgrade to Premium for unlimited swaps!",
@@ -200,7 +200,7 @@ export const useIndexLogic = () => {
       return;
     }
 
-    if (!canMakeSwap()) {
+    if (!canMakeSale()) {
       toast({
         title: "Swap Limit Reached",
         description: "You've reached your monthly swap limit. Upgrade to Premium for unlimited swaps!",

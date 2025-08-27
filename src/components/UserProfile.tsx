@@ -24,7 +24,7 @@ interface UserProfileProps {
 export const UserProfile = ({ onBack }: UserProfileProps) => {
   const { user } = useAuthStore();
   const { userRatings, fetchUserRatings, getAverageRating } = useRatingStore();
-  const { activeListings, totalViews, loading: statsLoading, totalSwaps, monthlyListings, monthlySwaps } = useUserStats();
+  const { activeListings, totalViews, loading: statsLoading, totalSales, monthlyListings, monthlySales } = useUserStats();
   const [activeTab, setActiveTab] = useState("profile");
   const [showAllRatings, setShowAllRatings] = useState(false);
 
@@ -43,7 +43,7 @@ export const UserProfile = ({ onBack }: UserProfileProps) => {
     name: `${user.firstName} ${user.lastName}`,
     joinDate: joinedDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
     location: user.location,
-    successfulSwaps: statsLoading ? 0 : totalSwaps,
+    successfulSwaps: statsLoading ? 0 : totalSales,
     rating: getAverageRating(user.id),
     activeListings: statsLoading ? 0 : activeListings,
     totalViews: statsLoading ? 0 : totalViews,
@@ -156,7 +156,7 @@ export const UserProfile = ({ onBack }: UserProfileProps) => {
                   </div>
                   <div className="bg-gray-50 rounded-lg p-4 text-center border border-gray-200">
                     <div className="text-lg font-semibold text-gray-600">
-                      {statsLoading ? '...' : `${monthlyListings} / ${monthlySwaps}`}
+                      {statsLoading ? '...' : `${monthlyListings} / ${monthlySales}`}
                     </div>
                     <div className="text-xs text-gray-600">Monthly L/S</div>
                   </div>
@@ -172,7 +172,7 @@ export const UserProfile = ({ onBack }: UserProfileProps) => {
           <div className="lg:col-span-2">
             <AchievementsDisplay 
               achievements={user.achievements || []}
-              totalSwaps={statsLoading ? 0 : totalSwaps}
+              totalSwaps={statsLoading ? 0 : totalSales}
               rating={getAverageRating(user.id)}
             />
           </div>

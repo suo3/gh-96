@@ -5,9 +5,9 @@ import { useAuthStore } from '@/stores/authStore';
 interface UserStats {
   activeListings: number;
   totalViews: number;
-  totalSwaps: number;
+  totalSales: number;
   monthlyListings: number;
-  monthlySwaps: number;
+  monthlySales: number;
   loading: boolean;
   error: string | null;
 }
@@ -17,9 +17,9 @@ export const useUserStats = () => {
   const [stats, setStats] = useState<UserStats>({
     activeListings: 0,
     totalViews: 0,
-    totalSwaps: 0,
+    totalSales: 0,
     monthlyListings: 0,
-    monthlySwaps: 0,
+    monthlySales: 0,
     loading: true,
     error: null
   });
@@ -50,14 +50,14 @@ export const useUserStats = () => {
 
         const totalViews = viewsData?.reduce((sum, listing) => sum + (listing.views || 0), 0) || 0;
 
-        // Get total swaps count
-        const { count: swapsCount, error: swapsError } = await supabase
-          .from('swaps')
+        // Get total sales count
+        const { count: salesCount, error: salesError } = await supabase
+          .from('sales')
           .select('*', { count: 'exact', head: true })
           .or(`user1_id.eq.${user.id},user2_id.eq.${user.id}`)
           .eq('status', 'completed');
 
-        if (swapsError) throw swapsError;
+        if (salesError) throw salesError;
 
         // Get monthly stats (current month)
         const now = new Date();
@@ -71,21 +71,21 @@ export const useUserStats = () => {
 
         if (monthlyListingsError) throw monthlyListingsError;
 
-        const { count: monthlySwapsCount, error: monthlySwapsError } = await supabase
-          .from('swaps')
+        const { count: monthlySalesCount, error: monthlySalesError } = await supabase
+          .from('sales')
           .select('*', { count: 'exact', head: true })
           .or(`user1_id.eq.${user.id},user2_id.eq.${user.id}`)
           .eq('status', 'completed')
           .gte('created_at', startOfMonth.toISOString());
 
-        if (monthlySwapsError) throw monthlySwapsError;
+        if (monthlySalesError) throw monthlySalesError;
 
         setStats({
           activeListings: listingsCount || 0,
           totalViews,
-          totalSwaps: swapsCount || 0,
+          totalSales: salesCount || 0,
           monthlyListings: monthlyListingsCount || 0,
-          monthlySwaps: monthlySwapsCount || 0,
+          monthlySales: monthlySalesCount || 0,
           loading: false,
           error: null
         });
