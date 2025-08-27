@@ -11,6 +11,7 @@ import { AdminListingModeration } from "@/components/admin/AdminListingModeratio
 import { AdminListingApproval } from "@/components/admin/AdminListingApproval";
 import { AdminAnalytics } from "@/components/admin/AdminAnalytics";
 import { AdminSettings } from "@/components/admin/AdminSettings";
+import { AdminBulkUpload } from "@/components/admin/AdminBulkUpload";
 
 const Admin = () => {
   const { user, isAuthenticated } = useAuthStore();
@@ -113,7 +114,13 @@ const Admin = () => {
           </TabsContent>
           
           <TabsContent value="approval">
-            <AdminListingApproval />
+            <div className="space-y-6">
+              <div className="flex justify-between items-center">
+                <h2 className="text-2xl font-bold">Listing Management</h2>
+                <AdminBulkUpload />
+              </div>
+              <AdminListingApproval />
+            </div>
           </TabsContent>
           
           <TabsContent value="moderation">
