@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,6 +14,22 @@ import { useAuthStore } from "@/stores/authStore";
 import { Upload, Plus, Trash2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { supabase } from "@/integrations/supabase/client";
+
+interface Category {
+  id: string;
+  name: string;
+  display_order: number;
+  is_active: boolean;
+}
+
+interface Condition {
+  id: string;
+  name: string;
+  value: string;
+  display_order: number;
+  is_active: boolean;
+}
 
 interface BulkListingItem {
   title: string;
@@ -41,11 +57,52 @@ export const AdminBulkUpload = () => {
   const [open, setOpen] = useState(false);
   const [items, setItems] = useState<BulkListingItem[]>([initialItem]);
   const [isUploading, setIsUploading] = useState(false);
-  const [categories, setCategories] = useState<any[]>([]);
-  const [conditions, setConditions] = useState<any[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [conditions, setConditions] = useState<Condition[]>([]);
+  const [isLoadingOptions, setIsLoadingOptions] = useState(true);
   const { toast } = useToast();
   const { addListing } = useListingStore();
   const { user } = useAuthStore();
+
+  // Fetch categories and conditions from database
+  useEffect(() => {
+    const fetchOptions = async () => {
+      setIsLoadingOptions(true);
+      try {
+        // Fetch categories
+        const { data: categoriesData, error: categoriesError } = await supabase
+          .from('categories')
+          .select('*')
+          .eq('is_active', true)
+          .order('display_order');
+
+        if (categoriesError) {
+          console.error('Error fetching categories:', categoriesError);
+        } else {
+          setCategories(categoriesData || []);
+        }
+
+        // Fetch conditions
+        const { data: conditionsData, error: conditionsError } = await supabase
+          .from('conditions')
+          .select('*')
+          .eq('is_active', true)
+          .order('display_order');
+
+        if (conditionsError) {
+          console.error('Error fetching conditions:', conditionsError);
+        } else {
+          setConditions(conditionsData || []);
+        }
+      } catch (error) {
+        console.error('Error fetching options:', error);
+      } finally {
+        setIsLoadingOptions(false);
+      }
+    };
+
+    fetchOptions();
+  }, []);
 
   const addNewItem = () => {
     setItems([...items, { ...initialItem }]);
@@ -283,34 +340,32 @@ export const AdminBulkUpload = () => {
                     
                     <div>
                       <Label htmlFor={`category-${index}`}>Category *</Label>
-                      <Select onValueChange={(value) => updateItem(index, 'category', value)}>
+                      <Select onValueChange={(value) => updateItem(index, 'category', value)} disabled={isLoadingOptions}>
                         <SelectTrigger>
-                          <SelectValue placeholder="Select category" />
+                          <SelectValue placeholder={isLoadingOptions ? "Loading..." : "Select category"} />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="electronics">Electronics</SelectItem>
-                          <SelectItem value="clothing">Clothing</SelectItem>
-                          <SelectItem value="books">Books</SelectItem>
-                          <SelectItem value="sports">Sports</SelectItem>
-                          <SelectItem value="home">Home & Garden</SelectItem>
-                          <SelectItem value="toys">Toys & Games</SelectItem>
-                          <SelectItem value="other">Other</SelectItem>
+                          {categories.map((category) => (
+                            <SelectItem key={category.id} value={category.name}>
+                              {category.name}
+                            </SelectItem>
+                          ))}
                         </SelectContent>
                       </Select>
                     </div>
                     
                     <div>
                       <Label htmlFor={`condition-${index}`}>Condition *</Label>
-                      <Select onValueChange={(value) => updateItem(index, 'condition', value)}>
+                      <Select onValueChange={(value) => updateItem(index, 'condition', value)} disabled={isLoadingOptions}>
                         <SelectTrigger>
-                          <SelectValue placeholder="Select condition" />
+                          <SelectValue placeholder={isLoadingOptions ? "Loading..." : "Select condition"} />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="new">New</SelectItem>
-                          <SelectItem value="like-new">Like New</SelectItem>
-                          <SelectItem value="good">Good</SelectItem>
-                          <SelectItem value="fair">Fair</SelectItem>
-                          <SelectItem value="poor">Poor</SelectItem>
+                          {conditions.map((condition) => (
+                            <SelectItem key={condition.id} value={condition.value}>
+                              {condition.name}
+                            </SelectItem>
+                          ))}
                         </SelectContent>
                       </Select>
                     </div>
@@ -367,7 +422,7 @@ export const AdminBulkUpload = () => {
               onClick={handleBulkUpload}
               loading={isUploading}
               loadingText="Uploading..."
-              disabled={items.length === 0}
+              disabled={items.length === 0 || isLoadingOptions}
             >
               Upload {items.length} Item{items.length > 1 ? 's' : ''}
             </LoadingButton>
