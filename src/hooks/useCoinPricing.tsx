@@ -15,7 +15,7 @@ export interface PricingPlan {
 
 export interface PlatformCosts {
   listingCost: number;
-  swapCost: number;
+  saleCost: number;
   defaultStartingCoins: number;
 }
 
@@ -40,20 +40,20 @@ export const usePlatformCosts = () => {
   return useQuery({
     queryKey: ['platformCosts'],
     queryFn: async () => {
-      const [listingCostResult, swapCostResult, defaultCoinsResult] = await Promise.all([
+      const [listingCostResult, saleCostResult, defaultCoinsResult] = await Promise.all([
         supabase.rpc('get_listing_cost'),
-        supabase.rpc('get_swap_cost'),
+        supabase.rpc('get_sale_cost'),
         supabase.rpc('get_default_starting_coins')
       ]);
 
       if (listingCostResult.error) throw listingCostResult.error;
-      if (swapCostResult.error) throw swapCostResult.error;
+      if (saleCostResult.error) throw saleCostResult.error;
       if (defaultCoinsResult.error) throw defaultCoinsResult.error;
 
       return {
         listingCost: listingCostResult.data || 1,
-        swapCost: swapCostResult.data || 2,
-        defaultStartingCoins: defaultCoinsResult.data || 20,
+        saleCost: saleCostResult.data || 2,
+        defaultStartingCoins: defaultCoinsResult.data || 50,
       } as PlatformCosts;
     },
     staleTime: 10 * 60 * 1000, // Cache for 10 minutes

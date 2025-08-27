@@ -85,8 +85,8 @@ export const SubscriptionPayment = () => {
   return (
     <div className="space-y-6">
       <div className="text-center">
-        <h2 className="text-2xl font-bold mb-2">Purchase Swap Coins</h2>
-        <p className="text-muted-foreground">Get more coins to post listings and make swaps</p>
+        <h2 className="text-2xl font-bold mb-2">Purchase Coins</h2>
+        <p className="text-muted-foreground">Get more coins to post listings and make sales</p>
         <div className="mt-4 p-4 bg-emerald-50 rounded-lg">
           <div className="flex items-center justify-center space-x-2">
             <Coins className="w-5 h-5 text-emerald-600" />
@@ -126,7 +126,8 @@ export const SubscriptionPayment = () => {
               </div>
               <div className="text-sm text-muted-foreground">Coins</div>
               <div className="text-lg font-semibold mt-2 mb-4">
-                ${(plan.price / plan.coins * 0.55).toFixed(2)} per coin
+                <div className="text-primary">₵{plan.price.toFixed(2)} GHS</div>
+                <div className="text-sm text-muted-foreground">${(plan.price * 0.55).toFixed(2)} USD</div>
               </div>
               
               <LoadingButton 
@@ -135,7 +136,7 @@ export const SubscriptionPayment = () => {
                 loadingText="Processing..."
                 className={`w-full mb-4 ${plan.is_popular ? 'bg-emerald-500 hover:bg-emerald-600' : ''}`}
               >
-                Buy for ${(plan.price * 0.55).toFixed(2)}
+                Buy for ₵{plan.price.toFixed(2)}
               </LoadingButton>
               
               <div className="text-left text-sm text-muted-foreground">
@@ -153,7 +154,7 @@ export const SubscriptionPayment = () => {
 
       <div className="text-center text-sm text-muted-foreground">
         <p>• {platformCosts?.listingCost || 1} coin = 1 listing post</p>
-        <p>• {platformCosts?.swapCost || 2} coins = 1 swap opportunity</p>
+        <p>• {platformCosts?.saleCost || 2} coins = 1 sale opportunity</p>
         <p>• Current balance: {user.coins} coins</p>
       </div>
     </div>
