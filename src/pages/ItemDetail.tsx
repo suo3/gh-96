@@ -7,6 +7,7 @@ import { Listing, useListingStore } from "@/stores/listingStore";
 import { UserRatingDisplay } from "@/components/UserRatingDisplay";
 import { ReportListingDialog } from "@/components/ReportListingDialog";
 import { UserRating } from "@/components/UserRating";
+import { Footer } from "@/components/Footer";
 import { useAuthStore } from "@/stores/authStore";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -565,6 +566,8 @@ const ItemDetail = () => {
           itemTitle={item.title}
         />
       )}
+      
+      <Footer />
     </>
   );
 };

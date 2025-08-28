@@ -1,5 +1,6 @@
 
 import { UserProfile } from "@/components/UserProfile";
+import { Footer } from "@/components/Footer";
 import { useNavigate } from "react-router-dom";
 
 const Profile = () => {
@@ -9,7 +10,12 @@ const Profile = () => {
     navigate("/");
   };
 
-  return <UserProfile onBack={handleBack} />;
+  return (
+    <>
+      <UserProfile onBack={handleBack} />
+      <Footer />
+    </>
+  );
 };
 
 export default Profile;

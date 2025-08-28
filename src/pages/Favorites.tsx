@@ -7,6 +7,7 @@ import { Listing } from "@/stores/listingStore";
 import { useAuthStore } from "@/stores/authStore";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { Footer } from "@/components/Footer";
 import { Helmet } from "react-helmet";
 import { generatePageTitle, generateMetaDescription } from "@/constants/seo";
 
@@ -193,6 +194,8 @@ const Favorites = () => {
           )}
         </div>
       </div>
+      
+      <Footer />
     </>
   );
 };

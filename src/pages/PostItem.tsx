@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { PostItemDialog } from "@/components/PostItemDialog";
+import { Footer } from "@/components/Footer";
 
 const PostItem = () => {
   const navigate = useNavigate();
@@ -23,10 +24,13 @@ const PostItem = () => {
   };
 
   return (
-    <PostItemDialog 
-      open={isOpen} 
-      onOpenChange={handleOpenChange} 
-    />
+    <>
+      <PostItemDialog 
+        open={isOpen} 
+        onOpenChange={handleOpenChange} 
+      />
+      <Footer />
+    </>
   );
 };
 

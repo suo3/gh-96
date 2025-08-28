@@ -13,6 +13,7 @@ import { AdminListingApproval } from "@/components/admin/AdminListingApproval";
 import { AdminAnalytics } from "@/components/admin/AdminAnalytics";
 import { AdminSettings } from "@/components/admin/AdminSettings";
 import { AdminBulkUpload } from "@/components/admin/AdminBulkUpload";
+import { Footer } from "@/components/Footer";
 
 const Admin = () => {
   const { user, isAuthenticated } = useAuthStore();
@@ -73,75 +74,79 @@ const Admin = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50">
-      <div className="container mx-auto px-4 py-8">
-        <div className="mb-8">
-          <Button 
-            variant="outline" 
-            onClick={() => navigate("/")}
-            className="mb-6"
-          >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Homepage
-          </Button>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Admin Dashboard</h1>
-          <p className="text-gray-600">
-            Welcome back, {user?.firstName}! You have {adminRole} access.
-          </p>
-        </div>
+    <>
+      <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50">
+        <div className="container mx-auto px-4 py-8">
+          <div className="mb-8">
+            <Button 
+              variant="outline" 
+              onClick={() => navigate("/")}
+              className="mb-6"
+            >
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back to Homepage
+            </Button>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">Admin Dashboard</h1>
+            <p className="text-gray-600">
+              Welcome back, {user?.firstName}! You have {adminRole} access.
+            </p>
+          </div>
 
-        <Tabs defaultValue="analytics" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5 lg:w-auto lg:grid-cols-5">
-            <TabsTrigger value="analytics" className="flex items-center gap-2">
-              <BarChart3 className="w-4 h-4" />
-              Analytics
-            </TabsTrigger>
-            <TabsTrigger value="users" className="flex items-center gap-2">
-              <Users className="w-4 h-4" />
-              Users
-            </TabsTrigger>
-            <TabsTrigger value="approval" className="flex items-center gap-2">
-              <CheckCircle className="w-4 h-4" />
-              Listings
-            </TabsTrigger>
-            <TabsTrigger value="moderation" className="flex items-center gap-2">
-              <Flag className="w-4 h-4" />
-              Reports
-            </TabsTrigger>
-            <TabsTrigger value="settings" className="flex items-center gap-2">
-              <Settings className="w-4 h-4" />
-              Settings
-            </TabsTrigger>
-          </TabsList>
+          <Tabs defaultValue="analytics" className="space-y-6">
+            <TabsList className="grid w-full grid-cols-5 lg:w-auto lg:grid-cols-5">
+              <TabsTrigger value="analytics" className="flex items-center gap-2">
+                <BarChart3 className="w-4 h-4" />
+                Analytics
+              </TabsTrigger>
+              <TabsTrigger value="users" className="flex items-center gap-2">
+                <Users className="w-4 h-4" />
+                Users
+              </TabsTrigger>
+              <TabsTrigger value="approval" className="flex items-center gap-2">
+                <CheckCircle className="w-4 h-4" />
+                Listings
+              </TabsTrigger>
+              <TabsTrigger value="moderation" className="flex items-center gap-2">
+                <Flag className="w-4 h-4" />
+                Reports
+              </TabsTrigger>
+              <TabsTrigger value="settings" className="flex items-center gap-2">
+                <Settings className="w-4 h-4" />
+                Settings
+              </TabsTrigger>
+            </TabsList>
 
-          <TabsContent value="analytics">
-            <AdminAnalytics />
-          </TabsContent>
+            <TabsContent value="analytics">
+              <AdminAnalytics />
+            </TabsContent>
 
-          <TabsContent value="users">
-            <AdminUserManagement adminRole={adminRole} />
-          </TabsContent>
-          
-          <TabsContent value="approval">
-            <div className="space-y-6">
-              <div className="flex justify-between items-center">
-                <h2 className="text-2xl font-bold">Listing Management</h2>
-                <AdminBulkUpload />
+            <TabsContent value="users">
+              <AdminUserManagement adminRole={adminRole} />
+            </TabsContent>
+            
+            <TabsContent value="approval">
+              <div className="space-y-6">
+                <div className="flex justify-between items-center">
+                  <h2 className="text-2xl font-bold">Listing Management</h2>
+                  <AdminBulkUpload />
+                </div>
+                <AdminListingApproval />
               </div>
-              <AdminListingApproval />
-            </div>
-          </TabsContent>
-          
-          <TabsContent value="moderation">
-            <AdminListingModeration />
-          </TabsContent>
+            </TabsContent>
+            
+            <TabsContent value="moderation">
+              <AdminListingModeration />
+            </TabsContent>
 
-          <TabsContent value="settings">
-            <AdminSettings adminRole={adminRole} />
-          </TabsContent>
-        </Tabs>
+            <TabsContent value="settings">
+              <AdminSettings adminRole={adminRole} />
+            </TabsContent>
+          </Tabs>
+        </div>
       </div>
-    </div>
+      
+      <Footer />
+    </>
   );
 };
 
