@@ -43,10 +43,10 @@ export const HeroSection = ({ onPostItem, onBrowseItems }: HeroSectionProps) => 
   ];
 
   return (
-    <section className="relative overflow-hidden bg-gradient-hero">
+    <section className="relative overflow-hidden bg-gradient-to-br from-background via-background to-primary/5">
       {/* Background Pattern */}
       <div className="absolute inset-0 opacity-5">
-        <div className="absolute inset-0 bg-gradient-ghana"></div>
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-primary/10"></div>
       </div>
       
       <div className="container mx-auto px-4 py-16 lg:py-24 relative z-10">
@@ -113,7 +113,7 @@ export const HeroSection = ({ onPostItem, onBrowseItems }: HeroSectionProps) => 
             return (
               <Card 
                 key={stat.label}
-                className={`p-8 text-center bg-gradient-card border-0 shadow-elegant hover:shadow-ghana transition-all duration-500 hover:-translate-y-2 group ${
+                className={`p-8 text-center bg-card border border-primary/10 shadow-elegant hover:shadow-primary/20 transition-all duration-500 hover:-translate-y-2 group ${
                   animateStats ? 'animate-fade-in' : 'opacity-0'
                 }`}
                 style={{ animationDelay: `${index * 150 + 800}ms` }}
@@ -139,13 +139,13 @@ export const HeroSection = ({ onPostItem, onBrowseItems }: HeroSectionProps) => 
             return (
               <Card 
                 key={feature.title}
-                className={`p-10 bg-gradient-card border border-border/20 shadow-elegant hover:shadow-gold transition-all duration-500 hover:-translate-y-3 group animate-fade-in relative overflow-hidden`}
+                className={`p-10 bg-card border border-primary/10 shadow-elegant hover:shadow-primary/20 transition-all duration-500 hover:-translate-y-3 group animate-fade-in relative overflow-hidden`}
                 style={{ animationDelay: `${index * 200 + 1200}ms` }}
               >
-                <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-ghana opacity-10 rounded-full transform translate-x-6 -translate-y-6"></div>
+                <div className="absolute top-0 right-0 w-20 h-20 bg-primary/10 rounded-full transform translate-x-6 -translate-y-6"></div>
                 <div className="relative z-10">
                   <div className="flex items-center mb-6">
-                    <div className="p-4 rounded-2xl bg-gradient-ghana/10 group-hover:bg-gradient-ghana/20 transition-colors">
+                    <div className="p-4 rounded-2xl bg-primary/10 group-hover:bg-primary/20 transition-colors">
                       <IconComponent className="h-8 w-8 text-primary" />
                     </div>
                   </div>
@@ -163,8 +163,8 @@ export const HeroSection = ({ onPostItem, onBrowseItems }: HeroSectionProps) => 
       </div>
       
       {/* Floating Elements */}
-      <div className="absolute top-20 left-10 w-20 h-20 bg-secondary/10 rounded-full animate-bounce-slow"></div>
-      <div className="absolute bottom-20 right-10 w-16 h-16 bg-accent/10 rounded-full animate-bounce-slow" style={{ animationDelay: '1s' }}></div>
+      <div className="absolute top-20 left-10 w-20 h-20 bg-primary/10 rounded-full animate-bounce-slow"></div>
+      <div className="absolute bottom-20 right-10 w-16 h-16 bg-primary/10 rounded-full animate-bounce-slow" style={{ animationDelay: '1s' }}></div>
       <div className="absolute top-1/2 left-5 w-12 h-12 bg-primary/10 rounded-full animate-bounce-slow" style={{ animationDelay: '2s' }}></div>
     </section>
   );
