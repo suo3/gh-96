@@ -18,27 +18,27 @@ export const HeroSection = ({ onPostItem, onBrowseItems }: HeroSectionProps) => 
   }, []);
 
   const stats = [
-    { number: "50K+", label: "Active Users", icon: Users },
+    { number: "50K+", label: "Active Traders", icon: Users },
     { number: "200K+", label: "Items Swapped", icon: Heart },
     { number: "16", label: "Regions Covered", icon: MapPin },
-    { number: "4.8", label: "User Rating", icon: Star }
+    { number: "4.9", label: "User Rating", icon: Star }
   ];
 
   const features = [
     {
       icon: Smartphone,
-      title: "Mobile Money Integration",
-      description: "MTN Mobile Money & Vodafone Cash supported"
+      title: "Mobile Money Ready",
+      description: "MTN MoMo, Vodafone Cash & AirtelTigo Money supported"
     },
     {
       icon: Shield,
-      title: "Safe & Secure",
-      description: "Verified users and secure transactions"
+      title: "Trusted & Secure",
+      description: "Verified profiles with secure peer-to-peer trading"
     },
     {
       icon: Users,
-      title: "Local Community",
-      description: "Connect with neighbors across Ghana"
+      title: "Ghana Community",
+      description: "Connect locally from Accra to Kumasi and beyond"
     }
   ];
 
@@ -51,63 +51,80 @@ export const HeroSection = ({ onPostItem, onBrowseItems }: HeroSectionProps) => 
       
       <div className="container mx-auto px-4 py-16 lg:py-24 relative z-10">
         {/* Main Hero Content */}
-        <div className="text-center max-w-4xl mx-auto mb-16">
+        <div className="text-center max-w-5xl mx-auto mb-20">
           <Badge 
             variant="secondary" 
-            className="mb-6 px-4 py-2 text-sm font-medium shadow-gold animate-fade-in"
+            className="mb-8 px-6 py-3 text-base font-medium shadow-gold animate-fade-in bg-secondary/20 border border-secondary/30"
           >
-            🇬🇭 Ghana's #1 Marketplace
+            🇬🇭 Ghana's Premier Trading Platform
           </Badge>
           
-          <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 animate-slide-up">
-            <span className="text-gradient-ghana">Swap, Trade & </span>
-            <br />
-            <span className="text-foreground">Connect Locally</span>
+          <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold mb-8 animate-slide-up leading-tight">
+            <span className="text-gradient-ghana block mb-2">Trade Smart,</span>
+            <span className="text-gradient-ghana block mb-2">Live Local</span>
+            <span className="text-foreground block text-4xl md:text-5xl lg:text-6xl">in Ghana</span>
           </h1>
           
-          <p className="text-lg md:text-xl text-muted-foreground mb-8 max-w-2xl mx-auto animate-fade-in delay-300">
-            Ghana's premier marketplace for sustainable trading. Connect with your community, 
-            swap items safely, and support local commerce with mobile money payments.
+          <p className="text-xl md:text-2xl text-muted-foreground mb-10 max-w-3xl mx-auto animate-fade-in delay-300 leading-relaxed">
+            Join thousands of Ghanaians trading everything from electronics to fashion. 
+            Safe, local, and powered by mobile money for seamless transactions.
           </p>
           
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center animate-fade-in delay-500">
+          <div className="flex flex-col sm:flex-row gap-6 justify-center items-center animate-fade-in delay-500">
             <Button 
               size="lg" 
               onClick={onPostItem}
-              className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-ghana px-8 py-4 text-lg font-semibold transition-all duration-300 hover:scale-105"
+              className="bg-gradient-ghana hover:opacity-90 text-white shadow-ghana px-10 py-5 text-xl font-bold transition-all duration-300 hover:scale-105 hover:shadow-gold border-0"
             >
-              Post Your Item
-              <ArrowRight className="ml-2 h-5 w-5" />
+              Start Trading Now
+              <ArrowRight className="ml-3 h-6 w-6" />
             </Button>
             
             <Button 
               variant="outline" 
               size="lg"
               onClick={onBrowseItems}
-              className="border-primary text-primary hover:bg-primary hover:text-primary-foreground px-8 py-4 text-lg font-semibold transition-all duration-300 hover:scale-105"
+              className="border-2 border-primary/30 text-primary hover:bg-primary/10 hover:border-primary bg-background/80 backdrop-blur-sm px-10 py-5 text-xl font-bold transition-all duration-300 hover:scale-105"
             >
-              Browse Items
+              Explore Marketplace
             </Button>
+          </div>
+          
+          <div className="mt-8 flex flex-wrap justify-center gap-6 text-sm text-muted-foreground animate-fade-in delay-700">
+            <span className="flex items-center gap-2">
+              <Shield className="h-4 w-4 text-primary" />
+              100% Secure Trading
+            </span>
+            <span className="flex items-center gap-2">
+              <Smartphone className="h-4 w-4 text-primary" />
+              Mobile Money Ready
+            </span>
+            <span className="flex items-center gap-2">
+              <Users className="h-4 w-4 text-primary" />
+              50K+ Active Users
+            </span>
           </div>
         </div>
 
         {/* Stats Section */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-16">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 mb-20">
           {stats.map((stat, index) => {
             const IconComponent = stat.icon;
             return (
               <Card 
                 key={stat.label}
-                className={`p-6 text-center bg-gradient-card border-0 shadow-elegant hover:shadow-ghana transition-all duration-300 hover:-translate-y-1 ${
+                className={`p-8 text-center bg-gradient-card border-0 shadow-elegant hover:shadow-ghana transition-all duration-500 hover:-translate-y-2 group ${
                   animateStats ? 'animate-fade-in' : 'opacity-0'
                 }`}
-                style={{ animationDelay: `${index * 100 + 800}ms` }}
+                style={{ animationDelay: `${index * 150 + 800}ms` }}
               >
-                <IconComponent className="h-8 w-8 text-primary mx-auto mb-3" />
-                <div className="text-2xl md:text-3xl font-bold text-foreground mb-1">
+                <div className="p-4 rounded-2xl bg-primary/10 group-hover:bg-primary/20 transition-colors mx-auto mb-4 w-fit">
+                  <IconComponent className="h-10 w-10 text-primary" />
+                </div>
+                <div className="text-3xl md:text-4xl font-bold text-foreground mb-2 group-hover:text-primary transition-colors">
                   {stat.number}
                 </div>
-                <div className="text-sm text-muted-foreground font-medium">
+                <div className="text-base text-muted-foreground font-semibold">
                   {stat.label}
                 </div>
               </Card>
@@ -116,26 +133,29 @@ export const HeroSection = ({ onPostItem, onBrowseItems }: HeroSectionProps) => 
         </div>
 
         {/* Features Section */}
-        <div className="grid md:grid-cols-3 gap-8">
+        <div className="grid md:grid-cols-3 gap-10">
           {features.map((feature, index) => {
             const IconComponent = feature.icon;
             return (
               <Card 
                 key={feature.title}
-                className={`p-8 bg-gradient-card border-0 shadow-elegant hover:shadow-gold transition-all duration-500 hover:-translate-y-2 group animate-fade-in`}
+                className={`p-10 bg-gradient-card border border-border/20 shadow-elegant hover:shadow-gold transition-all duration-500 hover:-translate-y-3 group animate-fade-in relative overflow-hidden`}
                 style={{ animationDelay: `${index * 200 + 1200}ms` }}
               >
-                <div className="flex items-center mb-4">
-                  <div className="p-3 rounded-xl bg-secondary/20 group-hover:bg-secondary/30 transition-colors">
-                    <IconComponent className="h-6 w-6 text-secondary" />
+                <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-ghana opacity-10 rounded-full transform translate-x-6 -translate-y-6"></div>
+                <div className="relative z-10">
+                  <div className="flex items-center mb-6">
+                    <div className="p-4 rounded-2xl bg-gradient-ghana/10 group-hover:bg-gradient-ghana/20 transition-colors">
+                      <IconComponent className="h-8 w-8 text-primary" />
+                    </div>
                   </div>
+                  <h3 className="text-2xl font-bold text-foreground mb-4 group-hover:text-primary transition-colors">
+                    {feature.title}
+                  </h3>
+                  <p className="text-muted-foreground leading-relaxed text-lg">
+                    {feature.description}
+                  </p>
                 </div>
-                <h3 className="text-xl font-bold text-foreground mb-3">
-                  {feature.title}
-                </h3>
-                <p className="text-muted-foreground leading-relaxed">
-                  {feature.description}
-                </p>
               </Card>
             );
           })}
