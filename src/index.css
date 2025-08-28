@@ -16,17 +16,17 @@
     --popover: 0 0% 100%;
     --popover-foreground: 0 0% 10%;
 
-    /* Ghana flag colors adapted for UI */
-    --primary: 0 85% 55%; /* Rich red from Ghana flag */
+    /* Updated color palette with green as primary */
+    --primary: 140 65% 45%; /* Green as primary color */
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 45 95% 50%; /* Vibrant gold from Ghana flag */
-    --secondary-foreground: 0 0% 10%;
+    --secondary: 140 30% 90%; /* Light green for secondary */
+    --secondary-foreground: 140 65% 25%;
 
     --muted: 40 30% 96%;
     --muted-foreground: 0 0% 45%;
 
-    --accent: 140 65% 45%; /* Green from Ghana flag */
+    --accent: 140 50% 60%; /* Lighter green for accent */
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84% 60%;
@@ -34,29 +34,29 @@
 
     --border: 40 20% 88%;
     --input: 40 20% 95%;
-    --ring: 0 85% 55%;
+    --ring: 140 65% 45%;
 
     --radius: 0.75rem;
 
-    /* Ghana-themed gradients */
-    --gradient-ghana: linear-gradient(135deg, hsl(0 85% 55%), hsl(45 95% 50%), hsl(140 65% 45%));
-    --gradient-hero: linear-gradient(135deg, hsl(0 85% 55% / 0.1), hsl(45 95% 50% / 0.1));
-    --gradient-card: linear-gradient(180deg, hsl(0 0% 100%), hsl(40 50% 98%));
+    /* Green-themed gradients */
+    --gradient-ghana: linear-gradient(135deg, hsl(140 65% 45%), hsl(140 50% 60%), hsl(140 30% 70%));
+    --gradient-hero: linear-gradient(135deg, hsl(140 65% 45% / 0.1), hsl(140 50% 60% / 0.1));
+    --gradient-card: linear-gradient(180deg, hsl(0 0% 100%), hsl(140 20% 98%));
 
-    /* Shadows with Ghana colors */
-    --shadow-ghana: 0 10px 30px -10px hsl(0 85% 55% / 0.3);
-    --shadow-gold: 0 5px 20px -5px hsl(45 95% 50% / 0.4);
+    /* Shadows with green colors */
+    --shadow-ghana: 0 10px 30px -10px hsl(140 65% 45% / 0.3);
+    --shadow-gold: 0 5px 20px -5px hsl(140 50% 60% / 0.4);
     --shadow-elegant: 0 20px 50px -10px hsl(0 0% 0% / 0.1);
 
     /* Sidebar styling */
     --sidebar-background: 0 0% 99%;
     --sidebar-foreground: 0 0% 20%;
-    --sidebar-primary: 0 85% 55%;
+    --sidebar-primary: 140 65% 45%;
     --sidebar-primary-foreground: 0 0% 98%;
     --sidebar-accent: 40 30% 96%;
     --sidebar-accent-foreground: 0 0% 10%;
     --sidebar-border: 40 20% 90%;
-    --sidebar-ring: 0 85% 55%;
+    --sidebar-ring: 140 65% 45%;
   }
 
   .dark {
@@ -69,16 +69,16 @@
     --popover: 0 0% 12%;
     --popover-foreground: 40 50% 95%;
 
-    --primary: 0 80% 60%; /* Softer red for dark mode */
+    --primary: 140 55% 55%; /* Green for dark mode */
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 45 85% 55%; /* Muted gold for dark mode */
-    --secondary-foreground: 0 0% 10%;
+    --secondary: 140 25% 25%; /* Dark green for secondary */
+    --secondary-foreground: 140 30% 85%;
 
     --muted: 0 0% 15%;
     --muted-foreground: 40 20% 65%;
 
-    --accent: 140 60% 50%; /* Adjusted green for dark mode */
+    --accent: 140 50% 60%; /* Lighter green for accent */
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 75% 55%;
@@ -86,27 +86,27 @@
 
     --border: 0 0% 20%;
     --input: 0 0% 18%;
-    --ring: 0 80% 60%;
+    --ring: 140 55% 55%;
 
     /* Dark mode gradients */
-    --gradient-ghana: linear-gradient(135deg, hsl(0 80% 60%), hsl(45 85% 55%), hsl(140 60% 50%));
-    --gradient-hero: linear-gradient(135deg, hsl(0 80% 60% / 0.2), hsl(45 85% 55% / 0.2));
-    --gradient-card: linear-gradient(180deg, hsl(0 0% 12%), hsl(0 0% 15%));
+    --gradient-ghana: linear-gradient(135deg, hsl(140 55% 55%), hsl(140 50% 60%), hsl(140 45% 65%));
+    --gradient-hero: linear-gradient(135deg, hsl(140 55% 55% / 0.2), hsl(140 50% 60% / 0.2));
+    --gradient-card: linear-gradient(180deg, hsl(0 0% 12%), hsl(140 10% 15%));
 
     /* Dark shadows */
-    --shadow-ghana: 0 10px 30px -10px hsl(0 80% 60% / 0.5);
-    --shadow-gold: 0 5px 20px -5px hsl(45 85% 55% / 0.6);
+    --shadow-ghana: 0 10px 30px -10px hsl(140 55% 55% / 0.5);
+    --shadow-gold: 0 5px 20px -5px hsl(140 50% 60% / 0.6);
     --shadow-elegant: 0 20px 50px -10px hsl(0 0% 0% / 0.8);
 
     /* Dark sidebar */
     --sidebar-background: 0 0% 10%;
     --sidebar-foreground: 40 30% 85%;
-    --sidebar-primary: 0 80% 60%;
+    --sidebar-primary: 140 55% 55%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 0 0% 15%;
     --sidebar-accent-foreground: 40 30% 85%;
     --sidebar-border: 0 0% 20%;
-    --sidebar-ring: 0 80% 60%;
+    --sidebar-ring: 140 55% 55%;
   }
 }
 
