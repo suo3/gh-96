@@ -21,6 +21,8 @@ import Favorites from "./pages/Favorites";
 import About from "./pages/About";
 import Privacy from "./pages/Privacy";
 import Trademark from "./pages/Trademark";
+import Categories from "./pages/Categories";
+import Category from "./pages/Category";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -74,6 +76,8 @@ const App = () => {
               <Route path="/admin" element={<Admin />} />
               <Route path="/item/:id" element={<ItemDetail />} />
               <Route path="/favorites" element={<Favorites />} />
+              <Route path="/categories" element={<Categories />} />
+              <Route path="/category/:categorySlug" element={<Category />} />
               <Route path="/about" element={<About />} />
               <Route path="/privacy" element={<Privacy />} />
               <Route path="/trademark" element={<Trademark />} />

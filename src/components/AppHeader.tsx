@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { MapPin, Plus, Bell, User, Shield, Coins, Heart } from "lucide-react";
+import { MapPin, Plus, Bell, User, Shield, Coins, Heart, Grid3X3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -15,7 +15,7 @@ import { AuthButton } from "./AuthButton";
 import { LocationInput } from "./LocationInput";
 import { useAuthStore } from "@/stores/authStore";
 import { useMessageStore } from "@/stores/messageStore";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 
@@ -78,17 +78,35 @@ export const AppHeader = ({ userLocation, onLocationDetect, onPostItem, onLogoCl
       <div className="container mx-auto px-4 py-3">
         <div className="flex items-center justify-between">
           {/* Logo */}
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-8">
             <button 
               onClick={onLogoClick}
               className="text-2xl font-bold text-emerald-600 hover:text-emerald-700 transition-colors cursor-pointer"
             >
               SwapBoard
             </button>
+            
+            {/* Navigation Links - Desktop */}
+            <div className="hidden md:flex items-center space-x-6">
+              <Link 
+                to="/categories" 
+                className="text-gray-600 hover:text-emerald-600 transition-colors font-medium flex items-center gap-2"
+              >
+                <Grid3X3 className="h-4 w-4" />
+                Categories
+              </Link>
+              <Link 
+                to="/favorites" 
+                className="text-gray-600 hover:text-emerald-600 transition-colors font-medium flex items-center gap-2"
+              >
+                <Heart className="h-4 w-4" />
+                Favorites
+              </Link>
+            </div>
           </div>
 
           {/* Location */}
-          <div className="hidden md:flex items-center space-x-2 text-sm text-gray-600">
+          <div className="hidden lg:flex items-center space-x-2 text-sm text-gray-600">
             <MapPin className="w-4 h-4" />
             {user?.location ? (
               <span className="font-medium">{user.location}</span>
@@ -174,6 +192,12 @@ export const AppHeader = ({ userLocation, onLocationDetect, onPostItem, onLogoCl
                       </div>
                     </div>
                     <DropdownMenuSeparator />
+                    <DropdownMenuItem asChild>
+                      <Link to="/categories" className="flex items-center">
+                        <Grid3X3 className="mr-2 h-4 w-4" />
+                        Categories
+                      </Link>
+                    </DropdownMenuItem>
                     <DropdownMenuItem onClick={handleProfile}>
                       <User className="mr-2 h-4 w-4" />
                       Profile
