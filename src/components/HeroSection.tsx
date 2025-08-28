@@ -54,14 +54,14 @@ export const HeroSection = ({ onPostItem, onBrowseItems }: HeroSectionProps) => 
         <div className="text-center max-w-5xl mx-auto mb-20">
           <Badge 
             variant="secondary" 
-            className="mb-8 px-6 py-3 text-base font-medium shadow-gold animate-fade-in bg-secondary/20 border border-secondary/30"
+            className="mb-8 px-6 py-3 text-base font-medium animate-fade-in bg-primary/10 border border-primary/20 text-primary"
           >
             🇬🇭 Ghana's Premier Trading Platform
           </Badge>
           
           <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold mb-8 animate-slide-up leading-tight">
-            <span className="text-gradient-ghana block mb-2">Trade Smart,</span>
-            <span className="text-gradient-ghana block mb-2">Live Local</span>
+            <span className="text-primary block mb-2">Trade Smart,</span>
+            <span className="text-primary block mb-2">Live Local</span>
             <span className="text-foreground block text-4xl md:text-5xl lg:text-6xl">in Ghana</span>
           </h1>
           
