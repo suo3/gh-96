@@ -74,7 +74,7 @@ export const HeroSection = ({ onPostItem, onBrowseItems }: HeroSectionProps) => 
             <Button 
               size="lg" 
               onClick={onPostItem}
-              className="bg-gradient-ghana hover:opacity-90 text-white shadow-ghana px-10 py-5 text-xl font-bold transition-all duration-300 hover:scale-105 hover:shadow-gold border-0"
+              className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-elegant px-10 py-5 text-xl font-bold transition-all duration-300 hover:scale-105 hover:shadow-gold border-0"
             >
               Start Trading Now
               <ArrowRight className="ml-3 h-6 w-6" />
