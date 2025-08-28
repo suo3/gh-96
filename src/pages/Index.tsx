@@ -9,6 +9,7 @@ import { LoginDialog } from "@/components/LoginDialog";
 import { LocationPermissionPrompt } from "@/components/LocationPermissionPrompt";
 import { PlatformAnnouncement } from "@/components/PlatformAnnouncement";
 import { MaintenanceMode } from "@/components/MaintenanceMode";
+import { Footer } from "@/components/Footer";
 import { useIndexLogic } from "@/hooks/useIndexLogic";
 import { usePlatformSettings } from "@/hooks/usePlatformSettings";
 
@@ -135,6 +136,9 @@ const Index = () => {
         open={showLoginDialog}
         onOpenChange={setShowLoginDialog}
       />
+      
+      {/* Footer */}
+      <Footer />
     </div>
   );
 };

@@ -18,6 +18,9 @@ import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
 import ItemDetail from "./pages/ItemDetail";
 import Favorites from "./pages/Favorites";
+import About from "./pages/About";
+import Privacy from "./pages/Privacy";
+import Trademark from "./pages/Trademark";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -71,6 +74,9 @@ const App = () => {
               <Route path="/admin" element={<Admin />} />
               <Route path="/item/:id" element={<ItemDetail />} />
               <Route path="/favorites" element={<Favorites />} />
+              <Route path="/about" element={<About />} />
+              <Route path="/privacy" element={<Privacy />} />
+              <Route path="/trademark" element={<Trademark />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>
