@@ -2,6 +2,7 @@ import { Helmet } from "react-helmet";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Copyright, Shield, AlertTriangle, Scale } from "lucide-react";
+import { Footer } from "@/components/Footer";
 
 export default function Trademark() {
   const trademarks = [
@@ -175,6 +176,7 @@ export default function Trademark() {
           </Card>
         </div>
       </div>
+      <Footer />
     </>
   );
 }

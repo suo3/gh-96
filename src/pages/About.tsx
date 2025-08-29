@@ -2,6 +2,7 @@ import { Helmet } from "react-helmet";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Users, Target, Heart, Shield } from "lucide-react";
+import { Footer } from "@/components/Footer";
 
 export default function About() {
   const values = [
@@ -130,6 +131,7 @@ export default function About() {
           </Card>
         </div>
       </div>
+      <Footer />
     </>
   );
 }

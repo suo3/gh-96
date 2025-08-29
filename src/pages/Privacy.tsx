@@ -2,6 +2,7 @@ import { Helmet } from "react-helmet";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Shield, Eye, Lock, Users } from "lucide-react";
+import { Footer } from "@/components/Footer";
 
 export default function Privacy() {
   const sections = [
@@ -157,6 +158,7 @@ export default function Privacy() {
           </Card>
         </div>
       </div>
+      <Footer />
     </>
   );
 }
