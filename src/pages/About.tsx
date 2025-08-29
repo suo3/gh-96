@@ -1,10 +1,13 @@
 import { Helmet } from "react-helmet";
+import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Users, Target, Heart, Shield } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Users, Target, Heart, Shield, ArrowLeft } from "lucide-react";
 import { Footer } from "@/components/Footer";
 
 export default function About() {
+  const navigate = useNavigate();
   const values = [
     {
       icon: Users,
@@ -40,6 +43,18 @@ export default function About() {
       
       <div className="min-h-screen bg-background">
         <div className="container mx-auto px-4 py-16">
+          {/* Back Button */}
+          <div className="mb-8">
+            <Button 
+              variant="ghost" 
+              onClick={() => navigate(-1)}
+              className="gap-2 hover:bg-primary/10"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Back
+            </Button>
+          </div>
+          
           {/* Hero Section */}
           <div className="text-center max-w-4xl mx-auto mb-16">
             <Badge variant="secondary" className="mb-6 bg-primary/10 text-primary">
