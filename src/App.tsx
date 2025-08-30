@@ -23,6 +23,10 @@ import Privacy from "./pages/Privacy";
 import Trademark from "./pages/Trademark";
 import Categories from "./pages/Categories";
 import Category from "./pages/Category";
+import UserProfile from "./pages/UserProfile";
+import Subscription from "./pages/Subscription";
+import { PaymentSuccess } from "./pages/PaymentSuccess";
+import { PaymentCancelled } from "./pages/PaymentCancelled";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -78,6 +82,10 @@ const App = () => {
               <Route path="/favorites" element={<Favorites />} />
               <Route path="/categories" element={<Categories />} />
               <Route path="/category/:categorySlug" element={<Category />} />
+              <Route path="/user/:userId" element={<UserProfile />} />
+              <Route path="/subscription" element={<Subscription />} />
+              <Route path="/payment-success" element={<PaymentSuccess />} />
+              <Route path="/payment-cancelled" element={<PaymentCancelled />} />
               <Route path="/about" element={<About />} />
               <Route path="/privacy" element={<Privacy />} />
               <Route path="/trademark" element={<Trademark />} />

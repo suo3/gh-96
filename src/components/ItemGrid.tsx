@@ -224,9 +224,17 @@ export const ItemGrid = ({ items, onItemLike }: ItemGridProps) => {
                     <div className="w-6 h-6 bg-gradient-to-br from-emerald-400 to-teal-400 rounded-full flex items-center justify-center text-white font-semibold text-xs mr-2">
                       {getUserAvatar(item)}
                     </div>
-                    <div className="text-sm text-gray-900">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (item.user_id) {
+                          navigate(`/user/${item.user_id}`);
+                        }
+                      }}
+                      className="text-sm text-gray-900 hover:text-primary transition-colors"
+                    >
                       {getUserDisplayName(item)}
-                    </div>
+                    </button>
                   </div>
                   <div className="flex gap-2">
                     <Button

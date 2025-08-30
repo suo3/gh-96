@@ -212,9 +212,18 @@ export const ItemCard = ({ item, onItemClick, onItemLike }: ItemCardProps) => {
                   {getUserAvatar(item)}
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-sm font-medium text-gray-700">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      e.preventDefault();
+                      if (item.user_id) {
+                        navigate(`/user/${item.user_id}`);
+                      }
+                    }}
+                    className="text-sm font-medium text-gray-700 hover:text-primary transition-colors"
+                  >
                     {getUserDisplayName(item)}
-                  </span>
+                  </button>
                   {isPopularSeller(item) && (
                     <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 border-yellow-200 text-xs px-1.5 py-0.5">
                       <Crown className="w-3 h-3 mr-1" />

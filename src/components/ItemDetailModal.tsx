@@ -9,6 +9,7 @@ import { UserRatingDisplay } from "./UserRatingDisplay";
 import { ReportListingDialog } from "./ReportListingDialog";
 import { UserRating } from "./UserRating";
 import { useAuthStore } from "@/stores/authStore";
+import { useNavigate } from "react-router-dom";
 
 interface ItemDetailModalProps {
   item: Listing | null;
@@ -28,6 +29,7 @@ export const ItemDetailModal = ({
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [showRating, setShowRating] = useState(false);
   const { user } = useAuthStore();
+  const navigate = useNavigate();
 
   useEffect(() => {
     setCurrentImageIndex(0);
@@ -224,9 +226,17 @@ export const ItemDetailModal = ({
                     {getUserAvatar(item)}
                   </div>
                   <div>
-                    <p className="font-medium text-gray-900">
+                    <button
+                      onClick={() => {
+                        if (item.user_id) {
+                          onClose();
+                          navigate(`/user/${item.user_id}`);
+                        }
+                      }}
+                      className="font-medium text-gray-900 hover:text-primary transition-colors text-left"
+                    >
                       {getUserDisplayName(item)}
-                    </p>
+                    </button>
                     <p className="text-sm text-gray-600">Item Owner</p>
                   </div>
                 </div>
