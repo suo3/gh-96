@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Footer } from "@/components/Footer";
 import { Home, ArrowLeft } from "lucide-react";
+import { AppHeader } from "@/components/AppHeader";
 
 const NotFound = () => {
   const navigate = useNavigate();
@@ -15,7 +16,13 @@ const NotFound = () => {
 
   return (
     <>
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-50 via-white to-teal-50 p-4">
+      <AppHeader 
+        userLocation={null}
+        onLocationDetect={() => {}}
+        onPostItem={() => navigate('/post-item')}
+        onLogoClick={() => navigate('/')}
+      />
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-50 via-white to-teal-50 p-4 pt-24">
         <Card className="max-w-md w-full">
           <CardHeader className="text-center">
             <div className="mx-auto mb-4 w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center">

@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { CheckCircle, Coins } from 'lucide-react';
 import { useAuthStore } from '@/stores/authStore';
 import { useToast } from '@/hooks/use-toast';
+import { AppHeader } from '@/components/AppHeader';
 
 export const PaymentSuccess = () => {
   const [searchParams] = useSearchParams();
@@ -28,7 +29,14 @@ export const PaymentSuccess = () => {
   }, [searchParams, initialize, toast]);
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-background">
+      <AppHeader 
+        userLocation={null}
+        onLocationDetect={() => {}}
+        onPostItem={() => navigate('/post-item')}
+        onLogoClick={() => navigate('/')}
+      />
+      <div className="flex items-center justify-center p-4 pt-24">
       <Card className="max-w-md w-full">
         <CardHeader className="text-center">
           <div className="mx-auto mb-4 w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
@@ -63,6 +71,7 @@ export const PaymentSuccess = () => {
           </div>
         </CardContent>
       </Card>
+      </div>
     </div>
   );
 };

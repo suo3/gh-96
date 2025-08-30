@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Copyright, Shield, AlertTriangle, Scale, ArrowLeft } from "lucide-react";
 import { Footer } from "@/components/Footer";
+import { AppHeader } from "@/components/AppHeader";
 
 export default function Trademark() {
   const navigate = useNavigate();
@@ -55,6 +56,12 @@ export default function Trademark() {
       </Helmet>
       
       <div className="min-h-screen bg-background">
+        <AppHeader 
+          userLocation={null}
+          onLocationDetect={() => {}}
+          onPostItem={() => navigate('/post-item')}
+          onLogoClick={() => navigate('/')}
+        />
         <div className="container mx-auto px-4 py-16">
           {/* Back Button */}
           <div className="mb-8">

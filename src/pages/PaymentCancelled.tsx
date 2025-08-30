@@ -3,12 +3,20 @@ import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { XCircle } from 'lucide-react';
+import { AppHeader } from '@/components/AppHeader';
 
 export const PaymentCancelled = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-background">
+      <AppHeader 
+        userLocation={null}
+        onLocationDetect={() => {}}
+        onPostItem={() => navigate('/post-item')}
+        onLogoClick={() => navigate('/')}
+      />
+      <div className="flex items-center justify-center p-4 pt-24">
       <Card className="max-w-md w-full">
         <CardHeader className="text-center">
           <div className="mx-auto mb-4 w-16 h-16 bg-red-100 rounded-full flex items-center justify-center">
@@ -38,6 +46,7 @@ export const PaymentCancelled = () => {
           </div>
         </CardContent>
       </Card>
+      </div>
     </div>
   );
 };
