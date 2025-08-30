@@ -14,6 +14,7 @@ import { AdminAnalytics } from "@/components/admin/AdminAnalytics";
 import { AdminSettings } from "@/components/admin/AdminSettings";
 import { AdminBulkUpload } from "@/components/admin/AdminBulkUpload";
 import { Footer } from "@/components/Footer";
+import { AppHeader } from "@/components/AppHeader";
 
 const Admin = () => {
   const { user, isAuthenticated } = useAuthStore();
@@ -76,6 +77,12 @@ const Admin = () => {
   return (
     <>
       <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50">
+        <AppHeader 
+          userLocation={null}
+          onLocationDetect={() => {}}
+          onPostItem={() => navigate('/post-item')}
+          onLogoClick={() => navigate('/')}
+        />
         <div className="container mx-auto px-4 py-8">
           <div className="mb-8">
             <Button 

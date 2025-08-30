@@ -10,6 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Footer } from "@/components/Footer";
 import { Helmet } from "react-helmet";
 import { generatePageTitle, generateMetaDescription } from "@/constants/seo";
+import { AppHeader } from "@/components/AppHeader";
 
 const Favorites = () => {
   const navigate = useNavigate();
@@ -133,6 +134,12 @@ const Favorites = () => {
       </Helmet>
 
       <div className="min-h-screen bg-background">
+        <AppHeader 
+          userLocation={null}
+          onLocationDetect={() => {}}
+          onPostItem={() => navigate('/post-item')}
+          onLogoClick={() => navigate('/')}
+        />
         <div className="container mx-auto px-4 py-8">
           {/* Header */}
           <div className="flex items-center justify-between mb-8">
