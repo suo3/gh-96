@@ -11,6 +11,7 @@ import { UITestingPanel } from "@/components/UITestingPanel";
 import { Helmet } from "react-helmet";
 import { SEO_CONFIG } from "@/constants/seo";
 import Index from "./pages/Index";
+import Marketplace from "./pages/Marketplace";
 import Messages from "./pages/Messages";
 import Profile from "./pages/Profile";
 import PostItem from "./pages/PostItem";
@@ -74,6 +75,7 @@ const App = () => {
           <BrowserRouter>
             <Routes>
               <Route path="/" element={<Index />} />
+              <Route path="/marketplace" element={<Marketplace />} />
               <Route path="/messages" element={<Messages />} />
               <Route path="/profile" element={<Profile />} />
               <Route path="/post" element={<PostItem />} />

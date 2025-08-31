@@ -147,11 +147,8 @@ export const useIndexLogic = () => {
 
   
   const handleBrowseItems = () => {
-    setHasUserInteracted(true);
-    setShowHeroSection(false);
-    if (displayMode === "swipe" && isMobile) {
-      setDisplayMode("grid");
-    }
+    console.log("Browse items clicked - navigating to marketplace");
+    navigate("/marketplace");
   };
 
   const handleSwipe = async (direction: 'left' | 'right') => {
