@@ -755,6 +755,7 @@ export type Database = {
         Returns: {
           achievements: string[]
           avatar: string
+          bio: string
           city: string
           first_name: string
           id: string
@@ -763,7 +764,7 @@ export type Database = {
           last_name: string
           rating: number
           region: string
-          total_swaps: number
+          total_sales: number
           username: string
         }[]
       }
