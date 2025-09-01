@@ -7,7 +7,7 @@ const Messages = () => {
   const navigate = useNavigate();
 
   const handleBack = () => {
-    navigate("/");
+    navigate(-1);
   };
 
   const handleLogin = () => {

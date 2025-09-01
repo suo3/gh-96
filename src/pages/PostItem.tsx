@@ -12,14 +12,14 @@ const PostItem = () => {
   useEffect(() => {
     // If dialog is closed, navigate back
     if (!isOpen) {
-      navigate("/");
+      navigate(-1);
     }
   }, [isOpen, navigate]);
 
   const handleOpenChange = (open: boolean) => {
     setIsOpen(open);
     if (!open) {
-      navigate("/");
+      navigate(-1);
     }
   };
 
