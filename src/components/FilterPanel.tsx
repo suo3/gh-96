@@ -18,6 +18,7 @@ interface FilterPanelProps {
     location: string;
     radius: number;
     minRating: number;
+    priceRange: [number, number];
   }) => void;
   isVisible: boolean;
   isMobile?: boolean;
@@ -49,13 +50,15 @@ export const FilterPanel = ({ onFilterChange, isVisible, isMobile = false, showS
     searchTerm, setSearchTerm,
     sortBy, setSortBy,
     userLocation, setUserLocation,
-    geocodeLocation
+    geocodeLocation,
+    priceRange, setPriceRange
   } = useListingStore();
   
   const { user } = useAuthStore();
   
   const [selectedRadius, setSelectedRadius] = useState([maxDistance]);
   const [selectedMinRating, setSelectedMinRating] = useState([minRating]);
+  const [selectedPriceRange, setSelectedPriceRange] = useState(priceRange);
   const [categories, setCategories] = useState<Category[]>([]);
   const [conditions, setConditions] = useState<Condition[]>([]);
   const [isLoadingOptions, setIsLoadingOptions] = useState(true);
@@ -135,7 +138,8 @@ export const FilterPanel = ({ onFilterChange, isVisible, isMobile = false, showS
       condition: selectedCondition === "all" ? "" : selectedCondition,
       location: user?.location || "",
       radius: selectedRadius[0],
-      minRating: selectedMinRating[0]
+      minRating: selectedMinRating[0],
+      priceRange: selectedPriceRange
     });
   };
 
@@ -149,12 +153,15 @@ export const FilterPanel = ({ onFilterChange, isVisible, isMobile = false, showS
     setMaxDistance(25);
     setSelectedMinRating([0]);
     setMinRating(0);
+    setSelectedPriceRange([0, 1000]);
+    setPriceRange([0, 1000]);
     onFilterChange({
       category: "",
       condition: "",
       location: user?.location || "",
       radius: 25,
-      minRating: 0
+      minRating: 0,
+      priceRange: [0, 1000]
     });
   };
 
@@ -167,6 +174,12 @@ export const FilterPanel = ({ onFilterChange, isVisible, isMobile = false, showS
   const handleRatingChange = (value: number[]) => {
     setSelectedMinRating(value);
     setMinRating(value[0]);
+    setTimeout(applyFilters, 0);
+  };
+
+  const handlePriceChange = (value: number[]) => {
+    setSelectedPriceRange([value[0], value[1]]);
+    setPriceRange([value[0], value[1]]);
     setTimeout(applyFilters, 0);
   };
 
@@ -290,6 +303,41 @@ export const FilterPanel = ({ onFilterChange, isVisible, isMobile = false, showS
           />
         </div>
 
+        {/* Price Range Filter */}
+        <div className={isMobile ? "mb-6" : "mb-4"}>
+          <label className="text-sm font-medium text-emerald-800 mb-2 block">
+            Price Range: GH₵{selectedPriceRange[0]} - GH₵{selectedPriceRange[1]}
+          </label>
+          <div className="flex items-center space-x-4">
+            <div className="flex-1">
+              <Input
+                type="number"
+                placeholder="Min price"
+                value={selectedPriceRange[0]}
+                onChange={(e) => {
+                  const newMin = Math.max(0, parseInt(e.target.value) || 0);
+                  const newMax = Math.max(newMin, selectedPriceRange[1]);
+                  handlePriceChange([newMin, newMax]);
+                }}
+                className="bg-white/80 backdrop-blur-sm border-emerald-200"
+              />
+            </div>
+            <span className="text-emerald-800">to</span>
+            <div className="flex-1">
+              <Input
+                type="number"
+                placeholder="Max price"
+                value={selectedPriceRange[1]}
+                onChange={(e) => {
+                  const newMax = Math.max(selectedPriceRange[0], parseInt(e.target.value) || 1000);
+                  handlePriceChange([selectedPriceRange[0], newMax]);
+                }}
+                className="bg-white/80 backdrop-blur-sm border-emerald-200"
+              />
+            </div>
+          </div>
+        </div>
+
         {/* Rating Filter */}
         <div className={isMobile ? "mb-6" : "mb-4"}>
           <label className="text-sm font-medium text-emerald-800 mb-2 block">
@@ -340,6 +388,11 @@ export const FilterPanel = ({ onFilterChange, isVisible, isMobile = false, showS
                 Sort: {sortOptions.find(s => s.value === sortBy)?.label}
               </Badge>
             )}
+            {(selectedPriceRange[0] > 0 || selectedPriceRange[1] < 1000) && (
+              <Badge variant="secondary" className="bg-emerald-100 text-emerald-800">
+                GH₵{selectedPriceRange[0]} - GH₵{selectedPriceRange[1]}
+              </Badge>
+            )}
             {minRating > 0 && (
               <Badge variant="secondary" className="bg-emerald-100 text-emerald-800">
                 <Star className="w-3 h-3 mr-1" />
@@ -347,7 +400,7 @@ export const FilterPanel = ({ onFilterChange, isVisible, isMobile = false, showS
               </Badge>
             )}
           </div>
-          {(selectedCategory !== "all" || selectedCondition !== "all" || swapFilter !== "all" || minRating > 0 || searchTerm || sortBy !== "newest") && (
+          {(selectedCategory !== "all" || selectedCondition !== "all" || swapFilter !== "all" || minRating > 0 || searchTerm || sortBy !== "newest" || selectedPriceRange[0] > 0 || selectedPriceRange[1] < 1000) && (
             <Button 
               variant="outline" 
               size={isMobile ? "default" : "sm"} 

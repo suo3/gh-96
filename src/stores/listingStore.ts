@@ -760,6 +760,15 @@ export const useListingStore = create<ListingStore>((set, get) => ({
       console.log(`After distance filter (${state.maxDistance} miles):`, filtered.length);
     }
 
+    // Apply price range filter
+    if (state.priceRange && (state.priceRange[0] > 0 || state.priceRange[1] < 1000)) {
+      filtered = filtered.filter(item => {
+        const itemPrice = item.price || 0;
+        return itemPrice >= state.priceRange[0] && itemPrice <= state.priceRange[1];
+      });
+      console.log(`After price filter (GH₵${state.priceRange[0]} - GH₵${state.priceRange[1]}):`, filtered.length);
+    }
+
     // Apply sorting
     switch (state.sortBy) {
       case 'popular':

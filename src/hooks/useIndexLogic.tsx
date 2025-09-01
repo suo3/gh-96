@@ -277,6 +277,7 @@ export const useIndexLogic = () => {
 
   const handleFilterChange = (filters: any) => {
     console.log('Filters applied:', filters);
+    // The store will automatically handle these filters when they're set
   };
 
   return {
