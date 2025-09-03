@@ -14,14 +14,16 @@ interface ContentControlsProps {
   onDisplayModeChange: (mode: "swipe" | "grid" | "list") => void;
   onToggleFilters: () => void;
   onFilterChange: (filters: any) => void;
+  hideFilterButton?: boolean;
 }
 
-export const ContentControls = ({
-  displayMode,
-  showFilters,
-  onDisplayModeChange,
-  onToggleFilters,
-  onFilterChange
+export const ContentControls = ({ 
+  displayMode, 
+  showFilters, 
+  onDisplayModeChange, 
+  onToggleFilters, 
+  onFilterChange,
+  hideFilterButton = false
 }: ContentControlsProps) => {
   const isMobile = useIsMobile();
   const { searchTerm, setSearchTerm } = useListingStore();
@@ -31,42 +33,44 @@ export const ContentControls = ({
       <div className="flex items-center justify-between mb-4">
         <ViewToggle currentView={displayMode} onViewChange={onDisplayModeChange} />
         
-        {isMobile ? (
-          <Sheet>
-            <SheetTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                className={`${showFilters ? 'bg-emerald-100 text-emerald-600' : ''}`}
-              >
-                <Filter className="w-5 h-5" />
-              </Button>
-            </SheetTrigger>
-            <SheetContent side="bottom" className="h-[80vh] overflow-y-auto">
-              <SheetHeader>
-                <SheetTitle className="text-lg font-semibold text-emerald-800">
-                  Filters
-                </SheetTitle>
-              </SheetHeader>
-              <div className="mt-6">
-                <FilterPanel 
-                  onFilterChange={onFilterChange}
-                  isVisible={true}
-                  isMobile={true}
-                  showSearch={false}
-                />
-              </div>
-            </SheetContent>
-          </Sheet>
-        ) : (
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={onToggleFilters}
-            className={`${showFilters ? 'bg-emerald-100 text-emerald-600' : ''}`}
-          >
-            <Filter className="w-5 h-5" />
-          </Button>
+        {!hideFilterButton && (
+          isMobile ? (
+            <Sheet>
+              <SheetTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className={`${showFilters ? 'bg-emerald-100 text-emerald-600' : ''}`}
+                >
+                  <Filter className="w-5 h-5" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="bottom" className="h-[80vh] overflow-y-auto">
+                <SheetHeader>
+                  <SheetTitle className="text-lg font-semibold text-emerald-800">
+                    Filters
+                  </SheetTitle>
+                </SheetHeader>
+                <div className="mt-6">
+                  <FilterPanel 
+                    onFilterChange={onFilterChange}
+                    isVisible={true}
+                    isMobile={true}
+                    showSearch={false}
+                  />
+                </div>
+              </SheetContent>
+            </Sheet>
+          ) : (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={onToggleFilters}
+              className={`${showFilters ? 'bg-emerald-100 text-emerald-600' : ''}`}
+            >
+              <Filter className="w-5 h-5" />
+            </Button>
+          )
         )}
       </div>
       
