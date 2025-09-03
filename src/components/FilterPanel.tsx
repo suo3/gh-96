@@ -6,7 +6,20 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
-import { MapPin, X, Star, MessageCircle, Navigation } from "lucide-react";
+import { Separator } from "@/components/ui/separator";
+import { 
+  MapPin, 
+  X, 
+  Star, 
+  MessageCircle, 
+  Grid3X3, 
+  Package,
+  DollarSign,
+  Navigation,
+  SlidersHorizontal,
+  Search,
+  ArrowUpDown
+} from "lucide-react";
 import { useListingStore } from "@/stores/listingStore";
 import { useAuthStore } from "@/stores/authStore";
 import { supabase } from "@/integrations/supabase/client";
@@ -186,39 +199,52 @@ export const FilterPanel = ({ onFilterChange, isVisible, isMobile = false, showS
   if (!isVisible) return null;
 
   return (
-    <div className="h-full flex flex-col bg-background border-r">
+    <div className="h-full flex flex-col bg-gradient-to-b from-background to-secondary/20">
       {/* Header */}
-      <div className="p-6 border-b">
-        <h2 className="text-lg font-semibold text-foreground mb-1">Filters</h2>
-        <p className="text-sm text-muted-foreground">Refine your search results</p>
+      <div className="p-6 border-b border-border/50">
+        <div className="flex items-center gap-3 mb-2">
+          <div className="p-2 rounded-lg bg-primary/10">
+            <SlidersHorizontal className="w-5 h-5 text-primary" />
+          </div>
+          <div>
+            <h2 className="text-lg font-semibold text-foreground">Filters</h2>
+            <p className="text-sm text-muted-foreground">Refine your search</p>
+          </div>
+        </div>
       </div>
 
       {/* Content */}
       <div className="flex-1 overflow-y-auto p-6 space-y-6">
         {/* Search Bar */}
         {showSearch && (
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-foreground">Search</label>
+          <div className="space-y-3 animate-fade-in">
+            <div className="flex items-center gap-2">
+              <Search className="w-4 h-4 text-primary" />
+              <label className="text-sm font-medium text-foreground">Search</label>
+            </div>
             <Input
               placeholder="Search items..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full"
+              className="w-full transition-all duration-200 focus:ring-2 focus:ring-primary/20"
             />
           </div>
         )}
 
         {/* Category */}
-        <div className="space-y-2">
-          <label className="text-sm font-medium text-foreground">Category</label>
+        <div className="space-y-3 animate-fade-in">
+          <div className="flex items-center gap-2">
+            <Grid3X3 className="w-4 h-4 text-primary" />
+            <label className="text-sm font-medium text-foreground">Category</label>
+          </div>
           <Select value={selectedCategory} onValueChange={(value) => {
             setSelectedCategory(value);
             setTimeout(applyFilters, 0);
           }} disabled={isLoadingOptions}>
-            <SelectTrigger className="w-full">
+            <SelectTrigger className="w-full transition-all duration-200 hover:border-primary/50">
               <SelectValue placeholder={isLoadingOptions ? "Loading..." : "All Categories"} />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="bg-background border border-border shadow-lg">
               <SelectItem value="all">All Categories</SelectItem>
               {categories.map((category) => (
                 <SelectItem key={category.id} value={category.name}>
@@ -230,16 +256,19 @@ export const FilterPanel = ({ onFilterChange, isVisible, isMobile = false, showS
         </div>
 
         {/* Condition */}
-        <div className="space-y-2">
-          <label className="text-sm font-medium text-foreground">Condition</label>
+        <div className="space-y-3 animate-fade-in">
+          <div className="flex items-center gap-2">
+            <Package className="w-4 h-4 text-primary" />
+            <label className="text-sm font-medium text-foreground">Condition</label>
+          </div>
           <Select value={selectedCondition} onValueChange={(value) => {
             setSelectedCondition(value);
             setTimeout(applyFilters, 0);
           }} disabled={isLoadingOptions}>
-            <SelectTrigger className="w-full">
+            <SelectTrigger className="w-full transition-all duration-200 hover:border-primary/50">
               <SelectValue placeholder={isLoadingOptions ? "Loading..." : "All Conditions"} />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="bg-background border border-border shadow-lg">
               <SelectItem value="all">All Conditions</SelectItem>
               {conditions.map((condition) => (
                 <SelectItem key={condition.id} value={condition.value}>
@@ -251,13 +280,16 @@ export const FilterPanel = ({ onFilterChange, isVisible, isMobile = false, showS
         </div>
 
         {/* Status */}
-        <div className="space-y-2">
-          <label className="text-sm font-medium text-foreground">Availability</label>
+        <div className="space-y-3 animate-fade-in">
+          <div className="flex items-center gap-2">
+            <MessageCircle className="w-4 h-4 text-primary" />
+            <label className="text-sm font-medium text-foreground">Availability</label>
+          </div>
           <Select value={swapFilter} onValueChange={setSwapFilter}>
-            <SelectTrigger className="w-full">
+            <SelectTrigger className="w-full transition-all duration-200 hover:border-primary/50">
               <SelectValue placeholder="All Items" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="bg-background border border-border shadow-lg">
               {swapStatuses.map((status) => (
                 <SelectItem key={status.value} value={status.value}>
                   {status.label}
@@ -268,13 +300,16 @@ export const FilterPanel = ({ onFilterChange, isVisible, isMobile = false, showS
         </div>
 
         {/* Sort */}
-        <div className="space-y-2">
-          <label className="text-sm font-medium text-foreground">Sort by</label>
+        <div className="space-y-3 animate-fade-in">
+          <div className="flex items-center gap-2">
+            <ArrowUpDown className="w-4 h-4 text-primary" />
+            <label className="text-sm font-medium text-foreground">Sort by</label>
+          </div>
           <Select value={sortBy} onValueChange={setSortBy}>
-            <SelectTrigger className="w-full">
+            <SelectTrigger className="w-full transition-all duration-200 hover:border-primary/50">
               <SelectValue placeholder="Newest First" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="bg-background border border-border shadow-lg">
               {sortOptions.map((option) => (
                 <SelectItem key={option.value} value={option.value}>
                   {option.label}
@@ -284,82 +319,123 @@ export const FilterPanel = ({ onFilterChange, isVisible, isMobile = false, showS
           </Select>
         </div>
 
+        <Separator className="my-6" />
+
         {/* Price Range */}
-        <div className="space-y-3">
-          <label className="text-sm font-medium text-foreground">
-            Price Range (GH₵{selectedPriceRange[0]} - GH₵{selectedPriceRange[1]})
-          </label>
-          <div className="grid grid-cols-2 gap-3">
-            <Input
-              type="number"
-              placeholder="Min"
-              value={selectedPriceRange[0]}
-              onChange={(e) => {
-                const newMin = Math.max(0, parseInt(e.target.value) || 0);
-                const newMax = Math.max(newMin, selectedPriceRange[1]);
-                handlePriceChange([newMin, newMax]);
-              }}
-            />
-            <Input
-              type="number"
-              placeholder="Max"
-              value={selectedPriceRange[1]}
-              onChange={(e) => {
-                const newMax = Math.max(selectedPriceRange[0], parseInt(e.target.value) || 1000);
-                handlePriceChange([selectedPriceRange[0], newMax]);
-              }}
-            />
+        <div className="space-y-4 animate-fade-in">
+          <div className="flex items-center gap-2">
+            <DollarSign className="w-4 h-4 text-primary" />
+            <label className="text-sm font-medium text-foreground">
+              Price Range
+            </label>
+          </div>
+          <div className="bg-secondary/30 rounded-lg p-4 space-y-4">
+            <div className="text-center">
+              <span className="text-lg font-semibold text-primary">
+                GH₵{selectedPriceRange[0]} - GH₵{selectedPriceRange[1]}
+              </span>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <Input
+                type="number"
+                placeholder="Min"
+                value={selectedPriceRange[0]}
+                onChange={(e) => {
+                  const newMin = Math.max(0, parseInt(e.target.value) || 0);
+                  const newMax = Math.max(newMin, selectedPriceRange[1]);
+                  handlePriceChange([newMin, newMax]);
+                }}
+                className="transition-all duration-200 focus:ring-2 focus:ring-primary/20"
+              />
+              <Input
+                type="number"
+                placeholder="Max"
+                value={selectedPriceRange[1]}
+                onChange={(e) => {
+                  const newMax = Math.max(selectedPriceRange[0], parseInt(e.target.value) || 1000);
+                  handlePriceChange([selectedPriceRange[0], newMax]);
+                }}
+                className="transition-all duration-200 focus:ring-2 focus:ring-primary/20"
+              />
+            </div>
           </div>
         </div>
 
         {/* Distance */}
-        <div className="space-y-3">
-          <label className="text-sm font-medium text-foreground">
-            Distance ({selectedRadius[0]} miles)
-          </label>
-          <Slider
-            value={selectedRadius}
-            onValueChange={handleDistanceChange}
-            max={100}
-            min={1}
-            step={1}
-            className="w-full"
-          />
-          <div className="flex justify-between text-xs text-muted-foreground">
-            <span>1 mi</span>
-            <span>100 mi</span>
+        <div className="space-y-4 animate-fade-in">
+          <div className="flex items-center gap-2">
+            <Navigation className="w-4 h-4 text-primary" />
+            <label className="text-sm font-medium text-foreground">
+              Distance
+            </label>
+          </div>
+          <div className="bg-secondary/30 rounded-lg p-4 space-y-3">
+            <div className="text-center">
+              <span className="text-lg font-semibold text-primary">
+                {selectedRadius[0]} miles
+              </span>
+            </div>
+            <Slider
+              value={selectedRadius}
+              onValueChange={handleDistanceChange}
+              max={100}
+              min={1}
+              step={1}
+              className="w-full"
+            />
+            <div className="flex justify-between text-xs text-muted-foreground">
+              <span>1 mi</span>
+              <span>100 mi</span>
+            </div>
           </div>
         </div>
 
         {/* Rating */}
-        <div className="space-y-3">
-          <label className="text-sm font-medium text-foreground">
-            Minimum Rating ({selectedMinRating[0]} star{selectedMinRating[0] !== 1 ? 's' : ''})
-          </label>
-          <Slider
-            value={selectedMinRating}
-            onValueChange={handleRatingChange}
-            max={5}
-            min={0}
-            step={1}
-            className="w-full"
-          />
-          <div className="flex justify-between text-xs text-muted-foreground">
-            <span>0 stars</span>
-            <span>5 stars</span>
+        <div className="space-y-4 animate-fade-in">
+          <div className="flex items-center gap-2">
+            <Star className="w-4 h-4 text-primary" />
+            <label className="text-sm font-medium text-foreground">
+              Minimum Rating
+            </label>
+          </div>
+          <div className="bg-secondary/30 rounded-lg p-4 space-y-3">
+            <div className="text-center flex items-center justify-center gap-1">
+              <span className="text-lg font-semibold text-primary">
+                {selectedMinRating[0]}
+              </span>
+              <Star className="w-4 h-4 fill-primary text-primary" />
+              <span className="text-sm text-muted-foreground">+</span>
+            </div>
+            <Slider
+              value={selectedMinRating}
+              onValueChange={handleRatingChange}
+              max={5}
+              min={0}
+              step={1}
+              className="w-full"
+            />
+            <div className="flex justify-between text-xs text-muted-foreground">
+              <span>0 stars</span>
+              <span>5 stars</span>
+            </div>
           </div>
         </div>
 
+        <Separator className="my-6" />
+
         {/* Location */}
-        <div className="space-y-2">
-          <label className="text-sm font-medium text-foreground">Your Location</label>
+        <div className="space-y-3 animate-fade-in">
+          <div className="flex items-center gap-2">
+            <MapPin className="w-4 h-4 text-primary" />
+            <label className="text-sm font-medium text-foreground">Your Location</label>
+          </div>
           <div className="relative">
             <MapPin className="absolute left-3 top-3 w-4 h-4 text-muted-foreground" />
             <Input
               placeholder="Set location in profile"
               value={user?.location || ""}
               readOnly
-              className="pl-10 bg-muted cursor-not-allowed"
+              className="pl-10 bg-muted/50 cursor-not-allowed transition-all duration-200"
               title="Update your location in your profile settings"
             />
           </div>
@@ -367,43 +443,53 @@ export const FilterPanel = ({ onFilterChange, isVisible, isMobile = false, showS
 
         {/* Active Filters */}
         {(selectedCategory !== "all" || selectedCondition !== "all" || swapFilter !== "all" || minRating > 0 || searchTerm || sortBy !== "newest" || selectedPriceRange[0] > 0 || selectedPriceRange[1] < 1000) && (
-          <div className="space-y-3 pt-4 border-t">
-            <label className="text-sm font-medium text-foreground">Active Filters</label>
+          <div className="space-y-4 pt-6 border-t border-border/50 animate-fade-in">
+            <div className="flex items-center gap-2">
+              <div className="p-1 rounded bg-primary/10">
+                <SlidersHorizontal className="w-3 h-3 text-primary" />
+              </div>
+              <label className="text-sm font-medium text-foreground">Active Filters</label>
+            </div>
             <div className="flex flex-wrap gap-2">
               {searchTerm && (
-                <Badge variant="secondary">
-                  Search: "{searchTerm}"
+                <Badge variant="secondary" className="gap-1 animate-scale-in">
+                  <Search className="w-3 h-3" />
+                  "{searchTerm}"
                 </Badge>
               )}
               {selectedCategory && selectedCategory !== "all" && (
-                <Badge variant="secondary">
+                <Badge variant="secondary" className="gap-1 animate-scale-in">
+                  <Grid3X3 className="w-3 h-3" />
                   {categories.find(c => c.name === selectedCategory)?.name || selectedCategory}
                 </Badge>
               )}
               {selectedCondition && selectedCondition !== "all" && (
-                <Badge variant="secondary">
+                <Badge variant="secondary" className="gap-1 animate-scale-in">
+                  <Package className="w-3 h-3" />
                   {conditions.find(c => c.value === selectedCondition)?.name || selectedCondition}
                 </Badge>
               )}
               {swapFilter !== "all" && (
-                <Badge variant="secondary">
-                  <MessageCircle className="w-3 h-3 mr-1" />
+                <Badge variant="secondary" className="gap-1 animate-scale-in">
+                  <MessageCircle className="w-3 h-3" />
                   {swapStatuses.find(s => s.value === swapFilter)?.label}
                 </Badge>
               )}
               {sortBy !== "newest" && (
-                <Badge variant="secondary">
-                  Sort: {sortOptions.find(s => s.value === sortBy)?.label}
+                <Badge variant="secondary" className="gap-1 animate-scale-in">
+                  <ArrowUpDown className="w-3 h-3" />
+                  {sortOptions.find(s => s.value === sortBy)?.label}
                 </Badge>
               )}
               {(selectedPriceRange[0] > 0 || selectedPriceRange[1] < 1000) && (
-                <Badge variant="secondary">
+                <Badge variant="secondary" className="gap-1 animate-scale-in">
+                  <DollarSign className="w-3 h-3" />
                   GH₵{selectedPriceRange[0]} - GH₵{selectedPriceRange[1]}
                 </Badge>
               )}
               {minRating > 0 && (
-                <Badge variant="secondary">
-                  <Star className="w-3 h-3 mr-1" />
+                <Badge variant="secondary" className="gap-1 animate-scale-in">
+                  <Star className="w-3 h-3" />
                   {minRating}+ stars
                 </Badge>
               )}
@@ -412,9 +498,9 @@ export const FilterPanel = ({ onFilterChange, isVisible, isMobile = false, showS
               variant="outline" 
               size="sm" 
               onClick={clearFilters} 
-              className="w-full"
+              className="w-full group hover-scale transition-all duration-200"
             >
-              <X className="w-4 h-4 mr-2" />
+              <X className="w-4 h-4 mr-2 group-hover:rotate-90 transition-transform duration-200" />
               Clear All Filters
             </Button>
           </div>

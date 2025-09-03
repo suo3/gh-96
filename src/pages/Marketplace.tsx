@@ -147,8 +147,8 @@ const Marketplace = () => {
         <SidebarProvider defaultOpen={false}>
           <div className="min-h-screen flex w-full bg-background">
             {/* Sidebar for filters */}
-            <Sidebar className="border-r border-border" collapsible="icon">
-              <SidebarContent className="p-4">
+            <Sidebar className="border-r border-border shadow-lg" collapsible="offcanvas">
+              <SidebarContent>
                 <FilterPanel 
                   onFilterChange={handleFilterChange}
                   isVisible={true}
@@ -159,18 +159,15 @@ const Marketplace = () => {
 
             {/* Main content area */}
             <div className="flex-1 flex flex-col">
-              {/* Header with sidebar trigger */}
+              {/* Header */}
               <div className="sticky top-0 z-40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border">
-                <div className="flex items-center gap-2 px-4 py-2">
-                  <SidebarTrigger />
-                  <div className="flex-1">
-                    <AppHeader
-                      userLocation={userLocation}
-                      onLocationDetect={handleLocationDetect}
-                      onPostItem={handlePostItem}
-                      onLogoClick={handleLogoClick}
-                    />
-                  </div>
+                <div className="px-4 py-2">
+                  <AppHeader
+                    userLocation={userLocation}
+                    onLocationDetect={handleLocationDetect}
+                    onPostItem={handlePostItem}
+                    onLogoClick={handleLogoClick}
+                  />
                 </div>
               </div>
 
@@ -194,7 +191,7 @@ const Marketplace = () => {
                 </div>
               )}
 
-              {/* Content Controls - simplified for desktop */}
+              {/* Content Controls - with filter trigger for desktop */}
               {filteredListings.length > 0 && (
                 <div className="bg-card/50 backdrop-blur-sm border-b border-border">
                   <div className="container mx-auto px-4 py-3">
@@ -204,7 +201,8 @@ const Marketplace = () => {
                       onDisplayModeChange={setDisplayMode}
                       onToggleFilters={() => setShowFilters(!showFilters)}
                       onFilterChange={handleFilterChange}
-                      hideFilterButton={true}
+                      hideFilterButton={false}
+                      showSidebarTrigger={true}
                     />
                   </div>
                 </div>
