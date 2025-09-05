@@ -203,6 +203,7 @@ const Marketplace = () => {
                       onFilterChange={handleFilterChange}
                       hideFilterButton={false}
                       showSidebarTrigger={true}
+                      itemCount={filteredListings.length}
                     />
                   </div>
                 </div>

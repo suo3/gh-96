@@ -17,6 +17,7 @@ interface ContentControlsProps {
   onFilterChange: (filters: any) => void;
   hideFilterButton?: boolean;
   showSidebarTrigger?: boolean;
+  itemCount?: number;
 }
 
 export const ContentControls = ({ 
@@ -26,13 +27,26 @@ export const ContentControls = ({
   onToggleFilters, 
   onFilterChange,
   hideFilterButton = false,
-  showSidebarTrigger = false
+  showSidebarTrigger = false,
+  itemCount
 }: ContentControlsProps) => {
   const isMobile = useIsMobile();
   const { searchTerm, setSearchTerm } = useListingStore();
 
   return (
     <div className="container mx-auto px-4 py-4">
+      {/* Browse Items Header */}
+      {itemCount !== undefined && (
+        <div className="text-center mb-6">
+          <h2 className="text-2xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent mb-2">
+            Browse Items
+          </h2>
+          <p className="text-gray-600">
+            {itemCount} item{itemCount !== 1 ? 's' : ''} found
+          </p>
+        </div>
+      )}
+      
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-3">
           {showSidebarTrigger && !isMobile && (
