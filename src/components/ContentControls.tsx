@@ -34,25 +34,18 @@ export const ContentControls = ({
   const { searchTerm, setSearchTerm } = useListingStore();
 
   return (
-    <div className="container mx-auto px-4 py-4">
-      {/* Browse Items Header */}
-      {itemCount !== undefined && (
-        <div className="text-center mb-6">
-          <h2 className="text-2xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent mb-2">
-            Browse Items
-          </h2>
-          <p className="text-gray-600">
-            {itemCount} item{itemCount !== 1 ? 's' : ''} found
-          </p>
-        </div>
-      )}
-      
-      <div className="flex items-center justify-between mb-4">
+    <div className="container mx-auto px-4 py-2">
+      <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           {showSidebarTrigger && !isMobile && (
             <SidebarTrigger className="hover:bg-accent hover:text-accent-foreground transition-colors" />
           )}
           <ViewToggle currentView={displayMode} onViewChange={onDisplayModeChange} />
+          {itemCount !== undefined && (
+            <div className="text-sm text-muted-foreground ml-2">
+              <span className="font-medium text-foreground">Browse Items</span> • {itemCount} item{itemCount !== 1 ? 's' : ''} found
+            </div>
+          )}
         </div>
         
         {!hideFilterButton && isMobile && (
@@ -87,7 +80,7 @@ export const ContentControls = ({
       
       {/* Mobile Search Bar - Always Visible */}
       {isMobile && (
-        <div className="mb-4">
+        <div className="mt-3">
           <Input
             placeholder="Search items..."
             value={searchTerm}
