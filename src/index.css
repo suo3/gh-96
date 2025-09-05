@@ -48,6 +48,9 @@
     --shadow-gold: 0 5px 20px -5px hsl(140 50% 60% / 0.4);
     --shadow-elegant: 0 20px 50px -10px hsl(0 0% 0% / 0.1);
 
+    /* Header styling */
+    --header-background: 55 100% 96%; /* Light yellow background */
+
     /* Sidebar styling */
     --sidebar-background: 0 0% 99%;
     --sidebar-foreground: 0 0% 20%;
@@ -97,6 +100,9 @@
     --shadow-ghana: 0 10px 30px -10px hsl(140 55% 55% / 0.5);
     --shadow-gold: 0 5px 20px -5px hsl(140 50% 60% / 0.6);
     --shadow-elegant: 0 20px 50px -10px hsl(0 0% 0% / 0.8);
+
+    /* Dark header */
+    --header-background: 55 30% 15%; /* Dark yellow background for dark mode */
 
     /* Dark sidebar */
     --sidebar-background: 0 0% 10%;
