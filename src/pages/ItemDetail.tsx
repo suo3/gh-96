@@ -432,9 +432,12 @@ const ItemDetail = () => {
                       {getUserAvatar(item)}
                     </div>
                     <div>
-                      <p className="font-medium text-foreground">
+                      <button 
+                        onClick={() => navigate(`/user/${item.user_id}`)}
+                        className="font-medium text-foreground hover:text-primary hover:underline transition-colors text-left"
+                      >
                         {getUserDisplayName(item)}
-                      </p>
+                      </button>
                       <p className="text-sm text-muted-foreground">Item Owner</p>
                     </div>
                   </div>
