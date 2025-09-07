@@ -1,5 +1,4 @@
-
-import { Heart, MapPin, MessageCircle, MoreVertical, MessageSquare, Star, Crown } from "lucide-react";
+import { Heart, MapPin, MessageCircle, MoreVertical, MessageSquare, Star, Crown, Megaphone, Flag } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -7,7 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Listing } from "@/stores/listingStore";
 import { UserRatingDisplay } from "./UserRatingDisplay";
 import { ReportListingDialog } from "./ReportListingDialog";
+import { PromoteItemDialog } from "./PromoteItemDialog";
 import { useFavorites } from "@/hooks/useFavorites";
+import { useAuthStore } from "@/stores/authStore";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -19,122 +20,39 @@ interface ItemCardProps {
 
 export const ItemCard = ({ item, onItemClick, onItemLike }: ItemCardProps) => {
   const navigate = useNavigate();
+  const { user } = useAuthStore();
   const { isFavorited, toggleFavorite } = useFavorites();
   const [showReportDialog, setShowReportDialog] = useState(false);
 
   const handleItemClick = () => {
-    console.log('handleItemClick called', item.id);
     if (onItemClick) {
       onItemClick(item);
     } else {
-      console.log('Navigating to:', `/item/${item.id}`);
       navigate(`/item/${item.id}`);
     }
   };
 
   const handleFavoriteClick = async (e: React.MouseEvent) => {
-    console.log('Heart icon clicked for item:', item.id);
     e.stopPropagation();
     e.preventDefault();
     if (onItemLike) {
-      console.log('Using onItemLike prop');
       onItemLike(item);
     } else {
-      console.log('Using toggleFavorite');
       await toggleFavorite(item.id);
     }
   };
 
-  const getUserDisplayName = (item: Listing) => {
-    return item.profiles?.first_name || item.profiles?.username || 'Anonymous User';
-  };
-
-  const getUserAvatar = (item: Listing) => {
-    if (item.profiles?.first_name) {
-      return item.profiles.first_name.charAt(0).toUpperCase();
-    }
-    if (item.profiles?.username) {
-      return item.profiles.username.charAt(0).toUpperCase();
-    }
-    return 'U';
-  };
-
-  const isPopularSeller = (item: Listing) => {
-    const profile = item.profiles;
-    if (!profile) return false;
-    
-    // Consider a seller popular if they have:
-    // - High rating (4.5+ stars) with verified status, OR
-    // - Many successful sales (10+), OR
-    // - High rating (4.8+) with at least 5 sales
-    const rating = profile.rating || 0;
-    const totalSales = profile.total_sales || 0;
-    const isVerified = profile.is_verified || false;
-    
-    return (
-      (rating >= 4.5 && isVerified) ||
-      totalSales >= 10 ||
-      (rating >= 4.8 && totalSales >= 5)
-    );
-  };
-
-  const formatPhoneForWhatsApp = (phoneNumber: string) => {
-    // Remove all non-digit characters
-    const digits = phoneNumber.replace(/\D/g, '');
-    
-    // If starts with 0, replace with 233 (Ghana country code)
-    if (digits.startsWith('0')) {
-      return '233' + digits.substring(1);
-    }
-    
-    // If starts with 233, use as is
-    if (digits.startsWith('233')) {
-      return digits;
-    }
-    
-    // If 9 digits, assume it's without country code
-    if (digits.length === 9) {
-      return '233' + digits;
-    }
-    
-    return digits;
-  };
-
-  const openWhatsApp = () => {
-    const phoneNumber = item.profiles?.phone_number;
-    if (!phoneNumber) return;
-    
-    const formattedPhone = formatPhoneForWhatsApp(phoneNumber);
-    const message = encodeURIComponent(`Hi! I'm interested in your item "${item.title}" on the marketplace. Is it still available?`);
-    const whatsappUrl = `https://wa.me/${formattedPhone}?text=${message}`;
-    
-    window.open(whatsappUrl, '_blank');
-  };
-
-  const getItemImages = (item: Listing) => {
-    if (item.images && item.images.length > 0) {
-      return item.images.filter(img => img && img.trim() !== '');
-    }
-    return [];
-  };
-
-  const images = getItemImages(item);
-  const firstImage = images.length > 0 ? images[0] : "https://images.unsplash.com/photo-1649972904349-6e44c42644a7?w=400&h=300&fit=crop";
+  const firstImage = item.images?.[0] || "https://images.unsplash.com/photo-1649972904349-6e44c42644a7?w=400&h=300&fit=crop";
 
   return (
     <Card className="overflow-hidden hover:shadow-lg transition-shadow">
-      {/* Main clickable area */}
       <div className="cursor-pointer" onClick={handleItemClick}>
         <div className="relative">
           <img
             src={firstImage}
             alt={item.title}
             className="w-full h-48 object-cover"
-            onError={(e) => {
-              e.currentTarget.src = "https://images.unsplash.com/photo-1649972904349-6e44c42644a7?w=400&h=300&fit=crop";
-            }}
           />
-          {/* Favorite button */}
           <Button
             variant="secondary"
             size="sm"
@@ -147,15 +65,7 @@ export const ItemCard = ({ item, onItemClick, onItemLike }: ItemCardProps) => {
           >
             <Heart className={`w-4 h-4 ${isFavorited(item.id) ? 'fill-current' : ''}`} />
           </Button>
-
-          {item.hasActiveMessage && (
-            <Badge className="absolute top-2 right-12 bg-blue-600">
-              <MessageCircle className="w-3 h-3 mr-1" />
-              Active
-            </Badge>
-          )}
           
-          {/* More options menu */}
           <div className="absolute top-2 left-2">
             <DropdownMenu>
               <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
@@ -164,10 +74,21 @@ export const ItemCard = ({ item, onItemClick, onItemLike }: ItemCardProps) => {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="start">
+                {user?.id === item.user_id && (
+                  <DropdownMenuItem onClick={(e) => e.stopPropagation()}>
+                    <PromoteItemDialog listingId={item.id}>
+                      <div className="flex items-center w-full">
+                        <Megaphone className="mr-2 h-4 w-4" />
+                        Promote Item
+                      </div>
+                    </PromoteItemDialog>
+                  </DropdownMenuItem>
+                )}
                 <DropdownMenuItem onClick={(e) => {
                   e.stopPropagation();
                   setShowReportDialog(true);
                 }}>
+                  <Flag className="mr-2 h-4 w-4" />
                   Report listing
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -176,119 +97,19 @@ export const ItemCard = ({ item, onItemClick, onItemLike }: ItemCardProps) => {
         </div>
         
         <CardContent className="p-4">
-          <div className="space-y-3">
-            <div>
-              <div className="flex items-center justify-between">
-                <h3 className="font-semibold text-lg line-clamp-2 flex-1">{item.title}</h3>
-                {item.price && (
-                  <span className="text-lg font-bold text-emerald-600 ml-2">
-                    ₵{item.price.toFixed(2)}
-                  </span>
-                )}
-              </div>
-              <p className="text-sm text-gray-600 line-clamp-2 mt-1">
-                {item.description || "No description provided."}
-              </p>
-            </div>
-            
-            <div className="flex flex-wrap gap-2">
-              <Badge className="bg-emerald-600 text-xs">
-                {item.category}
-              </Badge>
-              <Badge variant="outline" className="border-emerald-200 text-xs">
-                {item.condition}
-              </Badge>
-            </div>
-
-            <div className="flex items-center text-sm text-gray-600">
-              <MapPin className="w-4 h-4 mr-1" />
-              {item.location || "Location not specified"}
-            </div>
-
-            {/* Owner info and rating */}
-            <div className="flex items-center justify-between pt-2 border-t">
-              <div className="flex items-center">
-                <div className="w-6 h-6 bg-gradient-to-br from-emerald-400 to-teal-400 rounded-full flex items-center justify-center text-white text-xs font-semibold mr-2">
-                  {getUserAvatar(item)}
-                </div>
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      e.preventDefault();
-                      if (item.user_id) {
-                        navigate(`/user/${item.user_id}`);
-                      }
-                    }}
-                    className="text-sm font-medium text-gray-700 hover:text-primary transition-colors"
-                  >
-                    {getUserDisplayName(item)}
-                  </button>
-                  {isPopularSeller(item) && (
-                    <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 border-yellow-200 text-xs px-1.5 py-0.5">
-                      <Crown className="w-3 h-3 mr-1" />
-                      Popular
-                    </Badge>
-                  )}
-                </div>
-              </div>
-              
-              {item.user_id && (
-                <UserRatingDisplay userId={item.user_id} size="sm" />
-              )}
-            </div>
+          <h3 className="font-semibold text-lg line-clamp-2">{item.title}</h3>
+          {item.price && (
+            <span className="text-lg font-bold text-emerald-600">
+              ₵{item.price.toFixed(2)}
+            </span>
+          )}
+          <div className="flex items-center text-sm text-gray-600 mt-2">
+            <MapPin className="w-4 h-4 mr-1" />
+            {item.location || "Location not specified"}
           </div>
         </CardContent>
       </div>
-      
-      {/* Action buttons - not clickable for main navigation */}
-      <div className="px-4 pb-4">
-        <div className="flex gap-2">
-          <Button 
-            onClick={(e) => {
-              e.stopPropagation();
-              console.log('View Details clicked for item:', item.id);
-              handleItemClick();
-            }}
-            variant="outline" 
-            className="flex-1"
-          >
-            View Details
-          </Button>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-              <Button className="bg-gradient-to-r from-emerald-500 to-teal-500 text-white hover:from-emerald-600 hover:to-teal-600">
-                <MessageCircle className="w-4 h-4 mr-2" />
-                Contact
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="center" className="w-56">
-              {item.profiles?.phone_number && (
-                <DropdownMenuItem onClick={(e) => {
-                  e.stopPropagation();
-                  openWhatsApp();
-                }}>
-                  <MessageSquare className="w-4 h-4 mr-2" />
-                  Contact on WhatsApp
-                </DropdownMenuItem>
-              )}
-              <DropdownMenuItem onClick={(e) => {
-                e.stopPropagation();
-                if (onItemLike) {
-                  onItemLike(item);
-                } else {
-                  navigate('/messages');
-                }
-              }}>
-                <MessageCircle className="w-4 h-4 mr-2" />
-                Message in App
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-      </div>
 
-      {/* Report Dialog */}
       {showReportDialog && (
         <ReportListingDialog
           listingId={item.id}

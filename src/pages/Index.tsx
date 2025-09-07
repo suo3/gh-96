@@ -11,6 +11,9 @@ import { LocationPermissionPrompt } from "@/components/LocationPermissionPrompt"
 import { PlatformAnnouncement } from "@/components/PlatformAnnouncement";
 import { MaintenanceMode } from "@/components/MaintenanceMode";
 import { Footer } from "@/components/Footer";
+import { FeaturedItemsCarousel } from "@/components/FeaturedItemsCarousel";
+import { CategoryTabsCarousel } from "@/components/CategoryTabsCarousel";
+import { FeaturedSellersSection } from "@/components/FeaturedSellersSection";
 import { useIndexLogic } from "@/hooks/useIndexLogic";
 import { usePlatformSettings } from "@/hooks/usePlatformSettings";
 
@@ -79,6 +82,19 @@ const Index = () => {
         onPostItem={handlePostItem}
         onBrowseItems={handleBrowseItems}
       />
+      
+      {/* Main content sections */}
+      <div className="container mx-auto px-4 space-y-12 py-8">
+        {/* Featured Items Carousel */}
+        <FeaturedItemsCarousel />
+        
+        {/* Category Tabs with Items */}
+        <CategoryTabsCarousel />
+        
+        {/* Featured Sellers */}
+        <FeaturedSellersSection />
+      </div>
+      
       <CategoryLinks />
 
       {/* Location Permission Prompt */}

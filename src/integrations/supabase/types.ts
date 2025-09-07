@@ -208,6 +208,33 @@ export type Database = {
           },
         ]
       }
+      featured_sellers: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean
+          position: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          position?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          position?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       ghana_regions: {
         Row: {
           cities: string[]
@@ -482,6 +509,99 @@ export type Database = {
         }
         Relationships: []
       }
+      promoted_items: {
+        Row: {
+          amount_paid: number
+          created_at: string
+          currency: string
+          ends_at: string
+          id: string
+          listing_id: string
+          promotion_type: string
+          starts_at: string
+          status: string
+          transaction_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount_paid: number
+          created_at?: string
+          currency?: string
+          ends_at: string
+          id?: string
+          listing_id: string
+          promotion_type?: string
+          starts_at?: string
+          status?: string
+          transaction_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount_paid?: number
+          created_at?: string
+          currency?: string
+          ends_at?: string
+          id?: string
+          listing_id?: string
+          promotion_type?: string
+          starts_at?: string
+          status?: string
+          transaction_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      promotion_transactions: {
+        Row: {
+          amount: number
+          created_at: string
+          currency: string
+          external_reference: string | null
+          id: string
+          listing_id: string
+          phone_number: string
+          promotion_duration_days: number
+          promotion_type: string
+          provider: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          currency?: string
+          external_reference?: string | null
+          id?: string
+          listing_id: string
+          phone_number: string
+          promotion_duration_days?: number
+          promotion_type: string
+          provider: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          currency?: string
+          external_reference?: string | null
+          id?: string
+          listing_id?: string
+          phone_number?: string
+          promotion_duration_days?: number
+          promotion_type?: string
+          provider?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       ratings: {
         Row: {
           comment: string | null
@@ -750,6 +870,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: number
       }
+      get_promotion_price: {
+        Args: { promotion_type: string }
+        Returns: number
+      }
       get_public_profile: {
         Args: { profile_id: string }
         Returns: {
@@ -786,6 +910,10 @@ export type Database = {
       }
       get_user_rating_count: {
         Args: { user_uuid: string }
+        Returns: number
+      }
+      get_user_total_listings: {
+        Args: { user_uuid?: string }
         Returns: number
       }
       increment_listing_likes: {

@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { MapPin, Plus, Bell, User, Shield, Coins, Heart, Grid3X3 } from "lucide-react";
+import { MapPin, Plus, Bell, User, Shield, Package, Heart, Grid3X3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -45,6 +45,17 @@ export const AppHeader = ({ userLocation, onLocationDetect, onPostItem, onLogoCl
       if (!user?.id) return false;
       const { data } = await supabase.rpc('is_admin');
       return data || false;
+    },
+    enabled: !!user?.id
+  });
+
+  // Get user's total listings count
+  const { data: totalListings = 0 } = useQuery({
+    queryKey: ['userTotalListings', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return 0;
+      const { data } = await supabase.rpc('get_user_total_listings');
+      return data || 0;
     },
     enabled: !!user?.id
   });
@@ -128,11 +139,11 @@ export const AppHeader = ({ userLocation, onLocationDetect, onPostItem, onLogoCl
           <div className="flex items-center space-x-3">
             {isAuthenticated ? (
               <>
-                {/* Coins Display */}
-                <div className="hidden sm:flex items-center space-x-1 bg-gradient-to-r from-yellow-50 to-amber-50 border border-yellow-200 rounded-full px-3 py-1.5">
-                  <Coins className="w-4 h-4 text-yellow-600" />
-                  <span className="font-semibold text-yellow-700">{user?.coins || 0}</span>
-                  <span className="text-yellow-600 text-xs font-medium">coins</span>
+                {/* Items Count Display */}
+                <div className="hidden sm:flex items-center space-x-1 bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 rounded-full px-3 py-1.5">
+                  <Package className="w-4 h-4 text-emerald-600" />
+                  <span className="font-semibold text-emerald-700">{totalListings}</span>
+                  <span className="text-emerald-600 text-xs font-medium">items</span>
                 </div>
 
                 {/* Messages Button */}
@@ -183,10 +194,10 @@ export const AppHeader = ({ userLocation, onLocationDetect, onPostItem, onLogoCl
                           @{user?.username}
                         </p>
                         <div className="flex items-center gap-2 sm:hidden">
-                          <div className="flex items-center gap-1 bg-gradient-to-r from-yellow-50 to-amber-50 border border-yellow-200 rounded-full px-2 py-1">
-                            <Coins className="w-3 h-3 text-yellow-600" />
-                            <span className="text-xs font-semibold text-yellow-700">{user?.coins || 0}</span>
-                            <span className="text-yellow-600 text-xs">coins</span>
+                          <div className="flex items-center gap-1 bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 rounded-full px-2 py-1">
+                            <Package className="w-3 h-3 text-emerald-600" />
+                            <span className="text-xs font-semibold text-emerald-700">{totalListings}</span>
+                            <span className="text-emerald-600 text-xs">items</span>
                           </div>
                         </div>
                       </div>
