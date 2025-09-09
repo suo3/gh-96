@@ -7,7 +7,6 @@ interface AppSettings {
   maxListingsPerUser: number;
   defaultStartingCoins: number;
   listingCostCoins: number;
-  swapCostCoins: number;
   toastRemoveDelay: number;
   loading: boolean;
 }
@@ -18,7 +17,6 @@ const DEFAULT_SETTINGS: AppSettings = {
   maxListingsPerUser: 10,
   defaultStartingCoins: 20,
   listingCostCoins: 1,
-  swapCostCoins: 2,
   toastRemoveDelay: 5000,
   loading: false
 };
@@ -41,7 +39,6 @@ export const useAppSettings = () => {
             'max_listings_per_user',
             'default_starting_coins',
             'listing_cost_coins',
-            'swap_cost_coins',
             'toast_remove_delay'
           ]);
 
@@ -61,7 +58,6 @@ export const useAppSettings = () => {
           maxListingsPerUser: Number(settingsMap.max_listings_per_user) || DEFAULT_SETTINGS.maxListingsPerUser,
           defaultStartingCoins: Number(settingsMap.default_starting_coins) || DEFAULT_SETTINGS.defaultStartingCoins,
           listingCostCoins: Number(settingsMap.listing_cost_coins) || DEFAULT_SETTINGS.listingCostCoins,
-          swapCostCoins: Number(settingsMap.swap_cost_coins) || DEFAULT_SETTINGS.swapCostCoins,
           toastRemoveDelay: Number(settingsMap.toast_remove_delay) || DEFAULT_SETTINGS.toastRemoveDelay,
           loading: false
         });

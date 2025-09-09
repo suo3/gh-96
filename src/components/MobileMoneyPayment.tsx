@@ -123,8 +123,8 @@ export const MobileMoneyPayment = () => {
   return (
     <div className="space-y-6">
       <div className="text-center">
-        <h2 className="text-2xl font-bold mb-2">Purchase Swap Coins</h2>
-        <p className="text-muted-foreground">Get more coins to post listings and make swaps</p>
+        <h2 className="text-2xl font-bold mb-2">Purchase Coins</h2>
+        <p className="text-muted-foreground">Get more coins to post listings and promote your items</p>
         <div className="mt-4 p-4 bg-emerald-50 dark:bg-emerald-950 rounded-lg">
           <div className="flex items-center justify-center space-x-2">
             <Coins className="w-5 h-5 text-emerald-600" />

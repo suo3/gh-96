@@ -51,7 +51,7 @@ export const ItemList = ({ items, onItemLike }: ItemListProps) => {
     navigate(`/item/${item.id}`);
   };
 
-  const handleSwapClick = async (item: Listing) => {
+  const handleMessageClick = async (item: Listing) => {
     if (!user) {
       toast({
         title: "Login Required",
@@ -63,7 +63,7 @@ export const ItemList = ({ items, onItemLike }: ItemListProps) => {
 
     if (item.user_id === user.id) {
       toast({
-        title: "Cannot swap with yourself",
+        title: "Cannot message yourself",
         description: "You cannot start a conversation about your own listing.",
         variant: "destructive"
       });
@@ -290,7 +290,7 @@ export const ItemList = ({ items, onItemLike }: ItemListProps) => {
                                 No WhatsApp number available
                               </div>
                             )}
-                            <DropdownMenuItem onClick={() => handleSwapClick(item)}>
+                            <DropdownMenuItem onClick={() => handleMessageClick(item)}>
                               <Heart className="w-4 h-4 mr-2" />
                               Message in App
                             </DropdownMenuItem>

@@ -57,7 +57,7 @@ export const FilterPanel = ({ onFilterChange, isVisible, isMobile = false, showS
   const { 
     selectedCategory, setSelectedCategory,
     selectedCondition, setSelectedCondition,
-    swapFilter, setSwapFilter,
+    availabilityFilter, setAvailabilityFilter,
     maxDistance, setMaxDistance,
     minRating, setMinRating,
     searchTerm, setSearchTerm,
@@ -130,10 +130,10 @@ export const FilterPanel = ({ onFilterChange, isVisible, isMobile = false, showS
     initializeUserLocation();
   }, [user?.location, userLocation, geocodeLocation, setUserLocation]);
 
-  const swapStatuses = [
+  const availabilityStatuses = [
     { value: "all", label: "All Items" },
-    { value: "unswapped", label: "Available" },
-    { value: "swapped", label: "Message Sent" }
+    { value: "available", label: "Available" },
+    { value: "contacted", label: "Already Contacted" }
   ];
 
   const sortOptions = [
@@ -159,7 +159,7 @@ export const FilterPanel = ({ onFilterChange, isVisible, isMobile = false, showS
   const clearFilters = () => {
     setSelectedCategory("all");
     setSelectedCondition("all");
-    setSwapFilter("all");
+    setAvailabilityFilter("all");
     setSearchTerm("");
     setSortBy("newest");
     setSelectedRadius([25]);
@@ -285,12 +285,12 @@ export const FilterPanel = ({ onFilterChange, isVisible, isMobile = false, showS
             <MessageCircle className="w-4 h-4 text-primary" />
             <label className="text-sm font-medium text-foreground">Availability</label>
           </div>
-          <Select value={swapFilter} onValueChange={setSwapFilter}>
+          <Select value={availabilityFilter} onValueChange={setAvailabilityFilter}>
             <SelectTrigger className="w-full transition-all duration-200 hover:border-primary/50">
               <SelectValue placeholder="All Items" />
             </SelectTrigger>
             <SelectContent className="bg-background border border-border shadow-lg">
-              {swapStatuses.map((status) => (
+              {availabilityStatuses.map((status) => (
                 <SelectItem key={status.value} value={status.value}>
                   {status.label}
                 </SelectItem>
@@ -442,7 +442,7 @@ export const FilterPanel = ({ onFilterChange, isVisible, isMobile = false, showS
         </div>
 
         {/* Active Filters */}
-        {(selectedCategory !== "all" || selectedCondition !== "all" || swapFilter !== "all" || minRating > 0 || searchTerm || sortBy !== "newest" || selectedPriceRange[0] > 0 || selectedPriceRange[1] < 1000) && (
+        {(selectedCategory !== "all" || selectedCondition !== "all" || availabilityFilter !== "all" || minRating > 0 || searchTerm || sortBy !== "newest" || selectedPriceRange[0] > 0 || selectedPriceRange[1] < 1000) && (
           <div className="space-y-4 pt-6 border-t border-border/50 animate-fade-in">
             <div className="flex items-center gap-2">
               <div className="p-1 rounded bg-primary/10">
@@ -469,10 +469,10 @@ export const FilterPanel = ({ onFilterChange, isVisible, isMobile = false, showS
                   {conditions.find(c => c.value === selectedCondition)?.name || selectedCondition}
                 </Badge>
               )}
-              {swapFilter !== "all" && (
+              {availabilityFilter !== "all" && (
                 <Badge variant="secondary" className="gap-1 animate-scale-in">
                   <MessageCircle className="w-3 h-3" />
-                  {swapStatuses.find(s => s.value === swapFilter)?.label}
+                  {availabilityStatuses.find(s => s.value === availabilityFilter)?.label}
                 </Badge>
               )}
               {sortBy !== "newest" && (

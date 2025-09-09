@@ -48,7 +48,7 @@ interface ListingStore {
   error: string | null;
   
   // New properties needed by FilterPanel and other components
-  swapFilter: string;
+  availabilityFilter: string;
   maxDistance: number;
   searchTerm: string;
   userLocation: { lat: number; lng: number } | null;
@@ -79,7 +79,7 @@ interface ListingStore {
   clearFilters: () => void;
   
   // New methods needed by components
-  setSwapFilter: (filter: string) => void;
+  setAvailabilityFilter: (filter: string) => void;
   setMaxDistance: (distance: number) => void;
   setSearchTerm: (term: string) => void;
   setUserLocation: (location: { lat: number; lng: number } | null) => void;
@@ -125,7 +125,7 @@ export const useListingStore = create<ListingStore>((set, get) => ({
   error: null,
   
   // New properties
-  swapFilter: 'all',
+  availabilityFilter: 'all',
   maxDistance: 25,
   searchTerm: '',
   userLocation: null,
@@ -487,8 +487,8 @@ export const useListingStore = create<ListingStore>((set, get) => ({
   },
 
   // New setters - now they trigger applyFilters
-  setSwapFilter: (filter) => {
-    set({ swapFilter: filter });
+  setAvailabilityFilter: (filter) => {
+    set({ availabilityFilter: filter });
     get().applyFilters();
   },
   
@@ -602,7 +602,7 @@ export const useListingStore = create<ListingStore>((set, get) => ({
       priceRange: [0, 1000],
       sortBy: 'newest',
       minRating: 0,
-      swapFilter: 'all',
+      availabilityFilter: 'all',
       searchTerm: ''
     });
     get().applyFilters();
@@ -616,7 +616,7 @@ export const useListingStore = create<ListingStore>((set, get) => ({
       selectedCategory: state.selectedCategory,
       searchTerm: state.searchTerm,
       selectedCondition: state.selectedCondition,
-      swapFilter: state.swapFilter,
+      availabilityFilter: state.availabilityFilter,
       maxDistance: state.maxDistance,
       userLocation: state.userLocation,
       totalListings: filtered.length
@@ -668,13 +668,13 @@ export const useListingStore = create<ListingStore>((set, get) => ({
       console.log(`After condition filter (${state.selectedCondition}):`, filtered.length);
     }
 
-    // Apply swap filter
-    if (state.swapFilter === 'unswapped') {
+    // Apply availability filter
+    if (state.availabilityFilter === 'available') {
       filtered = filtered.filter(item => !item.hasActiveMessage);
-      console.log('After unswapped filter:', filtered.length);
-    } else if (state.swapFilter === 'swapped') {
+      console.log('After available filter:', filtered.length);
+    } else if (state.availabilityFilter === 'contacted') {
       filtered = filtered.filter(item => item.hasActiveMessage);
-      console.log('After swapped filter:', filtered.length);
+      console.log('After contacted filter:', filtered.length);
     }
 
     // Apply distance filter - Enhanced with better location mapping
