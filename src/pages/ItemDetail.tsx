@@ -2,10 +2,11 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Heart, MapPin, MessageCircle, ChevronLeft, ChevronRight, MessageSquare, Star, ArrowLeft } from "lucide-react";
+import { Heart, MapPin, MessageCircle, ChevronLeft, ChevronRight, MessageSquare, Star, ArrowLeft, Megaphone } from "lucide-react";
 import { Listing, useListingStore } from "@/stores/listingStore";
 import { UserRatingDisplay } from "@/components/UserRatingDisplay";
 import { ReportListingDialog } from "@/components/ReportListingDialog";
+import { PromoteItemDialog } from "@/components/PromoteItemDialog";
 import { UserRating } from "@/components/UserRating";
 import { Footer } from "@/components/Footer";
 import { useAuthStore } from "@/stores/authStore";
@@ -485,6 +486,19 @@ const ItemDetail = () => {
                   </div>
                   
                   <div className="flex gap-3">
+                    {/* Promote Item button - only show if user owns the item */}
+                    {user && user.id === item.user_id && (
+                      <PromoteItemDialog listingId={item.id}>
+                        <Button
+                          variant="outline"
+                          className="flex-1 border-orange-200 text-orange-700 hover:bg-orange-50"
+                        >
+                          <Megaphone className="w-4 h-4 mr-2" />
+                          Promote Item
+                        </Button>
+                      </PromoteItemDialog>
+                    )}
+                    
                     {/* Rate Owner button - only show if user is logged in and not viewing their own item */}
                     {user && user.id !== item.user_id && (
                       <Button
