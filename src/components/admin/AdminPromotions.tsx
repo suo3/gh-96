@@ -89,7 +89,7 @@ export const AdminPromotions = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {promotedItems?.map((promotion) => (
+              {promotedItems?.map((promotion: any) => (
                 <TableRow key={promotion.id}>
                   <TableCell>{promotion.listing?.title || 'Unknown'}</TableCell>
                   <TableCell>
@@ -135,7 +135,7 @@ export const AdminPromotions = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {promotionTransactions?.map((transaction) => (
+              {promotionTransactions?.map((transaction: any) => (
                 <TableRow key={transaction.id}>
                   <TableCell>
                     {new Date(transaction.created_at).toLocaleDateString()}

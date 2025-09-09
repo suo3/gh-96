@@ -11,38 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 export const FeaturedSellersSection = () => {
   const navigate = useNavigate();
 
-  // Fetch featured sellers with proper join
-  const { data: featuredSellers, isLoading } = useQuery({
-    queryKey: ['featuredSellers'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('featured_sellers')
-        .select(`
-          id,
-          user_id,
-          position,
-          is_active,
-          created_at,
-          updated_at,
-          profiles(
-            id,
-            first_name,
-            last_name,
-            username,
-            avatar,
-            rating,
-            total_sales,
-            bio
-          )
-        `)
-        .eq('is_active', true)
-        .order('position');
-
-      if (error) throw error;
-      return data;
-    },
-    staleTime: 5 * 60 * 1000, // Cache for 5 minutes
-  });
+  const { data: featuredSellers, isLoading } = useFeaturedSellers();
 
   if (isLoading) {
     return (
@@ -81,7 +50,7 @@ export const FeaturedSellersSection = () => {
         className="w-full"
       >
         <CarouselContent className="-ml-2 md:-ml-4">
-          {featuredSellers.map((seller) => {
+          {featuredSellers.map((seller: any) => {
             const profile = seller.profiles;
             if (!profile) return null;
 
