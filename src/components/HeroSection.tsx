@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowRight, Smartphone, Users, Shield } from "lucide-react";
+import { ArrowRight, Smartphone, Users, Shield, Star, TrendingUp } from "lucide-react";
 
 interface HeroSectionProps {
   onPostItem: () => void;
@@ -29,92 +29,108 @@ export const HeroSection = ({ onPostItem, onBrowseItems }: HeroSectionProps) => 
   ];
 
   return (
-    <section className="relative overflow-hidden bg-gradient-to-br from-background via-background to-primary/5">
-      {/* Background Pattern */}
-      <div className="absolute inset-0 opacity-5">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-primary/10"></div>
+    <section className="relative overflow-hidden bg-gradient-hero min-h-screen flex items-center">
+      {/* Retro Ghana Background Pattern */}
+      <div className="absolute inset-0 opacity-10">
+        <div className="absolute inset-0 bg-gradient-ghana-flag"></div>
+        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-ghana-flag"></div>
       </div>
       
-      <div className="container mx-auto px-4 py-16 lg:py-24 relative z-10">
-        {/* Main Hero Content */}
-        <div className="text-center max-w-5xl mx-auto mb-20">
+      {/* Kente-inspired decorative elements */}
+      <div className="absolute top-8 left-8 w-32 h-32 bg-gradient-retro-gold rounded-full opacity-20 animate-pulse"></div>
+      <div className="absolute bottom-8 right-8 w-24 h-24 bg-primary/20 rounded-full opacity-30 animate-bounce-slow"></div>
+      <div className="absolute top-1/2 right-16 w-16 h-16 bg-accent/20 rounded-full opacity-40"></div>
+      
+      <div className="container mx-auto px-4 py-20 relative z-10">
+        {/* Robinhood-style Hero */}
+        <div className="text-center max-w-6xl mx-auto mb-16">
           <Badge 
             variant="secondary" 
-            className="mb-8 px-6 py-3 text-base font-medium animate-fade-in bg-primary/10 border border-primary/20 text-primary"
+            className="mb-8 px-8 py-4 text-lg font-bold animate-fade-in bg-gradient-retro-gold text-foreground border-0 shadow-ghana-gold retro-glow"
           >
-            🇬🇭 Ghana's Premier Trading Platform
+            <Star className="w-5 h-5 mr-2" />
+            🇬🇭 Ghana's #1 Trading Platform
           </Badge>
           
-          <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold mb-8 leading-tight">
-            <span className="text-primary block mb-2 animate-fade-in animate-delay-100 opacity-0 [animation-fill-mode:forwards]">Your Marketplace,</span>
-            <span className="text-primary block mb-2 animate-fade-in animate-delay-300 opacity-0 [animation-fill-mode:forwards]">Your Community,</span>
-            <span className="text-foreground block text-4xl md:text-5xl lg:text-6xl animate-fade-in animate-delay-500 opacity-0 [animation-fill-mode:forwards]">Your Ghana</span>
+          <h1 className="font-retro text-6xl md:text-8xl lg:text-9xl font-black mb-12 leading-tight tracking-tight">
+            <span className="block mb-4 animate-fade-in animate-delay-100 opacity-0 [animation-fill-mode:forwards]">
+              <span className="text-gradient-ghana-flag">TRADE.</span>
+            </span>
+            <span className="block mb-4 animate-fade-in animate-delay-300 opacity-0 [animation-fill-mode:forwards]">
+              <span className="text-gradient-ghana-flag">CONNECT.</span>
+            </span>
+            <span className="block text-5xl md:text-6xl lg:text-7xl animate-fade-in animate-delay-500 opacity-0 [animation-fill-mode:forwards]">
+              <span className="text-foreground">PROSPER.</span>
+            </span>
           </h1>
           
-          <p className="text-xl md:text-2xl text-muted-foreground mb-10 max-w-3xl mx-auto animate-fade-in animate-delay-700 opacity-0 [animation-fill-mode:forwards] leading-relaxed">
-            Where every Ghanaian finds what they need, sells what they love, and builds connections that last. 
-            From Accra to Tamale - trade with trust, powered by mobile money.
+          <p className="text-2xl md:text-3xl text-muted-foreground mb-12 max-w-4xl mx-auto animate-fade-in animate-delay-700 opacity-0 [animation-fill-mode:forwards] leading-relaxed font-medium">
+            The future of trading is here. Join Ghana's most trusted marketplace where 
+            <span className="text-gradient-retro-gold font-bold"> community meets commerce</span>.
           </p>
           
-          <div className="flex flex-col sm:flex-row gap-6 justify-center items-center animate-fade-in animate-delay-1000 opacity-0 [animation-fill-mode:forwards]">
+          <div className="flex flex-col sm:flex-row gap-8 justify-center items-center animate-fade-in animate-delay-1000 opacity-0 [animation-fill-mode:forwards]">
             <Button 
               size="lg" 
               onClick={onPostItem}
-              className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-elegant px-10 py-5 text-xl font-bold transition-all duration-300 hover:scale-105 hover:shadow-gold border-0 group"
+              className="robinhood-button bg-primary hover:bg-primary/90 text-primary-foreground shadow-ghana-red retro-glow px-12 py-6 text-2xl font-black transition-all duration-300 hover:scale-105 border-0 group"
             >
-              Start Trading Now
-              <ArrowRight className="ml-3 h-6 w-6 transition-transform group-hover:translate-x-1" />
+              <TrendingUp className="mr-3 h-7 w-7" />
+              Start Trading
+              <ArrowRight className="ml-3 h-7 w-7 transition-transform group-hover:translate-x-2" />
             </Button>
             
             <Button 
               variant="outline" 
               size="lg"
               onClick={onBrowseItems}
-              className="border-2 border-primary/30 text-primary hover:bg-primary/10 hover:border-primary bg-background/80 backdrop-blur-sm px-10 py-5 text-xl font-bold transition-all duration-300 hover:scale-105 group"
+              className="robinhood-button border-2 border-secondary text-secondary hover:bg-secondary/10 hover:border-secondary bg-background/90 backdrop-blur px-12 py-6 text-2xl font-black transition-all duration-300 hover:scale-105 group shadow-ghana-gold"
             >
-              Explore Marketplace
-              <ArrowRight className="ml-3 h-5 w-5 opacity-0 group-hover:opacity-100 transition-all duration-300 group-hover:translate-x-1" />
+              Explore Market
+              <ArrowRight className="ml-3 h-6 w-6 opacity-0 group-hover:opacity-100 transition-all duration-300 group-hover:translate-x-2" />
             </Button>
           </div>
           
-          <div className="mt-8 flex flex-wrap justify-center gap-6 text-sm text-muted-foreground animate-fade-in animate-delay-1200 opacity-0 [animation-fill-mode:forwards]">
-            <span className="flex items-center gap-2 hover:text-primary transition-colors duration-300">
-              <Shield className="h-4 w-4 text-primary animate-pulse" />
-              100% Secure Trading
-            </span>
-            <span className="flex items-center gap-2 hover:text-primary transition-colors duration-300">
-              <Smartphone className="h-4 w-4 text-primary animate-pulse" style={{ animationDelay: '0.5s' }} />
-              Mobile Money Ready
-            </span>
-            <span className="flex items-center gap-2 hover:text-primary transition-colors duration-300">
-              <Users className="h-4 w-4 text-primary animate-pulse" style={{ animationDelay: '1s' }} />
-              50K+ Active Users
-            </span>
+          {/* Robinhood-style stats */}
+          <div className="mt-16 grid grid-cols-3 gap-8 max-w-2xl mx-auto animate-fade-in animate-delay-1200 opacity-0 [animation-fill-mode:forwards]">
+            <div className="text-center">
+              <div className="text-3xl md:text-4xl font-black text-primary mb-2">50K+</div>
+              <div className="text-sm text-muted-foreground font-medium">Active Traders</div>
+            </div>
+            <div className="text-center">
+              <div className="text-3xl md:text-4xl font-black text-secondary mb-2">₵2M+</div>
+              <div className="text-sm text-muted-foreground font-medium">Monthly Volume</div>
+            </div>
+            <div className="text-center">
+              <div className="text-3xl md:text-4xl font-black text-accent mb-2">99.9%</div>
+              <div className="text-sm text-muted-foreground font-medium">Uptime</div>
+            </div>
           </div>
         </div>
 
 
-        {/* Features Section */}
-        <div className="grid md:grid-cols-3 gap-10">
+        {/* Robinhood-style Features */}
+        <div className="grid md:grid-cols-3 gap-8 mt-20">
           {features.map((feature, index) => {
             const IconComponent = feature.icon;
+            const colors = ['shadow-ghana-red', 'shadow-ghana-gold', 'shadow-ghana-green'];
+            const gradients = ['bg-primary/5', 'bg-secondary/5', 'bg-accent/5'];
             return (
               <Card 
                 key={feature.title}
-                className={`p-10 bg-card border border-primary/10 shadow-elegant hover:shadow-primary/20 transition-all duration-500 hover:-translate-y-3 group animate-fade-in relative overflow-hidden`}
-                style={{ animationDelay: `${index * 200 + 1200}ms` }}
+                className={`robinhood-card p-8 ${gradients[index]} border-0 ${colors[index]} hover:scale-105 transition-all duration-500 group animate-fade-in relative overflow-hidden kente-pattern`}
+                style={{ animationDelay: `${index * 200 + 1400}ms` }}
               >
-                <div className="absolute top-0 right-0 w-20 h-20 bg-primary/10 rounded-full transform translate-x-6 -translate-y-6"></div>
                 <div className="relative z-10">
-                  <div className="flex items-center mb-6">
-                    <div className="p-4 rounded-2xl bg-primary/10 group-hover:bg-primary/20 transition-colors">
-                      <IconComponent className="h-8 w-8 text-primary" />
+                  <div className="flex items-center justify-center mb-6">
+                    <div className={`p-5 rounded-xl ${index === 0 ? 'bg-primary/20' : index === 1 ? 'bg-secondary/20' : 'bg-accent/20'} group-hover:scale-110 transition-transform retro-glow`}>
+                      <IconComponent className={`h-10 w-10 ${index === 0 ? 'text-primary' : index === 1 ? 'text-secondary' : 'text-accent'}`} />
                     </div>
                   </div>
-                  <h3 className="text-2xl font-bold text-foreground mb-4 group-hover:text-primary transition-colors">
+                  <h3 className={`text-xl font-black text-center mb-4 ${index === 0 ? 'text-primary' : index === 1 ? 'text-secondary' : 'text-accent'}`}>
                     {feature.title}
                   </h3>
-                  <p className="text-muted-foreground leading-relaxed text-lg">
+                  <p className="text-muted-foreground leading-relaxed text-center font-medium">
                     {feature.description}
                   </p>
                 </div>
