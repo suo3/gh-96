@@ -15,6 +15,7 @@ import { AdminSettings } from "@/components/admin/AdminSettings";
 import { AdminBulkUpload } from "@/components/admin/AdminBulkUpload";
 import { AdminBulkImport } from "@/components/admin/AdminBulkImport";
 import { AdminPromotions } from "@/components/admin/AdminPromotions";
+import { AdminManualFeaturing } from "@/components/admin/AdminManualFeaturing";
 import { Footer } from "@/components/Footer";
 import { AppHeader } from "@/components/AppHeader";
 
@@ -156,7 +157,10 @@ const Admin = () => {
             </TabsContent>
 
             <TabsContent value="promotions">
-              <AdminPromotions />
+              <div className="space-y-6">
+                <AdminPromotions />
+                <AdminManualFeaturing />
+              </div>
             </TabsContent>
             
             <TabsContent value="moderation">

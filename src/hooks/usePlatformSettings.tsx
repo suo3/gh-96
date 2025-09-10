@@ -9,6 +9,10 @@ interface PlatformSettings {
   allowAnonymous: boolean;
   welcomeMessage: string;
   announcementText: string;
+  enablePromotions: boolean;
+  enableManualFeaturing: boolean;
+  enableCategoryFeaturing: boolean;
+  enableHomepageCarousel: boolean;
 }
 
 export const usePlatformSettings = () => {
@@ -18,7 +22,11 @@ export const usePlatformSettings = () => {
     requireApproval: false,
     allowAnonymous: false,
     welcomeMessage: "Welcome to SwapBoard!",
-    announcementText: ""
+    announcementText: "",
+    enablePromotions: true,
+    enableManualFeaturing: true,
+    enableCategoryFeaturing: true,
+    enableHomepageCarousel: true
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -51,7 +59,11 @@ export const usePlatformSettings = () => {
           requireApproval: settingsMap.require_approval === true,
           allowAnonymous: settingsMap.allow_anonymous === true,
           welcomeMessage: settingsMap.welcome_message || "Welcome to SwapBoard!",
-          announcementText: settingsMap.announcement_text || ""
+          announcementText: settingsMap.announcement_text || "",
+          enablePromotions: settingsMap.enable_promotions === true,
+          enableManualFeaturing: settingsMap.enable_manual_featuring === true,
+          enableCategoryFeaturing: settingsMap.enable_category_featuring === true,
+          enableHomepageCarousel: settingsMap.enable_homepage_carousel === true
         });
 
         console.log('Platform settings loaded:', settingsMap);
@@ -74,7 +86,11 @@ export const usePlatformSettings = () => {
         { key: 'require_approval', value: newSettings.requireApproval },
         { key: 'allow_anonymous', value: newSettings.allowAnonymous },
         { key: 'welcome_message', value: newSettings.welcomeMessage },
-        { key: 'announcement_text', value: newSettings.announcementText }
+        { key: 'announcement_text', value: newSettings.announcementText },
+        { key: 'enable_promotions', value: newSettings.enablePromotions },
+        { key: 'enable_manual_featuring', value: newSettings.enableManualFeaturing },
+        { key: 'enable_category_featuring', value: newSettings.enableCategoryFeaturing },
+        { key: 'enable_homepage_carousel', value: newSettings.enableHomepageCarousel }
       ];
 
       for (const update of updates) {

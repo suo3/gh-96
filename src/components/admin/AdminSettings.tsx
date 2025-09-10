@@ -193,6 +193,28 @@ export const AdminSettings = ({ adminRole }: AdminSettingsProps) => {
                   }
                 />
               </div>
+
+              <div className="flex items-center justify-between">
+                <Label htmlFor="enablePromotions">Enable Item Promotions</Label>
+                <Switch
+                  id="enablePromotions"
+                  checked={localSettings.enablePromotions}
+                  onCheckedChange={(checked) =>
+                    setLocalSettings({ ...localSettings, enablePromotions: checked })
+                  }
+                />
+              </div>
+
+              <div className="flex items-center justify-between">
+                <Label htmlFor="enableManualFeaturing">Enable Manual Featuring</Label>
+                <Switch
+                  id="enableManualFeaturing"
+                  checked={localSettings.enableManualFeaturing}
+                  onCheckedChange={(checked) =>
+                    setLocalSettings({ ...localSettings, enableManualFeaturing: checked })
+                  }
+                />
+              </div>
             </div>
 
             <div className="space-y-4">
