@@ -208,7 +208,9 @@ export default function Category() {
 
               {/* Items Grid */}
               <div className="flex-1">
-                <ItemGrid items={filteredListings} onItemLike={() => {}} />
+                <ItemGrid items={filteredListings} onItemLike={async (item) => {
+                  // For category page, heart should add to favorites, not create conversation
+                }} />
               </div>
             </div>
           )}

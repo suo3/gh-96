@@ -45,11 +45,8 @@ export const ItemCard = ({ item, onItemClick, onItemLike }: ItemCardProps) => {
   const handleFavoriteClick = async (e: React.MouseEvent) => {
     e.stopPropagation();
     e.preventDefault();
-    if (onItemLike) {
-      onItemLike(item);
-    } else {
-      await toggleFavorite(item.id);
-    }
+    // Always use toggleFavorite for heart icon - this adds to favorites
+    await toggleFavorite(item.id);
   };
 
   const images = item.images || ["https://images.unsplash.com/photo-1649972904349-6e44c42644a7?w=400&h=300&fit=crop"];
