@@ -1,4 +1,4 @@
-import { Heart, MapPin, MessageCircle, MoreVertical, MessageSquare, Star, Crown, Megaphone, Flag } from "lucide-react";
+import { Heart, MapPin, MessageCircle, MoreVertical, MessageSquare, Star, Crown, Megaphone, Flag, ChevronLeft, ChevronRight } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -23,6 +23,7 @@ export const ItemCard = ({ item, onItemClick, onItemLike }: ItemCardProps) => {
   const { user } = useAuthStore();
   const { isFavorited, toggleFavorite } = useFavorites();
   const [showReportDialog, setShowReportDialog] = useState(false);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   const handleItemClick = () => {
     if (onItemClick) {
@@ -42,17 +43,68 @@ export const ItemCard = ({ item, onItemClick, onItemLike }: ItemCardProps) => {
     }
   };
 
-  const firstImage = item.images?.[0] || "https://images.unsplash.com/photo-1649972904349-6e44c42644a7?w=400&h=300&fit=crop";
+  const images = item.images || ["https://images.unsplash.com/photo-1649972904349-6e44c42644a7?w=400&h=300&fit=crop"];
+  const currentImage = images[currentImageIndex];
+  const hasMultipleImages = images.length > 1;
+
+  const handlePrevImage = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+    setCurrentImageIndex((prev) => prev === 0 ? images.length - 1 : prev - 1);
+  };
+
+  const handleNextImage = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+    setCurrentImageIndex((prev) => prev === images.length - 1 ? 0 : prev + 1);
+  };
 
   return (
     <Card className="overflow-hidden hover:shadow-lg transition-shadow">
       <div className="cursor-pointer" onClick={handleItemClick}>
-        <div className="relative">
+        <div className="relative overflow-hidden">
           <img
-            src={firstImage}
-            alt={item.title}
-            className="w-full h-48 object-cover"
+            src={currentImage}
+            alt={`${item.title} - Image ${currentImageIndex + 1}`}
+            className="w-full h-48 object-cover transition-opacity duration-300"
           />
+          
+          {/* Image Navigation Arrows */}
+          {hasMultipleImages && (
+            <>
+              <Button
+                variant="secondary"
+                size="sm"
+                className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 p-0 bg-black/60 hover:bg-black/80 text-white border-0"
+                onClick={handlePrevImage}
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </Button>
+              <Button
+                variant="secondary"
+                size="sm"
+                className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 p-0 bg-black/60 hover:bg-black/80 text-white border-0"
+                onClick={handleNextImage}
+              >
+                <ChevronRight className="w-4 h-4" />
+              </Button>
+            </>
+          )}
+
+          {/* Image Indicators */}
+          {hasMultipleImages && (
+            <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
+              {images.map((_, index) => (
+                <div
+                  key={index}
+                  className={`w-2 h-2 rounded-full transition-colors ${
+                    index === currentImageIndex ? 'bg-white' : 'bg-white/50'
+                  }`}
+                />
+              ))}
+            </div>
+          )}
+          
           <Button
             variant="secondary"
             size="sm"
