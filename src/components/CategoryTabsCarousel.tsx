@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
@@ -13,7 +13,7 @@ export const CategoryTabsCarousel = () => {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const navigate = useNavigate();
 
-  // Fetch categories
+  // Fetch categories and auto-select most popular
   const { data: categories } = useQuery({
     queryKey: ['categories'],
     queryFn: async () => {
@@ -27,6 +27,35 @@ export const CategoryTabsCarousel = () => {
       return data;
     },
   });
+
+  // Get category with most items
+  const { data: categoryCounts } = useQuery({
+    queryKey: ['categoryCounts'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('listings')
+        .select('category')
+        .eq('status', 'active');
+      
+      if (error) throw error;
+      
+      const counts = data.reduce((acc: Record<string, number>, listing) => {
+        acc[listing.category] = (acc[listing.category] || 0) + 1;
+        return acc;
+      }, {});
+      
+      return Object.entries(counts)
+        .sort(([,a], [,b]) => b - a)
+        .map(([category, count]) => ({ category, count }));
+    },
+  });
+
+  // Auto-select most popular category
+  useEffect(() => {
+    if (categoryCounts && categoryCounts.length > 0 && !selectedCategory) {
+      setSelectedCategory(categoryCounts[0].category);
+    }
+  }, [categoryCounts, selectedCategory]);
 
   // Fetch category items (promoted first, then regular items)
   const { data: categoryItems, isLoading: itemsLoading } = useQuery({

@@ -128,7 +128,7 @@ export const FeaturedItemsCarousel = () => {
                         </span>
                       </div>
 
-                      {profile?.rating && profile.rating > 0 && (
+                      {profile?.rating && profile.rating > 1 && (
                         <div className="flex items-center gap-1">
                           <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
                           <span className="text-xs font-medium">{profile.rating.toFixed(1)}</span>
