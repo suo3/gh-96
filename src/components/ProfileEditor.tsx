@@ -13,7 +13,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { useLocationDetection } from "@/hooks/useLocationDetection";
 import { useGhanaLocation } from "@/hooks/useGhanaLocation";
 import { PasswordChange } from "./PasswordChange";
-import { CoinPurchase } from "./CoinPurchase";
+
 import { LocationInput } from "./LocationInput";
 import { ProfileImageUpload } from "./ProfileImageUpload";
 import { AccountDeletion } from "./AccountDeletion";
@@ -330,7 +330,7 @@ export const ProfileEditor = () => {
 
       <PasswordChange />
 
-      <CoinPurchase />
+      
 
       <AccountDeletion />
     </div>

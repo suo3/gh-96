@@ -43,8 +43,6 @@ interface AuthState {
   canCreateListing: () => boolean;
   canMakeSale: () => boolean;
   spendCoins: (amount: number, description: string) => Promise<boolean>;
-  purchaseCoins: (amount: number, planType: string) => Promise<boolean>;
-  purchaseMobileMoneyCoins: (amount: number, planType: string, phoneNumber: string, provider: string) => Promise<boolean>;
   initialize: () => Promise<void>;
   refreshUserProfile: () => Promise<void>;
 }
@@ -423,71 +421,6 @@ export const useAuthStore = create<AuthState>()(
         }
       },
 
-      purchaseCoins: async (amount: number, planType: string) => {
-        const { user } = get();
-        if (!user) return false;
-
-        try {
-          // Call the coin purchase edge function
-          const { data, error } = await supabase.functions.invoke('purchase-coins', {
-            body: {
-              coinAmount: amount,
-              planType,
-              email: user.email,
-              userId: user.id
-            }
-          });
-
-          if (error) {
-            console.error('Coin purchase error:', error);
-            return false;
-          }
-
-          if (data?.url) {
-            // Open Stripe checkout in a new tab
-            window.open(data.url, '_blank');
-            return true;
-          }
-
-          return false;
-        } catch (error) {
-          console.error('Payment processing error:', error);
-          return false;
-        }
-      },
-
-      purchaseMobileMoneyCoins: async (amount: number, planType: string, phoneNumber: string, provider: string) => {
-        const { user } = get();
-        if (!user) return false;
-
-        try {
-          // Call the mobile money purchase edge function
-          const { data, error } = await supabase.functions.invoke('purchase-mobile-money-coins', {
-            body: {
-              coinAmount: amount,
-              planType,
-              phoneNumber,
-              provider,
-              email: user.email,
-              userId: user.id
-            }
-          });
-
-          if (error) {
-            console.error('Mobile money purchase error:', error);
-            return false;
-          }
-
-          if (data?.success) {
-            return true;
-          }
-
-          return false;
-        } catch (error) {
-          console.error('Mobile money processing error:', error);
-          return false;
-        }
-      }
     }),
     {
       name: 'auth-storage',
