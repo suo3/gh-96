@@ -3,7 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
-import { Star, Users, Award, MapPin } from "lucide-react";
+import { Star, Users, Medal, MapPin, TrendingUp } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -37,9 +37,12 @@ export const FeaturedSellersSection = () => {
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-2">
-        <Award className="h-6 w-6 text-orange-500" />
+        <Medal className="h-6 w-6 text-orange-500" />
         <h2 className="text-2xl font-bold">Featured Sellers</h2>
-        <Badge variant="secondary" className="ml-2">Trusted</Badge>
+        <Badge variant="secondary" className="ml-2 bg-gradient-to-r from-blue-100 to-purple-100 text-blue-700">
+          <TrendingUp className="h-3 w-3 mr-1" />
+          Trusted
+        </Badge>
       </div>
 
       <Carousel
@@ -81,7 +84,7 @@ export const FeaturedSellersSection = () => {
                       
                       {/* Featured badge */}
                       <Badge className="absolute -top-1 -right-2 bg-orange-500 text-white text-xs px-2 py-1 rounded-full">
-                        <Award className="h-3 w-3 mr-1" />
+                        <Medal className="h-3 w-3 mr-1" />
                         Featured
                       </Badge>
                     </div>

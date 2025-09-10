@@ -2,7 +2,7 @@ import { usePromotedItems } from "@/hooks/usePromotions";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
-import { Crown, Star, Heart, MapPin } from "lucide-react";
+import { Sparkles, Star, Heart, MapPin, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
@@ -28,11 +28,14 @@ export const FeaturedItemsCarousel = () => {
   return (
     <div className="relative">
       <div className="flex items-center gap-2 mb-4">
-        <Crown className="h-6 w-6 text-yellow-500" />
+        <Sparkles className="h-6 w-6 text-primary animate-pulse" />
         <h2 className="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
           Featured Items
         </h2>
-        <Badge variant="secondary" className="ml-2">Hot Deals</Badge>
+        <Badge variant="secondary" className="ml-2 bg-gradient-to-r from-orange-100 to-red-100 text-orange-700">
+          <Zap className="h-3 w-3 mr-1" />
+          Hot Deals
+        </Badge>
       </div>
 
       <Carousel
@@ -77,7 +80,7 @@ export const FeaturedItemsCarousel = () => {
                     
                     {/* Enhanced featured badge with animation */}
                     <Badge className="absolute top-3 left-3 bg-gradient-to-r from-primary to-accent text-primary-foreground shadow-lg animate-pulse border border-primary/20">
-                      <Crown className="h-3 w-3 mr-1 text-yellow-300" />
+                      <Sparkles className="h-3 w-3 mr-1 text-yellow-300" />
                       <span className="font-semibold">FEATURED</span>
                     </Badge>
                     
