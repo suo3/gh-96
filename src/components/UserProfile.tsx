@@ -152,7 +152,7 @@ export const UserProfile = ({ onBack }: UserProfileProps) => {
 
         {/* Recent Ratings */}
         {ratings.length > 0 && (
-          <div className="max-w-md mx-auto mb-6">
+          <div className="mb-6">
             <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center text-lg">
