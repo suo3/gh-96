@@ -56,9 +56,12 @@ export const FeaturedItemsCarousel = () => {
             return (
               <CarouselItem key={item.id} className="pl-2 md:pl-4 basis-full sm:basis-1/2 lg:basis-1/3 xl:basis-1/4">
                 <Card 
-                  className="group cursor-pointer hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border-yellow-200 bg-gradient-to-br from-yellow-50 to-orange-50"
+                  className="group cursor-pointer hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border-2 border-gradient-to-r from-primary to-accent bg-gradient-card shadow-gold relative overflow-hidden"
                   onClick={() => handleItemClick(listing.id)}
                 >
+                  {/* Premium glow effect */}
+                  <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-accent/10 to-primary/5 opacity-50"></div>
+                  
                   <div className="relative overflow-hidden rounded-t-lg">
                     {firstImage ? (
                       <img
@@ -72,11 +75,18 @@ export const FeaturedItemsCarousel = () => {
                       </div>
                     )}
                     
-                    {/* Featured badge */}
-                    <Badge className="absolute top-3 left-3 bg-yellow-500 text-yellow-900 shadow-lg">
-                      <Crown className="h-3 w-3 mr-1" />
-                      Featured
+                    {/* Enhanced featured badge with animation */}
+                    <Badge className="absolute top-3 left-3 bg-gradient-to-r from-primary to-accent text-primary-foreground shadow-lg animate-pulse border border-primary/20">
+                      <Crown className="h-3 w-3 mr-1 text-yellow-300" />
+                      <span className="font-semibold">FEATURED</span>
                     </Badge>
+                    
+                    {/* Premium corner ribbon */}
+                    <div className="absolute top-0 right-0 w-16 h-16 overflow-hidden">
+                      <div className="absolute top-3 right-[-20px] w-20 h-4 bg-gradient-to-r from-yellow-400 to-orange-400 text-xs font-bold text-white text-center leading-4 transform rotate-45 shadow-md">
+                        VIP
+                      </div>
+                    </div>
 
                     {/* Heart icon */}
                     <Button

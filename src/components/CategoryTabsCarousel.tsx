@@ -39,7 +39,7 @@ export const CategoryTabsCarousel = () => {
         .from('promoted_items')
         .select(`
           *,
-          listing:listings(
+          listing:listings!inner(
             *,
             profiles(
               id,
@@ -186,11 +186,11 @@ export const CategoryTabsCarousel = () => {
                         </div>
                       )}
                       
-                      {/* Promoted badge */}
+                      {/* Enhanced promoted badge */}
                       {item.isPromoted && (
-                        <Badge className="absolute top-2 left-2 bg-blue-500 text-white shadow-lg">
-                          <Crown className="h-3 w-3 mr-1" />
-                          Promoted
+                        <Badge className="absolute top-2 left-2 bg-gradient-to-r from-primary to-accent text-primary-foreground shadow-lg border border-primary/20">
+                          <Crown className="h-3 w-3 mr-1 text-yellow-300" />
+                          <span className="font-semibold">PROMOTED</span>
                         </Badge>
                       )}
 
