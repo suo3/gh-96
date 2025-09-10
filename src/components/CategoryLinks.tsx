@@ -2,24 +2,16 @@ import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Package, Smartphone, Car, Shirt, Home, Gamepad2 } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { getCategoryIcon } from "@/utils/categoryIcons";
 
 interface Category {
   id: string;
   name: string;
   listing_count?: number;
 }
-
-const categoryIcons: Record<string, any> = {
-  electronics: Smartphone,
-  vehicles: Car,
-  fashion: Shirt,
-  home: Home,
-  sports: Gamepad2,
-  default: Package
-};
 
 export const CategoryLinks = () => {
   const [categories, setCategories] = useState<Category[]>([]);
@@ -81,7 +73,7 @@ export const CategoryLinks = () => {
 
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6 mb-10">
           {categories.map((category, index) => {
-            const IconComponent = categoryIcons[category.name.toLowerCase()] || categoryIcons.default;
+            const IconComponent = getCategoryIcon(category.name);
             
             return (
               <Card 

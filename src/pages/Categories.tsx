@@ -4,10 +4,11 @@ import { Link } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Package, Smartphone, Home, Car, Gamepad2, Book, Shirt, Baby, Dumbbell, Music } from "lucide-react";
+import { ArrowLeft, Package } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Footer } from "@/components/Footer";
+import { getCategoryIcon } from "@/utils/categoryIcons";
 
 interface Category {
   id: string;
@@ -16,19 +17,6 @@ interface Category {
   is_active: boolean;
   item_count?: number;
 }
-
-const categoryIcons: Record<string, any> = {
-  "Electronics": Smartphone,
-  "Home & Garden": Home,
-  "Vehicles": Car,
-  "Gaming": Gamepad2,
-  "Books & Media": Book,
-  "Fashion": Shirt,
-  "Baby & Kids": Baby,
-  "Sports & Fitness": Dumbbell,
-  "Music & Instruments": Music,
-  "Other": Package,
-};
 
 export default function Categories() {
   const [categories, setCategories] = useState<Category[]>([]);
@@ -138,7 +126,7 @@ export default function Categories() {
           {/* Categories Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
             {categories.map((category) => {
-              const IconComponent = categoryIcons[category.name] || Package;
+              const IconComponent = getCategoryIcon(category.name);
               const categorySlug = category.name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
               
               return (

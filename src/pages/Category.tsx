@@ -10,6 +10,7 @@ import { ContentControls } from "@/components/ContentControls";
 import { Listing, useListingStore } from "@/stores/listingStore";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Footer } from "@/components/Footer";
+import { getCategoryIcon } from "@/utils/categoryIcons";
 
 type FilterOptions = {
   category: string;
@@ -120,17 +121,22 @@ export default function Category() {
               </Button>
             </Link>
             
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-              <div>
-                <Badge variant="secondary" className="mb-2 bg-primary/10 text-primary">
-                  📦 {categoryName}
-                </Badge>
-                <h1 className="text-3xl md:text-4xl font-bold mb-2">
-                  {categoryName} Marketplace
-                </h1>
-                <p className="text-muted-foreground">
-                  {itemCount} items available in {categoryName}
-                </p>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="flex items-center gap-4">
+                <div className="p-3 rounded-2xl bg-primary/10">
+                  {(() => {
+                    const IconComponent = getCategoryIcon(categoryName);
+                    return <IconComponent className="h-8 w-8 text-primary" />;
+                  })()}
+                </div>
+                <div>
+                  <h1 className="text-3xl md:text-4xl font-bold mb-2">
+                    {categoryName}
+                  </h1>
+                  <Badge variant="outline" className="text-sm">
+                    {itemCount} {itemCount === 1 ? 'item' : 'items'} available
+                  </Badge>
+                </div>
               </div>
               
               <div className="flex items-center gap-3">

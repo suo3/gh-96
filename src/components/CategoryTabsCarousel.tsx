@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { ItemGrid } from "@/components/ItemGrid";
 import { Star, Crown, Zap, MapPin, Heart } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { getCategoryIcon } from "@/utils/categoryIcons";
 
 export const CategoryTabsCarousel = () => {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
@@ -146,23 +147,27 @@ export const CategoryTabsCarousel = () => {
           className="w-full"
         >
           <CarouselContent className="-ml-2">
-            {categories.map((category) => (
-              <CarouselItem key={category.id} className="pl-2 basis-auto">
-                <Button
-                  variant={selectedCategory === category.name ? "default" : "outline"}
-                  onClick={() => setSelectedCategory(
-                    selectedCategory === category.name ? null : category.name
-                  )}
-                  className={`whitespace-nowrap ${
-                    selectedCategory === category.name 
-                      ? 'bg-primary text-primary-foreground shadow-lg' 
-                      : 'hover:bg-primary/10'
-                  }`}
-                >
-                  {category.name}
-                </Button>
-              </CarouselItem>
-            ))}
+            {categories.map((category) => {
+              const IconComponent = getCategoryIcon(category.name);
+              return (
+                <CarouselItem key={category.id} className="pl-2 basis-auto">
+                  <Button
+                    variant={selectedCategory === category.name ? "default" : "outline"}
+                    onClick={() => setSelectedCategory(
+                      selectedCategory === category.name ? null : category.name
+                    )}
+                    className={`whitespace-nowrap flex items-center gap-2 ${
+                      selectedCategory === category.name 
+                        ? 'bg-primary text-primary-foreground shadow-lg' 
+                        : 'hover:bg-primary/10'
+                    }`}
+                  >
+                    <IconComponent className="h-4 w-4" />
+                    {category.name}
+                  </Button>
+                </CarouselItem>
+              );
+            })}
           </CarouselContent>
           <CarouselPrevious className="hidden sm:flex" />
           <CarouselNext className="hidden sm:flex" />
