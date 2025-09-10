@@ -18,9 +18,9 @@ export const HeroSection = ({ onPostItem, onBrowseItems }: HeroSectionProps) => 
         <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-primary/10"></div>
       </div>
       
-      <div className="container mx-auto px-4 py-8 lg:py-12 relative z-10">
+      <div className="container mx-auto px-4 py-4 lg:py-6 relative z-10">
         {/* Main Hero Content */}
-        <div className="text-center max-w-5xl mx-auto mb-8">
+        <div className="text-center max-w-5xl mx-auto mb-4">
           <Badge 
             variant="secondary" 
             className="mb-8 px-6 py-3 text-base font-medium animate-fade-in bg-primary/10 border border-primary/20 text-primary"
