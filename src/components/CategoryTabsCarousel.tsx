@@ -28,7 +28,7 @@ export const CategoryTabsCarousel = () => {
     },
   });
 
-  // Fetch category items (promoted first, then high-rated sellers)
+  // Fetch category items (promoted first, then regular items)
   const { data: categoryItems, isLoading: itemsLoading } = useQuery({
     queryKey: ['categoryItems', selectedCategory],
     queryFn: async () => {
@@ -55,9 +55,9 @@ export const CategoryTabsCarousel = () => {
         .eq('status', 'active')
         .eq('promotion_type', 'category_featured')
         .gte('ends_at', new Date().toISOString())
-        .eq('listing.category', selectedCategory);
+        .ilike('listing.category', selectedCategory);
 
-      // Then get regular items from high-rated sellers
+      // Then get regular items - use case-insensitive search and remove rating filter
       const { data: regularItems } = await supabase
         .from('listings')
         .select(`
@@ -72,10 +72,9 @@ export const CategoryTabsCarousel = () => {
             total_sales
           )
         `)
-        .eq('category', selectedCategory)
+        .ilike('category', selectedCategory)
         .eq('status', 'active')
-        .gte('profiles.rating', 4.0)
-        .order('profiles.rating', { ascending: false })
+        .order('created_at', { ascending: false })
         .limit(20);
 
       // Combine and deduplicate
@@ -83,6 +82,7 @@ export const CategoryTabsCarousel = () => {
         const listing = p.listing as any;
         return { ...listing, isPromoted: true };
       }) || [];
+      
       const regular = regularItems?.filter(item => 
         !promoted.some(p => p.id === item.id)
       ).map(item => ({ ...item, isPromoted: false })) || [];
