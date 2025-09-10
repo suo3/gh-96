@@ -1,4 +1,4 @@
-import { Heart, MapPin, MessageCircle, MoreVertical, MessageSquare, Star, Crown, Megaphone, Flag, ChevronLeft, ChevronRight } from "lucide-react";
+import { Heart, MapPin, MessageCircle, MoreVertical, MessageSquare, Star, Crown, Megaphone, Flag, ChevronLeft, ChevronRight, User } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -9,7 +9,8 @@ import { ReportListingDialog } from "./ReportListingDialog";
 import { PromoteItemDialog } from "./PromoteItemDialog";
 import { useFavorites } from "@/hooks/useFavorites";
 import { useAuthStore } from "@/stores/authStore";
-import { useState } from "react";
+import { useRatingStore } from "@/stores/ratingStore";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 interface ItemCardProps {
@@ -22,8 +23,16 @@ export const ItemCard = ({ item, onItemClick, onItemLike }: ItemCardProps) => {
   const navigate = useNavigate();
   const { user } = useAuthStore();
   const { isFavorited, toggleFavorite } = useFavorites();
+  const { fetchUserRatings } = useRatingStore();
   const [showReportDialog, setShowReportDialog] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
+  // Fetch ratings for the item owner
+  useEffect(() => {
+    if (item.user_id) {
+      fetchUserRatings(item.user_id);
+    }
+  }, [item.user_id, fetchUserRatings]);
 
   const handleItemClick = () => {
     if (onItemClick) {
@@ -57,6 +66,14 @@ export const ItemCard = ({ item, onItemClick, onItemLike }: ItemCardProps) => {
     e.stopPropagation();
     e.preventDefault();
     setCurrentImageIndex((prev) => prev === images.length - 1 ? 0 : prev + 1);
+  };
+
+  const handleOwnerClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+    if (item.user_id) {
+      navigate(`/user/${item.user_id}`);
+    }
   };
 
   return (
@@ -149,15 +166,45 @@ export const ItemCard = ({ item, onItemClick, onItemLike }: ItemCardProps) => {
         </div>
         
         <CardContent className="p-4">
-          <h3 className="font-semibold text-lg line-clamp-2">{item.title}</h3>
+          <div className="flex items-start justify-between">
+            <h3 className="font-semibold text-lg line-clamp-2 flex-1">{item.title}</h3>
+            {item.condition && (
+              <Badge variant="secondary" className="ml-2 text-xs">
+                {item.condition}
+              </Badge>
+            )}
+          </div>
+          
           {item.price && (
             <span className="text-lg font-bold text-emerald-600">
               ₵{item.price.toFixed(2)}
             </span>
           )}
+          
           <div className="flex items-center text-sm text-gray-600 mt-2">
             <MapPin className="w-4 h-4 mr-1" />
             {item.location || "Location not specified"}
+          </div>
+
+          {/* Owner and Rating Section */}
+          <div className="flex items-center justify-between mt-3 pt-3 border-t">
+            <div className="flex items-center space-x-2">
+              {item.user_id && (
+                <UserRatingDisplay userId={item.user_id} showCount={false} size="sm" />
+              )}
+            </div>
+            
+            {item.user_id && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleOwnerClick}
+                className="text-primary hover:text-primary/80 p-1 h-auto"
+              >
+                <User className="w-4 h-4 mr-1" />
+                <span className="text-xs">View Seller</span>
+              </Button>
+            )}
           </div>
         </CardContent>
       </div>
