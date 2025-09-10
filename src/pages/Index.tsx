@@ -78,7 +78,16 @@ const Index = () => {
         </div>
       )}
 
-      {/* Featured content sections - moved before hero */}
+      {/* Seller Onboarding Banner */}
+      <SellerOnboardingBanner />
+
+      {/* Hero Section */}
+      <HeroSection 
+        onPostItem={handlePostItem}
+        onBrowseItems={handleBrowseItems}
+      />
+      
+      {/* Featured content sections */}
       <div className="container mx-auto px-4 space-y-12 py-8">
         {/* Featured Items Carousel */}
         <FeaturedItemsCarousel />
@@ -89,12 +98,6 @@ const Index = () => {
         {/* Featured Sellers */}
         <FeaturedSellersSection />
       </div>
-
-      {/* Hero Section */}
-      <HeroSection 
-        onPostItem={handlePostItem}
-        onBrowseItems={handleBrowseItems}
-      />
       
       <CategoryLinks />
 
