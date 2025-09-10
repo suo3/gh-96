@@ -4,14 +4,14 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowLeft, Award, MapPin, Calendar, Star, User, List, Coins } from "lucide-react";
+import { ArrowLeft, Award, MapPin, Calendar, Star, User, List } from "lucide-react";
 import { ProfileEditor } from "./ProfileEditor";
 import { ListingManager } from "./ListingManager";
 import { HistoryTab } from "./HistoryTab";
 import { UserRatingDisplay } from "./UserRatingDisplay";
 import { AllRatingsModal } from "./AllRatingsModal";
 import { AchievementsDisplay } from "./AchievementsDisplay";
-import { CoinPurchase } from "./CoinPurchase";
+
 import { useAuthStore } from "@/stores/authStore";
 import { useRatingStore } from "@/stores/ratingStore";
 import { useUserStats } from "@/hooks/useUserStats";
@@ -46,8 +46,7 @@ export const UserProfile = ({ onBack }: UserProfileProps) => {
     successfulSwaps: statsLoading ? 0 : totalSales,
     rating: getAverageRating(user.id),
     activeListings: statsLoading ? 0 : activeListings,
-    totalViews: statsLoading ? 0 : totalViews,
-    coins: user.coins
+    totalViews: statsLoading ? 0 : totalViews
   };
 
   // Get user's ratings
@@ -126,16 +125,6 @@ export const UserProfile = ({ onBack }: UserProfileProps) => {
                     </div>
                   </div>
 
-                  {/* Coin Balance - Prominent */}
-                  <div className="bg-gradient-to-r from-yellow-100 to-yellow-200 rounded-lg p-4 border border-yellow-300">
-                    <div className="flex items-center space-x-2">
-                      <Coins className="w-6 h-6 text-yellow-600" />
-                      <div className="text-center lg:text-right">
-                        <div className="text-2xl font-bold text-yellow-800">{userStats.coins}</div>
-                        <div className="text-xs text-yellow-700">coins available</div>
-                      </div>
-                    </div>
-                  </div>
                 </div>
 
                 {/* Stats Grid - Better Layout */}
@@ -237,14 +226,10 @@ export const UserProfile = ({ onBack }: UserProfileProps) => {
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-4 mb-6">
+          <TabsList className="grid w-full grid-cols-3 mb-6">
             <TabsTrigger value="profile" className="flex items-center">
               <User className="w-4 h-4 mr-2" />
               Profile
-            </TabsTrigger>
-            <TabsTrigger value="coins" className="flex items-center">
-              <Coins className="w-4 h-4 mr-2" />
-              Buy Coins
             </TabsTrigger>
             <TabsTrigger value="listings" className="flex items-center">
               <List className="w-4 h-4 mr-2" />
@@ -260,9 +245,6 @@ export const UserProfile = ({ onBack }: UserProfileProps) => {
             <ProfileEditor />
           </TabsContent>
 
-          <TabsContent value="coins">
-            <CoinPurchase />
-          </TabsContent>
 
           <TabsContent value="listings">
             <ListingManager />
