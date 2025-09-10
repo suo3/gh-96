@@ -144,7 +144,7 @@ const Marketplace = () => {
         </div>
       ) : (
         // Desktop layout with sidebar
-        <SidebarProvider defaultOpen={false}>
+        <SidebarProvider defaultOpen={true}>
           <div className="min-h-screen flex w-full bg-background">
             {/* Sidebar for filters */}
             <Sidebar className="border-r border-border shadow-lg" collapsible="offcanvas">
