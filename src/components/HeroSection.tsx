@@ -1,8 +1,7 @@
-import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowRight, Smartphone, Users, Shield, Star, MapPin, Heart } from "lucide-react";
+import { ArrowRight, Smartphone, Users, Shield } from "lucide-react";
 
 interface HeroSectionProps {
   onPostItem: () => void;
@@ -10,19 +9,6 @@ interface HeroSectionProps {
 }
 
 export const HeroSection = ({ onPostItem, onBrowseItems }: HeroSectionProps) => {
-  const [animateStats, setAnimateStats] = useState(false);
-
-  useEffect(() => {
-    const timer = setTimeout(() => setAnimateStats(true), 500);
-    return () => clearTimeout(timer);
-  }, []);
-
-  const stats = [
-    { number: "50K+", label: "Active Traders", icon: Users },
-    { number: "200K+", label: "Items Swapped", icon: Heart },
-    { number: "16", label: "Regions Covered", icon: MapPin },
-    { number: "4.9", label: "User Rating", icon: Star }
-  ];
 
   const features = [
     {
@@ -107,31 +93,6 @@ export const HeroSection = ({ onPostItem, onBrowseItems }: HeroSectionProps) => 
           </div>
         </div>
 
-        {/* Stats Section */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 mb-20">
-          {stats.map((stat, index) => {
-            const IconComponent = stat.icon;
-            return (
-              <Card 
-                key={stat.label}
-                className={`p-8 text-center bg-card border border-primary/10 shadow-elegant hover:shadow-primary/20 transition-all duration-500 hover:-translate-y-2 group ${
-                  animateStats ? 'animate-fade-in' : 'opacity-0'
-                }`}
-                style={{ animationDelay: `${index * 150 + 800}ms` }}
-              >
-                <div className="p-4 rounded-2xl bg-primary/10 group-hover:bg-primary/20 transition-colors mx-auto mb-4 w-fit">
-                  <IconComponent className="h-10 w-10 text-primary" />
-                </div>
-                <div className="text-3xl md:text-4xl font-bold text-foreground mb-2 group-hover:text-primary transition-colors">
-                  {stat.number}
-                </div>
-                <div className="text-base text-muted-foreground font-semibold">
-                  {stat.label}
-                </div>
-              </Card>
-            );
-          })}
-        </div>
 
         {/* Features Section */}
         <div className="grid md:grid-cols-3 gap-10">
