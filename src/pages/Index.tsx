@@ -14,6 +14,7 @@ import { Footer } from "@/components/Footer";
 import { FeaturedItemsCarousel } from "@/components/FeaturedItemsCarousel";
 import { CategoryTabsCarousel } from "@/components/CategoryTabsCarousel";
 import { FeaturedSellersSection } from "@/components/FeaturedSellersSection";
+import { SellerOnboardingBanner } from "@/components/SellerOnboardingBanner";
 import { useIndexLogic } from "@/hooks/useIndexLogic";
 import { usePlatformSettings } from "@/hooks/usePlatformSettings";
 
@@ -76,6 +77,9 @@ const Index = () => {
           </div>
         </div>
       )}
+
+      {/* Seller Onboarding Banner */}
+      <SellerOnboardingBanner />
 
       {/* Show Hero Section and Category Links */}
       <HeroSection 

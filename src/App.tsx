@@ -26,6 +26,7 @@ import Categories from "./pages/Categories";
 import Category from "./pages/Category";
 import UserProfile from "./pages/UserProfile";
 import Subscription from "./pages/Subscription";
+import SellerOnboarding from "./pages/SellerOnboarding";
 import { PaymentSuccess } from "./pages/PaymentSuccess";
 import { PaymentCancelled } from "./pages/PaymentCancelled";
 
@@ -85,6 +86,7 @@ const App = () => {
               <Route path="/categories" element={<Categories />} />
               <Route path="/category/:categorySlug" element={<Category />} />
               <Route path="/user/:userId" element={<UserProfile />} />
+              <Route path="/seller-onboarding" element={<SellerOnboarding />} />
               <Route path="/subscription" element={<Subscription />} />
               <Route path="/payment-success" element={<PaymentSuccess />} />
               <Route path="/payment-cancelled" element={<PaymentCancelled />} />

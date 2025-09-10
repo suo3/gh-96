@@ -13,6 +13,7 @@ import { AdminListingApproval } from "@/components/admin/AdminListingApproval";
 import { AdminAnalytics } from "@/components/admin/AdminAnalytics";
 import { AdminSettings } from "@/components/admin/AdminSettings";
 import { AdminBulkUpload } from "@/components/admin/AdminBulkUpload";
+import { AdminBulkImport } from "@/components/admin/AdminBulkImport";
 import { AdminPromotions } from "@/components/admin/AdminPromotions";
 import { Footer } from "@/components/Footer";
 import { AppHeader } from "@/components/AppHeader";
@@ -101,7 +102,7 @@ const Admin = () => {
           </div>
 
           <Tabs defaultValue="analytics" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-6 lg:w-auto lg:grid-cols-6">
+            <TabsList className="grid w-full grid-cols-7 lg:w-auto lg:grid-cols-7">
               <TabsTrigger value="analytics" className="flex items-center gap-2">
                 <BarChart3 className="w-4 h-4" />
                 Analytics
@@ -113,6 +114,10 @@ const Admin = () => {
               <TabsTrigger value="approval" className="flex items-center gap-2">
                 <CheckCircle className="w-4 h-4" />
                 Listings
+              </TabsTrigger>
+              <TabsTrigger value="bulk-import" className="flex items-center gap-2">
+                <Shield className="w-4 h-4" />
+                Bulk Import
               </TabsTrigger>
               <TabsTrigger value="promotions" className="flex items-center gap-2">
                 <Shield className="w-4 h-4" />
@@ -144,6 +149,10 @@ const Admin = () => {
                 </div>
                 <AdminListingApproval />
               </div>
+            </TabsContent>
+
+            <TabsContent value="bulk-import">
+              <AdminBulkImport />
             </TabsContent>
 
             <TabsContent value="promotions">
