@@ -10,7 +10,7 @@ import { ListingManager } from "./ListingManager";
 import { HistoryTab } from "./HistoryTab";
 import { UserRatingDisplay } from "./UserRatingDisplay";
 import { AllRatingsModal } from "./AllRatingsModal";
-import { AchievementsDisplay } from "./AchievementsDisplay";
+
 
 import { useAuthStore } from "@/stores/authStore";
 import { useRatingStore } from "@/stores/ratingStore";
@@ -43,7 +43,6 @@ export const UserProfile = ({ onBack }: UserProfileProps) => {
     name: `${user.firstName} ${user.lastName}`,
     joinDate: joinedDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
     location: user.location,
-    successfulSwaps: statsLoading ? 0 : totalSales,
     rating: getAverageRating(user.id),
     activeListings: statsLoading ? 0 : activeListings,
     totalViews: statsLoading ? 0 : totalViews
@@ -128,11 +127,7 @@ export const UserProfile = ({ onBack }: UserProfileProps) => {
                 </div>
 
                 {/* Stats Grid - Better Layout */}
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                  <div className="bg-emerald-50 rounded-lg p-4 text-center border border-emerald-200">
-                    <div className="text-2xl font-bold text-emerald-600">{userStats.successfulSwaps}</div>
-                    <div className="text-sm text-emerald-700">Successful Swaps</div>
-                  </div>
+                <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
                   <div className="bg-blue-50 rounded-lg p-4 text-center border border-blue-200">
                     <UserRatingDisplay userId={user.id} showCount={true} size="lg" />
                     <div className="text-sm text-blue-700 mt-1">Rating</div>
@@ -155,21 +150,10 @@ export const UserProfile = ({ onBack }: UserProfileProps) => {
           </CardContent>
         </Card>
 
-        {/* Two Column Layout for Better Organization */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-          {/* Left Column - Achievements */}
-          <div className="lg:col-span-2">
-            <AchievementsDisplay 
-              achievements={user.achievements || []}
-              totalSwaps={statsLoading ? 0 : totalSales}
-              rating={getAverageRating(user.id)}
-            />
-          </div>
-
-          {/* Right Column - Recent Ratings */}
-          {ratings.length > 0 && (
-            <div>
-              <Card>
+        {/* Recent Ratings */}
+        {ratings.length > 0 && (
+          <div className="max-w-md mx-auto mb-6">
+            <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center text-lg">
                     <Star className="w-5 h-5 mr-2 text-yellow-500" />
@@ -219,10 +203,9 @@ export const UserProfile = ({ onBack }: UserProfileProps) => {
                     )}
                   </div>
                 </CardContent>
-              </Card>
-            </div>
-          )}
-        </div>
+            </Card>
+          </div>
+        )}
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
