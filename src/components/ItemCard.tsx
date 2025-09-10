@@ -10,6 +10,7 @@ import { PromoteItemDialog } from "./PromoteItemDialog";
 import { useFavorites } from "@/hooks/useFavorites";
 import { useAuthStore } from "@/stores/authStore";
 import { useRatingStore } from "@/stores/ratingStore";
+import { usePlatformSettings } from "@/hooks/usePlatformSettings";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -24,6 +25,7 @@ export const ItemCard = ({ item, onItemClick, onItemLike }: ItemCardProps) => {
   const { user } = useAuthStore();
   const { isFavorited, toggleFavorite } = useFavorites();
   const { fetchUserRatings } = useRatingStore();
+  const { settings } = usePlatformSettings();
   const [showReportDialog, setShowReportDialog] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
@@ -140,7 +142,7 @@ export const ItemCard = ({ item, onItemClick, onItemLike }: ItemCardProps) => {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="start">
-                {user?.id === item.user_id && (
+                {user?.id === item.user_id && settings.enablePromotions && (
                   <DropdownMenuItem onClick={(e) => e.stopPropagation()}>
                     <PromoteItemDialog listingId={item.id}>
                       <div className="flex items-center w-full">

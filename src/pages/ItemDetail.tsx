@@ -10,6 +10,7 @@ import { PromoteItemDialog } from "@/components/PromoteItemDialog";
 import { UserRating } from "@/components/UserRating";
 import { Footer } from "@/components/Footer";
 import { useAuthStore } from "@/stores/authStore";
+import { usePlatformSettings } from "@/hooks/usePlatformSettings";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Helmet } from "react-helmet";
@@ -20,6 +21,7 @@ const ItemDetail = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user } = useAuthStore();
+  const { settings } = usePlatformSettings();
   const { incrementViews } = useListingStore();
   
   const [item, setItem] = useState<Listing | null>(null);
@@ -486,8 +488,8 @@ const ItemDetail = () => {
                   </div>
                   
                   <div className="flex gap-3">
-                    {/* Promote Item button - only show if user owns the item */}
-                    {user && user.id === item.user_id && (
+                    {/* Promote Item button - only show if user owns the item and promotions are enabled */}
+                    {user && user.id === item.user_id && settings.enablePromotions && (
                       <PromoteItemDialog listingId={item.id}>
                         <Button
                           variant="outline"
