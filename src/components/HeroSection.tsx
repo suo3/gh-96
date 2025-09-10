@@ -10,23 +10,6 @@ interface HeroSectionProps {
 
 export const HeroSection = ({ onPostItem, onBrowseItems }: HeroSectionProps) => {
 
-  const features = [
-    {
-      icon: Smartphone,
-      title: "Mobile Money Ready",
-      description: "MTN MoMo, Vodafone Cash & AirtelTigo Money supported"
-    },
-    {
-      icon: Shield,
-      title: "Trusted & Secure",
-      description: "Verified profiles with secure peer-to-peer trading"
-    },
-    {
-      icon: Users,
-      title: "Ghana Community",
-      description: "Connect locally from Accra to Kumasi and beyond"
-    }
-  ];
 
   return (
     <section className="relative overflow-hidden bg-gradient-to-br from-background via-background to-primary/5">
@@ -94,34 +77,6 @@ export const HeroSection = ({ onPostItem, onBrowseItems }: HeroSectionProps) => 
         </div>
 
 
-        {/* Features Section */}
-        <div className="grid md:grid-cols-3 gap-10">
-          {features.map((feature, index) => {
-            const IconComponent = feature.icon;
-            return (
-              <Card 
-                key={feature.title}
-                className={`p-10 bg-card border border-primary/10 shadow-elegant hover:shadow-primary/20 transition-all duration-500 hover:-translate-y-3 group animate-fade-in relative overflow-hidden`}
-                style={{ animationDelay: `${index * 200 + 1200}ms` }}
-              >
-                <div className="absolute top-0 right-0 w-20 h-20 bg-primary/10 rounded-full transform translate-x-6 -translate-y-6"></div>
-                <div className="relative z-10">
-                  <div className="flex items-center mb-6">
-                    <div className="p-4 rounded-2xl bg-primary/10 group-hover:bg-primary/20 transition-colors">
-                      <IconComponent className="h-8 w-8 text-primary" />
-                    </div>
-                  </div>
-                  <h3 className="text-2xl font-bold text-foreground mb-4 group-hover:text-primary transition-colors">
-                    {feature.title}
-                  </h3>
-                  <p className="text-muted-foreground leading-relaxed text-lg">
-                    {feature.description}
-                  </p>
-                </div>
-              </Card>
-            );
-          })}
-        </div>
       </div>
       
       {/* Floating Elements */}
