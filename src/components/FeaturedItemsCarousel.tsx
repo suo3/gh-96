@@ -8,7 +8,7 @@ import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 
 export const FeaturedItemsCarousel = () => {
-  const { data: promotedItems, isLoading } = usePromotedItems('homepage_carousel');
+  const { data: promotedItems, isLoading } = usePromotedItems('featured');
   const navigate = useNavigate();
 
   if (isLoading) {

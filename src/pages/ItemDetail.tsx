@@ -314,11 +314,11 @@ const ItemDetail = () => {
           {/* Back Button */}
           <Button 
             variant="ghost" 
-            onClick={() => navigate('/')}
+            onClick={() => navigate(-1)}
             className="mb-6 -ml-2"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Marketplace
+            Back
           </Button>
 
           <div className="bg-card rounded-lg shadow-lg overflow-hidden">
