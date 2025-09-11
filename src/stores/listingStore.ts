@@ -218,12 +218,15 @@ export const useListingStore = create<ListingStore>((set, get) => ({
       const { session } = useAuthStore.getState();
       if (!session?.user) throw new Error('User not authenticated');
 
-      // Include user_id to satisfy RLS policy WITH CHECK condition
+      // Only update specific fields to avoid RLS policy violations
       const updatePayload = {
-        ...updatedListing,
-        user_id: session.user.id,
+        status: updatedListing.status,
         updated_at: new Date().toISOString()
       };
+      
+      console.log('UpdateListing payload:', updatePayload);
+      console.log('User ID:', session.user.id);
+      console.log('Listing ID:', id);
 
       const { data, error } = await supabase
         .from('listings')

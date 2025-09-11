@@ -24,8 +24,10 @@ export const ListingManager = () => {
   const loadUserListings = async () => {
     if (!user) return;
     
+    console.log('Loading listings for user:', user.id);
     setIsLoading(true);
     const listings = await getUserListings(user.id);
+    console.log('Fetched listings:', listings);
     // Transform the data to match the expected format
     const transformedListings = listings.map(listing => ({
       ...listing,
