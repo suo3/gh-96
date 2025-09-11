@@ -37,6 +37,7 @@ export const ListingManager = () => {
 
   const handleMarkComplete = async (id: string, title: string) => {
     try {
+      console.log('Attempting to mark listing as complete:', id, title);
       await markAsCompleted(id);
       await loadUserListings();
       toast({
@@ -45,6 +46,7 @@ export const ListingManager = () => {
       });
     } catch (error) {
       console.error('Error marking listing as complete:', error);
+      console.error('Error details:', JSON.stringify(error, null, 2));
       toast({
         title: "Error",
         description: "Failed to mark listing as completed. Please try again.",
@@ -73,6 +75,7 @@ export const ListingManager = () => {
 
   const handleToggleStatus = async (id: string, currentStatus: string, title: string) => {
     try {
+      console.log('Attempting to toggle status:', id, currentStatus, title);
       const newStatus = currentStatus === 'active' ? 'paused' : 'active';
       await updateListing(id, { status: newStatus });
       await loadUserListings();
@@ -82,6 +85,7 @@ export const ListingManager = () => {
       });
     } catch (error) {
       console.error('Error toggling listing status:', error);
+      console.error('Error details:', JSON.stringify(error, null, 2));
       toast({
         title: "Error",
         description: "Failed to update listing status. Please try again.",
