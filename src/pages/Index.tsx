@@ -14,6 +14,7 @@ import { Footer } from "@/components/Footer";
 import { FeaturedItemsCarousel } from "@/components/FeaturedItemsCarousel";
 import { CategoryTabsCarousel } from "@/components/CategoryTabsCarousel";
 import { FeaturedSellersSection } from "@/components/FeaturedSellersSection";
+import { FeaturedStoresCarousel } from "@/components/FeaturedStoresCarousel";
 import { SellerOnboardingBanner } from "@/components/SellerOnboardingBanner";
 import { useIndexLogic } from "@/hooks/useIndexLogic";
 import { usePlatformSettings } from "@/hooks/usePlatformSettings";
@@ -59,6 +60,9 @@ const Index = () => {
         onPostItem={handlePostItem}
         onLogoClick={handleLogoClick}
       />
+
+      {/* Featured Stores Carousel - Above Hero */}
+      <FeaturedStoresCarousel />
 
       {/* Platform Announcement */}
       {!settingsLoading && settings.announcementText && (

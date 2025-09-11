@@ -12,6 +12,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Listing } from "@/stores/listingStore";
 import { generatePageTitle, generateMetaDescription } from "@/constants/seo";
+import { FeaturedStoresCarousel } from "@/components/FeaturedStoresCarousel";
 
 interface UserProfile {
   id: string;
@@ -230,6 +231,9 @@ const UserProfile = () => {
           onPostItem={() => navigate('/post-item')}
           onLogoClick={() => navigate('/')}
         />
+
+        {/* Featured Stores Carousel */}
+        <FeaturedStoresCarousel />
         
         <div className="container mx-auto px-4 py-8">
           {/* Back Button */}

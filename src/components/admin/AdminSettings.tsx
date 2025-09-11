@@ -9,6 +9,7 @@ import { Settings, Save, Database } from "lucide-react";
 import { toast } from "sonner";
 import { usePlatformSettings } from "@/hooks/usePlatformSettings";
 import { supabase } from "@/integrations/supabase/client";
+import { AdminFeaturedStores } from "./AdminFeaturedStores";
 
 interface AdminSettingsProps {
   adminRole: string | null;
@@ -148,6 +149,10 @@ export const AdminSettings = ({ adminRole }: AdminSettingsProps) => {
 
   return (
     <div className="space-y-6">
+      {/* Featured Stores Management */}
+      <AdminFeaturedStores adminRole={adminRole} />
+      
+      {/* Platform Settings */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">

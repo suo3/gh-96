@@ -11,6 +11,7 @@ import { Listing, useListingStore } from "@/stores/listingStore";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Footer } from "@/components/Footer";
 import { getCategoryIcon } from "@/utils/categoryIcons";
+import { FeaturedStoresCarousel } from "@/components/FeaturedStoresCarousel";
 
 type FilterOptions = {
   category: string;
@@ -111,6 +112,9 @@ export default function Category() {
       </Helmet>
 
       <div className="min-h-screen bg-background">
+        {/* Featured Stores Carousel */}
+        <FeaturedStoresCarousel />
+        
         {/* Header */}
         <div className="bg-card/50 backdrop-blur-sm border-b border-border">
           <div className="container mx-auto px-4 py-6">

@@ -15,6 +15,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Helmet } from "react-helmet";
 import { generatePageTitle, generateMetaDescription } from "@/constants/seo";
+import { FeaturedStoresCarousel } from "@/components/FeaturedStoresCarousel";
 
 const ItemDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -312,6 +313,9 @@ const ItemDetail = () => {
       </Helmet>
 
       <div className="min-h-screen bg-background">
+        {/* Featured Stores Carousel */}
+        <FeaturedStoresCarousel />
+        
         <div className="container mx-auto px-4 py-8 max-w-4xl">
           {/* Back Button */}
           <Button 
