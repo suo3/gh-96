@@ -218,9 +218,10 @@ export const useListingStore = create<ListingStore>((set, get) => ({
       const { session } = useAuthStore.getState();
       if (!session?.user) throw new Error('User not authenticated');
 
-      // Only update the status field to avoid RLS policy violations
+      // Include user_id to satisfy RLS policy WITH CHECK condition
       const updatePayload = {
-        status: updatedListing.status,
+        ...updatedListing,
+        user_id: session.user.id,
         updated_at: new Date().toISOString()
       };
 
