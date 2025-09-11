@@ -33,12 +33,25 @@ export const ListingManager = () => {
       ...listing,
       createdAt: new Date(listing.created_at || ''),
     }));
+    console.log('Setting userListings to:', transformedListings.map(l => ({ id: l.id, title: l.title, user_id: l.user_id })));
     setUserListings(transformedListings);
     setIsLoading(false);
   };
 
   const handleMarkComplete = async (id: string, title: string) => {
     try {
+      // Safety check: verify this listing belongs to the current user
+      const listing = userListings.find(l => l.id === id);
+      if (!listing || listing.user_id !== user?.id) {
+        console.error('Security error: Attempting to modify listing that doesn\'t belong to current user');
+        toast({
+          title: "Error",
+          description: "You can only modify your own listings.",
+          variant: "destructive",
+        });
+        return;
+      }
+      
       console.log('Attempting to mark listing as complete:', id, title);
       await markAsCompleted(id);
       await loadUserListings();
@@ -77,6 +90,18 @@ export const ListingManager = () => {
 
   const handleToggleStatus = async (id: string, currentStatus: string, title: string) => {
     try {
+      // Safety check: verify this listing belongs to the current user
+      const listing = userListings.find(l => l.id === id);
+      if (!listing || listing.user_id !== user?.id) {
+        console.error('Security error: Attempting to modify listing that doesn\'t belong to current user');
+        toast({
+          title: "Error",
+          description: "You can only modify your own listings.",
+          variant: "destructive",
+        });
+        return;
+      }
+      
       console.log('Attempting to toggle status:', id, currentStatus, title);
       const newStatus = currentStatus === 'active' ? 'paused' : 'active';
       await updateListing(id, { status: newStatus });
