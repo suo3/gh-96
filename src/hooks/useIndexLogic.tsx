@@ -101,10 +101,10 @@ export const useIndexLogic = () => {
   }, [user?.location, geocodeLocation, setStoreUserLocation, fetchListings]);
 
   useEffect(() => {
-    // Auto-set to grid view for all devices
+    // Set initial display mode to grid and adjust filters based on device
     setDisplayMode("grid");
     setShowFilters(!isMobile);
-  }, [isMobile, displayMode]);
+  }, [isMobile]); // Removed displayMode dependency to prevent infinite loop
 
   const handleLocationSet = async (location: string) => {
     if (location.trim()) {
