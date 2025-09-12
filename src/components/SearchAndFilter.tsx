@@ -44,7 +44,7 @@ export const SearchAndFilter = ({ onSearch, onFilterChange, onBack }: SearchAndF
   const [selectedRadius, setSelectedRadius] = useState(5);
   const [categories, setCategories] = useState<Category[]>([]);
   const [conditions, setConditions] = useState<Condition[]>([]);
-  const { createConversationFromSwipe } = useMessageStore();
+  
   const { toast } = useToast();
 
   const radiusOptions = [1, 2, 5, 10, 15, 25, 50];
@@ -201,14 +201,14 @@ export const SearchAndFilter = ({ onSearch, onFilterChange, onBack }: SearchAndF
 
   const handleItemLike = async (item: any) => {
     try {
-      const conversationId = await createConversationFromSwipe(item.id, item.title, 'mock-user-id');
+      // Navigate to messages to start conversation
       toast({
         title: "Interest Sent!",
-        description: `You've expressed interest in ${item.title}. A conversation has been started with ${item.user}.`,
+        description: `You've expressed interest in ${item.title}. Navigate to messages to start a conversation.`,
       });
-      console.log(`Started conversation ${conversationId} for ${item.title} with ${item.user}`);
+      console.log(`Expressed interest in ${item.title} with ${item.user}`);
     } catch (error) {
-      console.error('Error starting conversation:', error);
+      console.error('Error expressing interest:', error);
       toast({
         title: "Error",
         description: "Failed to start conversation. Please try again.",

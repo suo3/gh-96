@@ -3,7 +3,7 @@ import { AppHeader } from "@/components/AppHeader";
 import { HeroSection } from "@/components/HeroSection";
 import { CategoryLinks } from "@/components/CategoryLinks";
 import { ContentControls } from "@/components/ContentControls";
-import { SwipeMode } from "@/components/SwipeMode";
+
 import { BrowseMode } from "@/components/BrowseMode";
 import { FilterPanel } from "@/components/FilterPanel";
 import { LoginDialog } from "@/components/LoginDialog";
@@ -38,7 +38,6 @@ const Index = () => {
     handleLocationPromptDismiss,
     handleLocationDetect,
     handleBrowseItems,
-    handleSwipe,
     handleItemLike,
     handlePostItem,
     handleLogoClick,

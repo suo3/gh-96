@@ -44,7 +44,7 @@ interface MessageStore {
   markAsRead: (conversationId: string) => Promise<void>;
   setTyping: (conversationId: string, isTyping: boolean) => void;
   addConversation: (conversation: Conversation) => void;
-  createConversationFromSwipe: (listingId: string, itemTitle: string, listingOwnerId: string) => Promise<string>;
+  
   markConversationComplete: (conversationId: string) => Promise<void>;
   rejectConversation: (conversationId: string) => Promise<void>;
   fetchConversations: () => Promise<void>;
@@ -227,66 +227,6 @@ export const useMessageStore = create<MessageStore>((set, get) => ({
     }));
   },
 
-  createConversationFromSwipe: async (listingId, itemTitle, listingOwnerId) => {
-    const { session } = useAuthStore.getState();
-    if (!session?.user) {
-      console.error('User not authenticated');
-      return '';
-    }
-
-    try {
-      console.log('Creating conversation for listing:', { listingId, itemTitle, listingOwnerId });
-      
-      const { data: existingConversation, error: checkError } = await supabase
-        .from('conversations')
-        .select('id')
-        .eq('listing_id', listingId)
-        .or(`and(user1_id.eq.${session.user.id},user2_id.eq.${listingOwnerId}),and(user1_id.eq.${listingOwnerId},user2_id.eq.${session.user.id})`)
-        .maybeSingle();
-
-      if (checkError) {
-        console.error('Error checking existing conversation:', checkError);
-      }
-
-      if (existingConversation) {
-        console.log('Conversation already exists:', existingConversation.id);
-        return existingConversation.id;
-      }
-      
-      const { data, error } = await supabase
-        .from('conversations')
-        .insert({
-          user1_id: session.user.id,
-          user2_id: listingOwnerId,
-          item_title: itemTitle,
-          listing_id: listingId
-        })
-        .select()
-        .single();
-
-      if (error) {
-        console.error('Error creating conversation:', error);
-        return '';
-      }
-
-      console.log('Conversation created:', data);
-
-      await supabase
-        .from('messages')
-        .insert({
-          conversation_id: data.id,
-          sender_id: session.user.id,
-          content: `Hi! I'm interested in your ${itemTitle}.`
-        });
-
-      get().fetchConversations();
-      
-      return data.id;
-    } catch (error) {
-      console.error('Error creating conversation:', error);
-      return '';
-    }
-  },
 
   markConversationComplete: async (conversationId) => {
     const { session } = useAuthStore.getState();

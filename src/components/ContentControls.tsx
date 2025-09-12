@@ -10,9 +10,9 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { useListingStore } from "@/stores/listingStore";
 
 interface ContentControlsProps {
-  displayMode: "swipe" | "grid" | "list";
+  displayMode: "grid" | "list";
   showFilters: boolean;
-  onDisplayModeChange: (mode: "swipe" | "grid" | "list") => void;
+  onDisplayModeChange: (mode: "grid" | "list") => void;
   onToggleFilters: () => void;
   onFilterChange: (filters: any) => void;
   hideFilterButton?: boolean;

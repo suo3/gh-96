@@ -1,6 +1,6 @@
 import { AppHeader } from "@/components/AppHeader";
 import { ContentControls } from "@/components/ContentControls";
-import { SwipeMode } from "@/components/SwipeMode";
+
 import { BrowseMode } from "@/components/BrowseMode";
 import { FilterPanel } from "@/components/FilterPanel";
 import { LoginDialog } from "@/components/LoginDialog";
@@ -30,7 +30,6 @@ const Marketplace = () => {
     handleManualLocationEntry,
     handleLocationPromptDismiss,
     handleLocationDetect,
-    handleSwipe,
     handleItemLike,
     handlePostItem,
     handleLogoClick,
@@ -82,7 +81,7 @@ const Marketplace = () => {
           )}
 
           {/* Content Controls */}
-          {filteredListings.length > 0 && (displayMode !== "swipe" || !isMobile) && (
+          {filteredListings.length > 0 && (
             <div className="bg-card/50 backdrop-blur-sm border-b border-border">
               <ContentControls
                 displayMode={displayMode}
@@ -119,13 +118,8 @@ const Marketplace = () => {
               </div>
             )}
 
-            {/* Swipe Mode */}
-            {displayMode === "swipe" && isMobile && filteredListings.length > 0 && (
-              <SwipeMode items={filteredListings} onSwipe={handleSwipe} />
-            )}
-
             {/* Browse Mode (Grid & List) */}
-            {(displayMode === "grid" || displayMode === "list") && filteredListings.length > 0 && (
+            {filteredListings.length > 0 && (
               <BrowseMode 
                 displayMode={displayMode}
                 items={filteredListings}

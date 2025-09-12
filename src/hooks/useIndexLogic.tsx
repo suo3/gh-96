@@ -17,7 +17,7 @@ export const useIndexLogic = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const isMobile = useIsMobile();
-  const [displayMode, setDisplayMode] = useState<"swipe" | "grid" | "list">(isMobile ? "swipe" : "grid");
+  const [displayMode, setDisplayMode] = useState<"grid" | "list">("grid");
   const [showLoginDialog, setShowLoginDialog] = useState(false);
   const [showFilters, setShowFilters] = useState(!isMobile);
   const [showLocationPrompt, setShowLocationPrompt] = useState(false);
@@ -25,7 +25,7 @@ export const useIndexLogic = () => {
   const [showHeroSection, setShowHeroSection] = useState(true);
   const [hasUserInteracted, setHasUserInteracted] = useState(false);
   
-  const { createConversationFromSwipe, totalUnreadCount, fetchConversations } = useMessageStore();
+  const { totalUnreadCount, fetchConversations } = useMessageStore();
   const { isAuthenticated, canCreateListing, canMakeSale, user } = useAuthStore();
   const { 
     filteredListings, 
@@ -101,9 +101,8 @@ export const useIndexLogic = () => {
   }, [user?.location, geocodeLocation, setStoreUserLocation, fetchListings]);
 
   useEffect(() => {
-    if (!isMobile && displayMode === "swipe") {
-      setDisplayMode("grid");
-    }
+    // Auto-set to grid view for all devices
+    setDisplayMode("grid");
     setShowFilters(!isMobile);
   }, [isMobile, displayMode]);
 
@@ -151,57 +150,6 @@ export const useIndexLogic = () => {
     navigate("/marketplace");
   };
 
-  const handleSwipe = async (direction: 'left' | 'right') => {
-    if (!isAuthenticated) {
-      setShowLoginDialog(true);
-      return;
-    }
-
-    if (!canMakeSale()) {
-      toast({
-        title: "Swap Limit Reached",
-        description: "You've reached your monthly swap limit. Upgrade to Premium for unlimited swaps!",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    const currentItem = filteredListings[0]; // SwipeMode will handle index internally
-    if (!currentItem) return;
-
-    if (direction === 'right' && currentItem.hasActiveMessage) {
-      toast({
-        title: "Already Interested",
-        description: `You've already shown interest in ${currentItem.title}.`,
-        variant: "destructive"
-      });
-      return;
-    }
-
-    if (direction === 'right') {
-      try {
-        const conversationId = await createConversationFromSwipe(
-          currentItem.id, 
-          currentItem.title, 
-          currentItem.user_id || ''
-        );
-        markItemAsMessaged(currentItem.id);
-        
-        toast({
-          title: "Match Created!",
-          description: `You've shown interest in ${currentItem.title}! A conversation has been started.`,
-        });
-      } catch (error) {
-        console.error('Error creating conversation:', error);
-        toast({
-          title: "Error",
-          description: "Failed to start conversation. Please try again.",
-          variant: "destructive"
-        });
-      }
-    }
-  };
-
   const handleItemLike = async (item: any) => {
     setHasUserInteracted(true);
     setShowHeroSection(false);
@@ -229,11 +177,8 @@ export const useIndexLogic = () => {
     }
 
     try {
-      const conversationId = await createConversationFromSwipe(
-        item.id, 
-        item.title, 
-        item.user_id || ''
-      );
+      // Navigate to messages to start conversation
+      navigate(`/messages?newConversation=${item.id}&user=${item.user_id}&title=${encodeURIComponent(item.title)}`);
       markItemAsMessaged(item.id);
       
       toast({
@@ -303,7 +248,7 @@ export const useIndexLogic = () => {
     handleLocationPromptDismiss,
     handleLocationDetect,
     handleBrowseItems,
-    handleSwipe,
+    
     handleItemLike,
     handlePostItem,
     handleLogoClick,
