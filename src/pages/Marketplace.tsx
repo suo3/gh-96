@@ -86,7 +86,7 @@ const Marketplace = () => {
               <ContentControls
                 displayMode={displayMode}
                 showFilters={showFilters}
-                onDisplayModeChange={setDisplayMode}
+                onDisplayModeChange={(mode) => { console.log('[Marketplace] setDisplayMode called with', mode); setDisplayMode(mode); }}
                 onToggleFilters={() => setShowFilters(!showFilters)}
                 onFilterChange={handleFilterChange}
               />
@@ -192,7 +192,7 @@ const Marketplace = () => {
                     <ContentControls
                       displayMode={displayMode}
                       showFilters={showFilters}
-                      onDisplayModeChange={setDisplayMode}
+                      onDisplayModeChange={(mode) => { console.log('[Marketplace] setDisplayMode called with', mode); setDisplayMode(mode); }}
                       onToggleFilters={() => setShowFilters(!showFilters)}
                       onFilterChange={handleFilterChange}
                       hideFilterButton={false}

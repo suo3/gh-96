@@ -18,6 +18,9 @@ export const useIndexLogic = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const isMobile = useIsMobile();
   const [displayMode, setDisplayMode] = useState<"grid" | "list">("grid");
+  useEffect(() => {
+    console.log('[useIndexLogic] displayMode:', displayMode);
+  }, [displayMode]);
   const [showLoginDialog, setShowLoginDialog] = useState(false);
   const [showFilters, setShowFilters] = useState(!isMobile);
   const [showLocationPrompt, setShowLocationPrompt] = useState(false);

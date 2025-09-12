@@ -13,8 +13,9 @@ export const ViewToggle = ({ currentView, onViewChange }: ViewToggleProps) => {
   const isMobile = useIsMobile();
 
   const handleChange = (value: string) => {
+    console.log("[ViewToggle] onValueChange:", value);
     if (value === "grid" || value === "list") {
-      onViewChange(value);
+      onViewChange(value as "grid" | "list");
     }
   };
 
