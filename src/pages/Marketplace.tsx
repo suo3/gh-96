@@ -146,7 +146,7 @@ const Marketplace = () => {
                 <FilterPanel 
                   onFilterChange={handleFilterChange}
                   isVisible={true}
-                  showSearch={false}
+                  showSearch={true}
                 />
               </SidebarContent>
             </Sidebar>

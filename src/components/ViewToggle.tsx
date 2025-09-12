@@ -12,8 +12,14 @@ interface ViewToggleProps {
 export const ViewToggle = ({ currentView, onViewChange }: ViewToggleProps) => {
   const isMobile = useIsMobile();
 
+  const handleChange = (value: string) => {
+    if (value === "grid" || value === "list") {
+      onViewChange(value);
+    }
+  };
+
   return (
-    <ToggleGroup type="single" value={currentView} onValueChange={onViewChange} className="bg-white/80 backdrop-blur-sm rounded-lg p-1">
+    <ToggleGroup type="single" value={currentView} onValueChange={handleChange} className="bg-white/80 backdrop-blur-sm rounded-lg p-1">
       <ToggleGroupItem value="grid" aria-label="Grid view" className="data-[state=on]:bg-gradient-to-r data-[state=on]:from-emerald-500 data-[state=on]:to-teal-500 data-[state=on]:text-white">
         <Grid2X2 className="h-4 w-4" />
       </ToggleGroupItem>
