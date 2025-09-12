@@ -142,22 +142,23 @@ const Favorites = () => {
         />
         <div className="container mx-auto px-4 py-8">
           {/* Header */}
-          <div className="flex items-center justify-between mb-8">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-6 md:mb-8">
             <div className="flex items-center">
               <Button 
                 variant="ghost" 
                 onClick={() => navigate('/')}
-                className="mr-4 -ml-2"
+                className="mr-3 -ml-2 shrink-0"
+                size="sm"
               >
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                Back
+                <ArrowLeft className="w-4 h-4 mr-1 md:mr-2" />
+                <span className="hidden sm:inline">Back</span>
               </Button>
               <div>
-                <h1 className="text-3xl font-bold text-foreground flex items-center">
-                  <Heart className="w-8 h-8 mr-3 text-red-500 fill-current" />
+                <h1 className="text-2xl md:text-3xl font-bold text-foreground flex items-center">
+                  <Heart className="w-6 h-6 md:w-8 md:h-8 mr-2 md:mr-3 text-red-500 fill-current" />
                   My Favorites
                 </h1>
-                <p className="text-muted-foreground mt-1">
+                <p className="text-sm md:text-base text-muted-foreground mt-1">
                   {favorites.length} saved {favorites.length === 1 ? 'item' : 'items'}
                 </p>
               </div>
@@ -188,7 +189,7 @@ const Favorites = () => {
 
           {/* Favorites Grid */}
           {!isLoading && favorites.length > 0 && (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
               {favorites.map((item) => (
                 <ItemCard
                   key={item.id}

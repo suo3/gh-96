@@ -164,30 +164,30 @@ export const ItemCard = ({ item, onItemClick, onItemLike }: ItemCardProps) => {
           </div>
         </div>
         
-        <CardContent className="p-4">
-          <div className="flex items-start justify-between">
-            <h3 className="font-semibold text-lg line-clamp-2 flex-1">{item.title}</h3>
+        <CardContent className="p-3 md:p-4">
+          <div className="flex items-start justify-between gap-2">
+            <h3 className="font-semibold text-base md:text-lg line-clamp-2 flex-1">{item.title}</h3>
             {item.condition && (
-              <Badge variant="secondary" className="ml-2 text-xs">
+              <Badge variant="secondary" className="text-xs shrink-0">
                 {item.condition}
               </Badge>
             )}
           </div>
           
           {item.price && (
-            <span className="text-lg font-bold text-emerald-600">
+            <span className="text-base md:text-lg font-bold text-emerald-600 block mt-1">
               ₵{item.price.toFixed(2)}
             </span>
           )}
           
-          <div className="flex items-center text-sm text-gray-600 mt-2">
-            <MapPin className="w-4 h-4 mr-1" />
-            {item.location || "Location not specified"}
+          <div className="flex items-center text-xs md:text-sm text-gray-600 mt-2">
+            <MapPin className="w-3 h-3 md:w-4 md:h-4 mr-1 shrink-0" />
+            <span className="truncate">{item.location || "Location not specified"}</span>
           </div>
 
           {/* Owner and Rating Section */}
-          <div className="flex items-center justify-between mt-3 pt-3 border-t">
-            <div className="flex items-center space-x-2">
+          <div className="flex items-center justify-between mt-3 pt-3 border-t gap-2">
+            <div className="flex items-center space-x-2 min-w-0">
               {item.user_id && (
                 <UserRatingDisplay userId={item.user_id} showCount={false} size="sm" />
               )}
@@ -198,10 +198,11 @@ export const ItemCard = ({ item, onItemClick, onItemLike }: ItemCardProps) => {
                 variant="ghost"
                 size="sm"
                 onClick={handleOwnerClick}
-                className="text-primary hover:text-primary/80 p-1 h-auto"
+                className="text-primary hover:text-primary/80 p-1 h-auto shrink-0"
               >
-                <User className="w-4 h-4 mr-1" />
-                <span className="text-xs">View Seller</span>
+                <User className="w-3 h-3 md:w-4 md:h-4 mr-1" />
+                <span className="text-xs hidden sm:inline">View Seller</span>
+                <span className="text-xs sm:hidden">Seller</span>
               </Button>
             )}
           </div>

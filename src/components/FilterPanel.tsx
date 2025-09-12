@@ -201,20 +201,20 @@ export const FilterPanel = ({ onFilterChange, isVisible, isMobile = false, showS
   return (
     <div className="h-full flex flex-col bg-gradient-to-b from-background to-secondary/20">
       {/* Header */}
-      <div className="p-6 border-b border-border/50">
-        <div className="flex items-center gap-3 mb-2">
-          <div className="p-2 rounded-lg bg-primary/10">
-            <SlidersHorizontal className="w-5 h-5 text-primary" />
+      <div className="p-4 md:p-6 border-b border-border/50">
+        <div className="flex items-center gap-2 md:gap-3 mb-2">
+          <div className="p-1.5 md:p-2 rounded-lg bg-primary/10">
+            <SlidersHorizontal className="w-4 h-4 md:w-5 md:h-5 text-primary" />
           </div>
           <div>
-            <h2 className="text-lg font-semibold text-foreground">Filters</h2>
-            <p className="text-sm text-muted-foreground">Refine your search</p>
+            <h2 className="text-base md:text-lg font-semibold text-foreground">Filters</h2>
+            <p className="text-xs md:text-sm text-muted-foreground">Refine your search</p>
           </div>
         </div>
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-y-auto p-6 space-y-6">
+      <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-4 md:space-y-6">
         {/* Search Bar */}
         {showSearch && (
           <div className="space-y-3 animate-fade-in">

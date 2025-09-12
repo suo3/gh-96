@@ -45,18 +45,18 @@ export const SwipeMode = ({ items, onSwipe }: SwipeModeProps) => {
 
   return (
     <>
-      <div className="text-center mb-8">
-        <h2 className="text-3xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent mb-2">
+      <div className="text-center mb-6 md:mb-8 px-4">
+        <h2 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent mb-2">
           Discover Amazing Items Nearby
         </h2>
-        <p className="text-gray-600 max-w-2xl mx-auto">
+        <p className="text-sm md:text-base text-gray-600 max-w-2xl mx-auto">
           Swipe right on items you'd love to swap for, left to pass. 
           When both users like each other's items, you'll be matched to chat!
         </p>
       </div>
 
-      <div className="max-w-md mx-auto">
-        <div className="relative h-[600px] flex items-center justify-center">
+      <div className="max-w-sm md:max-w-md mx-auto">
+        <div className="relative h-[500px] md:h-[600px] flex items-center justify-center">
           {items.length > 0 && currentItemIndex < items.length ? (
             <SwipeCard
               item={convertToSwipeFormat(items[currentItemIndex])}
@@ -86,27 +86,27 @@ export const SwipeMode = ({ items, onSwipe }: SwipeModeProps) => {
         </div>
 
         {items.length > 0 && currentItemIndex < items.length && (
-          <div className="flex justify-center space-x-6 mt-6">
+          <div className="flex justify-center space-x-4 md:space-x-6 mt-4 md:mt-6">
             <Button
               variant="outline"
               size="lg"
-              className="w-16 h-16 rounded-full border-red-200 hover:bg-red-50 hover:border-red-300 shadow-lg"
+              className="w-12 h-12 md:w-16 md:h-16 rounded-full border-red-200 hover:bg-red-50 hover:border-red-300 shadow-lg"
               onClick={() => handleSwipe('left')}
             >
-              <X className="w-8 h-8 text-red-500" />
+              <X className="w-6 h-6 md:w-8 md:h-8 text-red-500" />
             </Button>
             <Button
               size="lg"
-              className="w-16 h-16 rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 shadow-lg"
+              className="w-12 h-12 md:w-16 md:h-16 rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 shadow-lg"
               onClick={() => handleSwipe('right')}
             >
-              <Heart className="w-8 h-8 text-white" />
+              <Heart className="w-6 h-6 md:w-8 md:h-8 text-white" />
             </Button>
           </div>
         )}
 
-        <div className="text-center mt-4">
-          <Badge variant="secondary" className="text-sm bg-emerald-100 text-emerald-800">
+        <div className="text-center mt-3 md:mt-4">
+          <Badge variant="secondary" className="text-xs md:text-sm bg-emerald-100 text-emerald-800">
             {Math.max(0, items.length - currentItemIndex)} items remaining today
           </Badge>
         </div>

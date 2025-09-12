@@ -127,19 +127,19 @@ export const UserProfile = ({ onBack }: UserProfileProps) => {
                 </div>
 
                 {/* Stats Grid - Better Layout */}
-                <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
-                  <div className="bg-blue-50 rounded-lg p-4 text-center border border-blue-200">
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
+                  <div className="bg-blue-50 rounded-lg p-3 md:p-4 text-center border border-blue-200">
                     <UserRatingDisplay userId={user.id} showCount={true} size="lg" />
-                    <div className="text-sm text-blue-700 mt-1">Rating</div>
+                    <div className="text-xs md:text-sm text-blue-700 mt-1">Rating</div>
                   </div>
-                  <div className="bg-purple-50 rounded-lg p-4 text-center border border-purple-200">
-                    <div className="text-2xl font-bold text-purple-600">
+                  <div className="bg-purple-50 rounded-lg p-3 md:p-4 text-center border border-purple-200">
+                    <div className="text-xl md:text-2xl font-bold text-purple-600">
                       {statsLoading ? '...' : userStats.activeListings}
                     </div>
-                    <div className="text-sm text-purple-700">Active Listings</div>
+                    <div className="text-xs md:text-sm text-purple-700">Active Listings</div>
                   </div>
-                  <div className="bg-gray-50 rounded-lg p-4 text-center border border-gray-200">
-                    <div className="text-lg font-semibold text-gray-600">
+                  <div className="bg-gray-50 rounded-lg p-3 md:p-4 text-center border border-gray-200 col-span-2 md:col-span-1">
+                    <div className="text-base md:text-lg font-semibold text-gray-600">
                       {statsLoading ? '...' : `${monthlyListings} / ${monthlySales}`}
                     </div>
                     <div className="text-xs text-gray-600">Monthly L/S</div>
@@ -210,17 +210,17 @@ export const UserProfile = ({ onBack }: UserProfileProps) => {
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="grid w-full grid-cols-3 mb-6">
-            <TabsTrigger value="profile" className="flex items-center">
-              <User className="w-4 h-4 mr-2" />
-              Profile
+            <TabsTrigger value="profile" className="flex items-center text-xs md:text-sm">
+              <User className="w-3 h-3 md:w-4 md:h-4 md:mr-2" />
+              <span className="hidden md:inline">Profile</span>
             </TabsTrigger>
-            <TabsTrigger value="listings" className="flex items-center">
-              <List className="w-4 h-4 mr-2" />
-              Listings
+            <TabsTrigger value="listings" className="flex items-center text-xs md:text-sm">
+              <List className="w-3 h-3 md:w-4 md:h-4 md:mr-2" />
+              <span className="hidden md:inline">Listings</span>
             </TabsTrigger>
-            <TabsTrigger value="history" className="flex items-center">
-              <Award className="w-4 h-4 mr-2" />
-              History
+            <TabsTrigger value="history" className="flex items-center text-xs md:text-sm">
+              <Award className="w-3 h-3 md:w-4 md:h-4 md:mr-2" />
+              <span className="hidden md:inline">History</span>
             </TabsTrigger>
           </TabsList>
 

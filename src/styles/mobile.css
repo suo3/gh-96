@@ -1,0 +1,73 @@
+/* Mobile-specific styles for better touch interactions */
+
+/* Ensure proper touch targets on mobile */
+@media (max-width: 768px) {
+  .touch-target {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* Better spacing for mobile cards */
+  .mobile-card {
+    margin: 0.5rem;
+    padding: 0.75rem;
+  }
+  
+  /* Optimized button sizes for mobile */
+  .mobile-button {
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+  }
+  
+  /* Better modal spacing on mobile */
+  .mobile-modal {
+    margin: 1rem;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+  
+  /* Improved text readability */
+  .mobile-text {
+    font-size: 0.875rem;
+    line-height: 1.5;
+  }
+  
+  /* Better form spacing */
+  .mobile-form .form-field {
+    margin-bottom: 1rem;
+  }
+  
+  /* Optimized grid spacing */
+  .mobile-grid {
+    gap: 0.75rem;
+  }
+  
+  /* Better header spacing */
+  .mobile-header {
+    padding: 0.5rem 1rem;
+  }
+}
+
+/* Tablet optimizations */
+@media (min-width: 768px) and (max-width: 1024px) {
+  .tablet-optimized {
+    max-width: 100%;
+    padding: 1rem 2rem;
+  }
+}
+
+/* Landscape mobile optimizations */
+@media (max-width: 768px) and (orientation: landscape) {
+  .landscape-mobile {
+    height: auto;
+    min-height: auto;
+  }
+  
+  .landscape-mobile .hero-section {
+    padding: 2rem 0;
+  }
+  
+  .landscape-mobile .swipe-card {
+    height: 300px;
+  }
+}

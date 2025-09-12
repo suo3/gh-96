@@ -124,7 +124,7 @@ export default function Categories() {
           </div>
 
           {/* Categories Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 mb-16">
             {categories.map((category) => {
               const IconComponent = getCategoryIcon(category.name);
               const categorySlug = category.name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
@@ -135,19 +135,19 @@ export default function Categories() {
                   to={`/category/${categorySlug}`}
                   className="group"
                 >
-                  <Card className="p-8 h-full hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border border-primary/10 group-hover:border-primary/30">
+                  <Card className="p-4 md:p-8 h-full hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border border-primary/10 group-hover:border-primary/30">
                     <div className="flex flex-col items-center text-center">
-                      <div className="p-4 rounded-2xl bg-primary/10 group-hover:bg-primary/20 transition-colors mb-6">
-                        <IconComponent className="h-12 w-12 text-primary" />
+                      <div className="p-3 md:p-4 rounded-2xl bg-primary/10 group-hover:bg-primary/20 transition-colors mb-4 md:mb-6">
+                        <IconComponent className="h-8 w-8 md:h-12 md:w-12 text-primary" />
                       </div>
                       
-                      <h3 className="text-xl font-bold mb-3 group-hover:text-primary transition-colors">
+                      <h3 className="text-lg md:text-xl font-bold mb-2 md:mb-3 group-hover:text-primary transition-colors">
                         {category.name}
                       </h3>
                       
                       <div className="flex items-center gap-2 text-muted-foreground">
-                        <Package className="h-4 w-4" />
-                        <span className="text-sm font-medium">
+                        <Package className="h-3 w-3 md:h-4 md:w-4" />
+                        <span className="text-xs md:text-sm font-medium">
                           {category.item_count || 0} items
                         </span>
                       </div>
@@ -159,14 +159,14 @@ export default function Categories() {
           </div>
 
           {/* Call to Action */}
-          <Card className="p-8 md:p-12 text-center bg-primary/5 border border-primary/20">
-            <h2 className="text-3xl font-bold mb-4 text-primary">Don't See Your Category?</h2>
-            <p className="text-muted-foreground mb-6 max-w-2xl mx-auto">
+          <Card className="p-6 md:p-8 lg:p-12 text-center bg-primary/5 border border-primary/20">
+            <h2 className="text-2xl md:text-3xl font-bold mb-4 text-primary">Don't See Your Category?</h2>
+            <p className="text-sm md:text-base text-muted-foreground mb-6 max-w-2xl mx-auto">
               Can't find the perfect category for your item? No worries! You can still list your item 
               and help us grow our marketplace categories.
             </p>
             <Link to="/post">
-              <Button size="lg" className="font-semibold">
+              <Button size="lg" className="font-semibold w-full sm:w-auto">
                 List Your Item
               </Button>
             </Link>

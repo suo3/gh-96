@@ -97,8 +97,8 @@ export const AppHeader = ({ userLocation, onLocationDetect, onPostItem, onLogoCl
               SwapBoard
             </button>
             
-            {/* Navigation Links - Desktop */}
-            <div className="hidden md:flex items-center space-x-6">
+          {/* Navigation Links - Desktop */}
+            <div className="hidden lg:flex items-center space-x-6">
               <Link 
                 to="/categories" 
                 className="text-gray-600 hover:text-emerald-600 transition-colors font-medium flex items-center gap-2"
@@ -117,10 +117,10 @@ export const AppHeader = ({ userLocation, onLocationDetect, onPostItem, onLogoCl
           </div>
 
           {/* Location */}
-          <div className="hidden lg:flex items-center space-x-2 text-sm text-gray-600">
+          <div className="hidden xl:flex items-center space-x-2 text-sm text-gray-600">
             <MapPin className="w-4 h-4" />
             {user?.location ? (
-              <span className="font-medium">{user.location}</span>
+              <span className="font-medium truncate max-w-32">{user.location}</span>
             ) : userLocation ? (
               <span className="font-medium">Location detected</span>
             ) : (
@@ -140,7 +140,7 @@ export const AppHeader = ({ userLocation, onLocationDetect, onPostItem, onLogoCl
             {isAuthenticated ? (
               <>
                 {/* Items Count Display */}
-                <div className="hidden sm:flex items-center space-x-1 bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 rounded-full px-3 py-1.5">
+                <div className="hidden md:flex items-center space-x-1 bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 rounded-full px-3 py-1.5">
                   <Package className="w-4 h-4 text-emerald-600" />
                   <span className="font-semibold text-emerald-700">{totalListings}</span>
                   <span className="text-emerald-600 text-xs font-medium">items</span>
@@ -169,9 +169,10 @@ export const AppHeader = ({ userLocation, onLocationDetect, onPostItem, onLogoCl
                 <Button
                   onClick={onPostItem}
                   className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                  size="sm"
                 >
-                  <Plus className="w-4 h-4 mr-2" />
-                  <span className="hidden sm:inline">Post Item</span>
+                  <Plus className="w-4 h-4 md:mr-2" />
+                  <span className="hidden md:inline">Post Item</span>
                 </Button>
 
                 {/* User Menu */}
@@ -193,7 +194,7 @@ export const AppHeader = ({ userLocation, onLocationDetect, onPostItem, onLogoCl
                         <p className="w-[200px] truncate text-sm text-muted-foreground">
                           @{user?.username}
                         </p>
-                        <div className="flex items-center gap-2 sm:hidden">
+                        <div className="flex items-center gap-2 md:hidden">
                           <div className="flex items-center gap-1 bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 rounded-full px-2 py-1">
                             <Package className="w-3 h-3 text-emerald-600" />
                             <span className="text-xs font-semibold text-emerald-700">{totalListings}</span>
@@ -217,7 +218,7 @@ export const AppHeader = ({ userLocation, onLocationDetect, onPostItem, onLogoCl
                       <Heart className="mr-2 h-4 w-4" />
                       Favorites
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={handleMessages} className="sm:hidden">
+                    <DropdownMenuItem onClick={handleMessages} className="md:hidden">
                       <Bell className="mr-2 h-4 w-4" />
                       Messages
                       {totalUnreadCount > 0 && (
@@ -246,8 +247,8 @@ export const AppHeader = ({ userLocation, onLocationDetect, onPostItem, onLogoCl
 
       {/* Location Input Modal */}
       {showLocationInput && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4 max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg p-4 md:p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
             <h3 className="text-lg font-semibold mb-4">Set Your Location</h3>
             <LocationInput
               value={locationValue}
@@ -255,11 +256,11 @@ export const AppHeader = ({ userLocation, onLocationDetect, onPostItem, onLogoCl
               placeholder="Enter your location"
               className="mb-4"
             />
-            <div className="flex gap-2">
+            <div className="flex flex-col sm:flex-row gap-2">
               <Button onClick={handleLocationSubmit} className="flex-1">
                 Set Location
               </Button>
-              <Button onClick={onLocationDetect} variant="outline">
+              <Button onClick={onLocationDetect} variant="outline" className="flex-1">
                 Detect
               </Button>
             </div>
