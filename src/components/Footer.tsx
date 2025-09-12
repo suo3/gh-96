@@ -7,7 +7,7 @@ export const Footer = () => {
         <div className="flex flex-col md:flex-row justify-between items-center gap-4">
           <div className="text-center md:text-left">
             <p className="text-sm text-muted-foreground">
-              © 2024 SwapBoard. All rights reserved.
+              © 2024 KenteKart. All rights reserved.
             </p>
           </div>
           

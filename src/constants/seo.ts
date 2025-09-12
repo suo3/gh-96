@@ -1,23 +1,23 @@
-// SEO Configuration for SwapBoard Ghana
+// SEO Configuration for KenteKart Ghana
 export const SEO_CONFIG = {
-  siteName: "SwapBoard Ghana",
+  siteName: "KenteKart Ghana",
   siteDescription: "Ghana's premier marketplace for swapping and trading items. Connect with locals to exchange goods safely and sustainably.",
-  siteUrl: "https://swapboard.gh", // Update with actual domain
+  siteUrl: "https://kentekart.gh", // Update with actual domain
   
   // Social media metadata
   social: {
-    twitter: "@swapboardgh",
-    facebook: "swapboardghana",
-    instagram: "@swapboard.ghana"
+    twitter: "@kentekartgh",
+    facebook: "kentekartghana",
+    instagram: "@kentekart.ghana"
   },
   
   // Local business metadata
   business: {
-    name: "SwapBoard Ghana",
+    name: "KenteKart Ghana",
     description: "Sustainable marketplace for Ghana",
     address: "Accra, Ghana",
     phone: "+233 XXX XXX XXX", // Update with actual number
-    email: "contact@swapboard.gh"
+    email: "contact@kentekart.gh"
   },
   
   // SEO keywords for Ghana market

@@ -130,7 +130,7 @@ const Favorites = () => {
     <>
       <Helmet>
         <title>{generatePageTitle("My Favorites")}</title>
-        <meta name="description" content={generateMetaDescription("View and manage your favorite items on SwapBoard Ghana marketplace")} />
+        <meta name="description" content={generateMetaDescription("View and manage your favorite items on KenteKart Ghana marketplace")} />
       </Helmet>
 
       <div className="min-h-screen bg-background">

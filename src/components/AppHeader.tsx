@@ -94,7 +94,7 @@ export const AppHeader = ({ userLocation, onLocationDetect, onPostItem, onLogoCl
               onClick={onLogoClick}
               className="text-2xl font-bold text-emerald-600 hover:text-emerald-700 transition-colors cursor-pointer"
             >
-              SwapBoard
+              KenteKart
             </button>
             
           {/* Navigation Links - Desktop */}

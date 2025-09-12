@@ -221,7 +221,7 @@ const UserProfile = () => {
     <>
       <Helmet>
         <title>{generatePageTitle(`${displayName}'s Profile`)}</title>
-        <meta name="description" content={generateMetaDescription(`View ${displayName}'s listings and profile on SwapBoard Ghana marketplace`)} />
+        <meta name="description" content={generateMetaDescription(`View ${displayName}'s listings and profile on KenteKart Ghana marketplace`)} />
       </Helmet>
 
       <div className="min-h-screen bg-background">

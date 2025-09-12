@@ -103,10 +103,10 @@ export default function Category() {
   return (
     <>
       <Helmet>
-        <title>{categoryName} - SwapBoard Ghana Trading Platform</title>
+        <title>{categoryName} - KenteKart Ghana Trading Platform</title>
         <meta 
           name="description" 
-          content={`Browse ${itemCount} ${categoryName.toLowerCase()} items on SwapBoard Ghana. Find great deals on ${categoryName.toLowerCase()} in Ghana's trusted trading marketplace.`} 
+          content={`Browse ${itemCount} ${categoryName.toLowerCase()} items on KenteKart Ghana. Find great deals on ${categoryName.toLowerCase()} in Ghana's trusted trading marketplace.`} 
         />
         <meta name="keywords" content={`${categoryName.toLowerCase()}, ghana marketplace, trading, ${categorySlugForSEO}`} />
       </Helmet>

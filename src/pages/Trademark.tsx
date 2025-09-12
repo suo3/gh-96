@@ -11,12 +11,12 @@ export default function Trademark() {
   const navigate = useNavigate();
   const trademarks = [
     {
-      name: "SwapBoard®",
+      name: "KenteKart®",
       description: "Our primary trademark covering our trading platform and services",
       category: "Platform Name"
     },
     {
-      name: "SwapBoard Logo",
+      name: "KenteKart Logo",
       description: "Our distinctive logo and visual brand elements",
       category: "Visual Identity"
     },
@@ -31,7 +31,7 @@ export default function Trademark() {
     {
       icon: Shield,
       title: "Authorized Use",
-      description: "Our trademarks may only be used with explicit written permission from SwapBoard Ghana Limited."
+      description: "Our trademarks may only be used with explicit written permission from KenteKart Ghana Limited."
     },
     {
       icon: AlertTriangle,
@@ -48,10 +48,10 @@ export default function Trademark() {
   return (
     <>
       <Helmet>
-        <title>Trademark Information - SwapBoard Ghana Trading Platform</title>
+        <title>Trademark Information - KenteKart Ghana Trading Platform</title>
         <meta 
           name="description" 
-          content="Information about SwapBoard's trademarks, intellectual property rights, and usage guidelines for our brand assets." 
+          content="Information about KenteKart's trademarks, intellectual property rights, and usage guidelines for our brand assets." 
         />
       </Helmet>
       
@@ -87,7 +87,7 @@ export default function Trademark() {
             </h1>
             
             <p className="text-xl text-muted-foreground leading-relaxed">
-              SwapBoard and related marks are trademarks of SwapBoard Ghana Limited. 
+              KenteKart and related marks are trademarks of KenteKart Ghana Limited. 
               This page outlines our intellectual property rights and usage guidelines.
             </p>
           </div>
@@ -148,21 +148,21 @@ export default function Trademark() {
             <div className="space-y-6 text-muted-foreground">
               <p className="leading-relaxed">
                 All trademarks, service marks, trade names, logos, and other intellectual property 
-                displayed on the SwapBoard platform are the property of SwapBoard Ghana Limited or 
+                displayed on the KenteKart platform are the property of KenteKart Ghana Limited or 
                 their respective owners. Nothing on this platform should be construed as granting 
-                any license or right to use any trademark without the written permission of SwapBoard 
+                any license or right to use any trademark without the written permission of KenteKart 
                 Ghana Limited or the relevant trademark owner.
               </p>
               
               <p className="leading-relaxed">
-                SwapBoard® is a registered trademark of SwapBoard Ghana Limited in Ghana and other 
+                KenteKart® is a registered trademark of KenteKart Ghana Limited in Ghana and other 
                 jurisdictions. Unauthorized use of our trademarks is strictly prohibited and may 
                 result in legal action.
               </p>
               
               <p className="leading-relaxed">
                 If you believe that your trademark rights are being infringed upon through the 
-                SwapBoard platform, please contact our legal team immediately with detailed 
+                KenteKart platform, please contact our legal team immediately with detailed 
                 information about the alleged infringement.
               </p>
             </div>
@@ -179,14 +179,14 @@ export default function Trademark() {
             <div className="space-y-4">
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <a 
-                  href="mailto:legal@swapboard.gh" 
+                  href="mailto:legal@kentekart.gh" 
                   className="text-primary hover:underline font-medium"
                 >
-                  legal@swapboard.gh
+                  legal@kentekart.gh
                 </a>
                 <span className="text-muted-foreground hidden sm:block">|</span>
                 <span className="text-muted-foreground">
-                  Legal Department, SwapBoard Ghana Limited
+                  Legal Department, KenteKart Ghana Limited
                 </span>
               </div>
               

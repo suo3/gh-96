@@ -1,4 +1,4 @@
-# SwapBoard Ghana - Production Readiness Checklist
+# KenteKart Ghana - Production Readiness Checklist
 
 ## ✅ COMPLETED Security Fixes
 

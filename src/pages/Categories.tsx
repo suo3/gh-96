@@ -88,10 +88,10 @@ export default function Categories() {
   return (
     <>
       <Helmet>
-        <title>Categories - SwapBoard Ghana Trading Platform</title>
+        <title>Categories - KenteKart Ghana Trading Platform</title>
         <meta 
           name="description" 
-          content="Browse all categories on SwapBoard Ghana. Find electronics, fashion, home goods, vehicles and more in Ghana's premier trading marketplace." 
+          content="Browse all categories on KenteKart Ghana. Find electronics, fashion, home goods, vehicles and more in Ghana's premier trading marketplace." 
         />
         <meta name="keywords" content="categories, electronics, fashion, vehicles, home goods, ghana marketplace" />
       </Helmet>

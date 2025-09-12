@@ -59,10 +59,10 @@ export default function Privacy() {
   return (
     <>
       <Helmet>
-        <title>Privacy Policy - SwapBoard Ghana Trading Platform</title>
+        <title>Privacy Policy - KenteKart Ghana Trading Platform</title>
         <meta 
           name="description" 
-          content="SwapBoard's privacy policy outlines how we protect your personal information and ensure secure trading in Ghana's digital marketplace." 
+          content="KenteKart's privacy policy outlines how we protect your personal information and ensure secure trading in Ghana's digital marketplace." 
         />
       </Helmet>
       
@@ -98,7 +98,7 @@ export default function Privacy() {
             </h1>
             
             <p className="text-xl text-muted-foreground leading-relaxed mb-6">
-              At SwapBoard, we are committed to protecting your privacy and ensuring the security 
+              At KenteKart, we are committed to protecting your privacy and ensuring the security 
               of your personal information. This policy explains how we collect, use, and protect your data.
             </p>
             
@@ -167,14 +167,14 @@ export default function Privacy() {
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <a 
-                href="mailto:privacy@swapboard.gh" 
+                href="mailto:privacy@kentekart.gh" 
                 className="text-primary hover:underline font-medium"
               >
-                privacy@swapboard.gh
+                privacy@kentekart.gh
               </a>
               <span className="text-muted-foreground hidden sm:block">|</span>
               <span className="text-muted-foreground">
-                SwapBoard Legal Team, Accra, Ghana
+                KenteKart Legal Team, Accra, Ghana
               </span>
             </div>
           </Card>

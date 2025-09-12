@@ -34,7 +34,7 @@ export const PaymentCancelled = () => {
               onClick={() => navigate('/')} 
               className="w-full"
             >
-              Return to SwapBoard
+              Return to KenteKart
             </Button>
             <Button 
               onClick={() => navigate('/subscription')} 

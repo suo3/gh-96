@@ -66,7 +66,7 @@ export const PaymentSuccess = () => {
               onClick={() => navigate('/')} 
               className="w-full"
             >
-              Continue to SwapBoard
+              Continue to KenteKart
             </Button>
           </div>
         </CardContent>

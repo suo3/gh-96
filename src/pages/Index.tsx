@@ -71,7 +71,7 @@ const Index = () => {
       )}
 
       {/* Welcome Message */}
-      {!settingsLoading && settings.welcomeMessage && settings.welcomeMessage !== "Welcome to SwapBoard!" && (
+      {!settingsLoading && settings.welcomeMessage && settings.welcomeMessage !== "Welcome to KenteKart!" && (
         <div className="bg-card/80 backdrop-blur-sm border-b border-border">
           <div className="container mx-auto px-4 py-3">
             <p className="text-center text-primary font-medium">

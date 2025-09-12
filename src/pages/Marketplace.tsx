@@ -47,7 +47,7 @@ const Marketplace = () => {
   return (
     <>
       <Helmet>
-        <title>Marketplace - Browse Items | SwapBoard Ghana</title>
+        <title>Marketplace - Browse Items | KenteKart Ghana</title>
         <meta name="description" content="Browse and discover amazing items in Ghana's premier trading marketplace. Find electronics, fashion, furniture and more." />
         <meta name="keywords" content="marketplace, browse items, Ghana shopping, trade, electronics, fashion, furniture" />
       </Helmet>
@@ -70,7 +70,7 @@ const Marketplace = () => {
           )}
 
           {/* Welcome Message */}
-          {!settingsLoading && settings.welcomeMessage && settings.welcomeMessage !== "Welcome to SwapBoard!" && (
+          {!settingsLoading && settings.welcomeMessage && settings.welcomeMessage !== "Welcome to KenteKart!" && (
             <div className="bg-card/80 backdrop-blur-sm border-b border-border">
               <div className="container mx-auto px-4 py-3">
                 <p className="text-center text-primary font-medium">
@@ -175,7 +175,7 @@ const Marketplace = () => {
               )}
 
               {/* Welcome Message */}
-              {!settingsLoading && settings.welcomeMessage && settings.welcomeMessage !== "Welcome to SwapBoard!" && (
+              {!settingsLoading && settings.welcomeMessage && settings.welcomeMessage !== "Welcome to KenteKart!" && (
                 <div className="bg-card/80 backdrop-blur-sm border-b border-border">
                   <div className="container mx-auto px-4 py-3">
                     <p className="text-center text-primary font-medium">

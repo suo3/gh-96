@@ -35,10 +35,10 @@ export default function About() {
   return (
     <>
       <Helmet>
-        <title>About Us - SwapBoard Ghana's Premier Trading Platform</title>
+        <title>About Us - KenteKart Ghana's Premier Trading Platform</title>
         <meta 
           name="description" 
-          content="Learn about SwapBoard's mission to empower Ghanaian communities through safe, local trading. Discover our story, values, and commitment to Ghana's digital marketplace." 
+          content="Learn about KenteKart's mission to empower Ghanaian communities through safe, local trading. Discover our story, values, and commitment to Ghana's digital marketplace." 
         />
       </Helmet>
       
@@ -65,7 +65,7 @@ export default function About() {
           {/* Hero Section */}
           <div className="text-center max-w-4xl mx-auto mb-16">
             <Badge variant="secondary" className="mb-6 bg-primary/10 text-primary">
-              🇬🇭 About SwapBoard
+              🇬🇭 About KenteKart
             </Badge>
             
             <h1 className="text-4xl md:text-6xl font-bold mb-6 text-primary">
@@ -74,7 +74,7 @@ export default function About() {
             </h1>
             
             <p className="text-xl text-muted-foreground leading-relaxed">
-              SwapBoard was born from a simple vision: to create a trusted, local trading platform 
+              KenteKart was born from a simple vision: to create a trusted, local trading platform 
               that connects Ghanaians across all 16 regions, making it easy to buy, sell, and trade 
               safely within our communities.
             </p>
@@ -86,7 +86,7 @@ export default function About() {
             <div className="grid md:grid-cols-2 gap-8 items-center">
               <div>
                 <p className="text-muted-foreground mb-4 leading-relaxed">
-                  Founded in 2024, SwapBoard emerged from the need for a truly Ghanaian trading platform. 
+                  Founded in 2024, KenteKart emerged from the need for a truly Ghanaian trading platform. 
                   We recognized that existing platforms didn't address the unique needs of our market - 
                   from mobile money integration to regional connectivity.
                 </p>
