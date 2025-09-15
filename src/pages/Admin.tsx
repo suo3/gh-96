@@ -6,7 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Shield, Users, Flag, BarChart3, Settings, CheckCircle, ArrowLeft } from "lucide-react";
+import { Shield, Users, Flag, BarChart3, Settings, CheckCircle, ArrowLeft, Crown, Star, MessageSquare } from "lucide-react";
 import { AdminUserManagement } from "@/components/admin/AdminUserManagement";
 import { AdminListingModeration } from "@/components/admin/AdminListingModeration";
 import { AdminListingApproval } from "@/components/admin/AdminListingApproval";
@@ -17,6 +17,7 @@ import { AdminBulkImport } from "@/components/admin/AdminBulkImport";
 import { AdminPromotions } from "@/components/admin/AdminPromotions";
 import { AdminManualFeaturing } from "@/components/admin/AdminManualFeaturing";
 import { AdminInquiries } from "@/components/admin/AdminInquiries";
+import { AdminFeaturedStores } from "@/components/admin/AdminFeaturedStores";
 import { Footer } from "@/components/Footer";
 import { AppHeader } from "@/components/AppHeader";
 
@@ -104,7 +105,7 @@ const Admin = () => {
           </div>
 
           <Tabs defaultValue="analytics" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-8 lg:w-auto lg:grid-cols-8">
+            <TabsList className="grid w-full grid-cols-9 lg:w-auto lg:grid-cols-9">
               <TabsTrigger value="analytics" className="flex items-center gap-2">
                 <BarChart3 className="w-4 h-4" />
                 Analytics
@@ -122,11 +123,15 @@ const Admin = () => {
                 Bulk Import
               </TabsTrigger>
               <TabsTrigger value="promotions" className="flex items-center gap-2">
-                <Shield className="w-4 h-4" />
+                <Star className="w-4 h-4" />
                 Promotions
               </TabsTrigger>
+              <TabsTrigger value="featured-stores" className="flex items-center gap-2">
+                <Crown className="w-4 h-4" />
+                Featured
+              </TabsTrigger>
               <TabsTrigger value="inquiries" className="flex items-center gap-2">
-                <Shield className="w-4 h-4" />
+                <MessageSquare className="w-4 h-4" />
                 Inquiries
               </TabsTrigger>
               <TabsTrigger value="moderation" className="flex items-center gap-2">
@@ -166,6 +171,10 @@ const Admin = () => {
                 <AdminPromotions />
                 <AdminManualFeaturing />
               </div>
+            </TabsContent>
+
+            <TabsContent value="featured-stores">
+              <AdminFeaturedStores adminRole={adminRole} />
             </TabsContent>
 
             <TabsContent value="inquiries">
