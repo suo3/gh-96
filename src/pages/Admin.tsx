@@ -16,6 +16,7 @@ import { AdminBulkUpload } from "@/components/admin/AdminBulkUpload";
 import { AdminBulkImport } from "@/components/admin/AdminBulkImport";
 import { AdminPromotions } from "@/components/admin/AdminPromotions";
 import { AdminManualFeaturing } from "@/components/admin/AdminManualFeaturing";
+import { AdminInquiries } from "@/components/admin/AdminInquiries";
 import { Footer } from "@/components/Footer";
 import { AppHeader } from "@/components/AppHeader";
 
@@ -103,7 +104,7 @@ const Admin = () => {
           </div>
 
           <Tabs defaultValue="analytics" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-7 lg:w-auto lg:grid-cols-7">
+            <TabsList className="grid w-full grid-cols-8 lg:w-auto lg:grid-cols-8">
               <TabsTrigger value="analytics" className="flex items-center gap-2">
                 <BarChart3 className="w-4 h-4" />
                 Analytics
@@ -123,6 +124,10 @@ const Admin = () => {
               <TabsTrigger value="promotions" className="flex items-center gap-2">
                 <Shield className="w-4 h-4" />
                 Promotions
+              </TabsTrigger>
+              <TabsTrigger value="inquiries" className="flex items-center gap-2">
+                <Shield className="w-4 h-4" />
+                Inquiries
               </TabsTrigger>
               <TabsTrigger value="moderation" className="flex items-center gap-2">
                 <Flag className="w-4 h-4" />
@@ -161,6 +166,10 @@ const Admin = () => {
                 <AdminPromotions />
                 <AdminManualFeaturing />
               </div>
+            </TabsContent>
+
+            <TabsContent value="inquiries">
+              <AdminInquiries />
             </TabsContent>
             
             <TabsContent value="moderation">

@@ -29,6 +29,7 @@ import Subscription from "./pages/Subscription";
 import SellerOnboarding from "./pages/SellerOnboarding";
 import { PaymentSuccess } from "./pages/PaymentSuccess";
 import { PaymentCancelled } from "./pages/PaymentCancelled";
+import { Contact } from "./pages/Contact";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -91,6 +92,7 @@ const App = () => {
               <Route path="/payment-success" element={<PaymentSuccess />} />
               <Route path="/payment-cancelled" element={<PaymentCancelled />} />
               <Route path="/about" element={<About />} />
+              <Route path="/contact" element={<Contact />} />
               <Route path="/privacy" element={<Privacy />} />
               <Route path="/trademark" element={<Trademark />} />
               <Route path="*" element={<NotFound />} />
