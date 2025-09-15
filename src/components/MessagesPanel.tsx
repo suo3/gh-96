@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { ArrowLeft, Send, MessageCircle, CheckCircle } from "lucide-react";
+import { ArrowLeft, Send, MessageCircle, CheckCircle, Shield, Headphones } from "lucide-react";
 import { ConversationList } from "./ConversationList";
 import { MessageBubble } from "./MessageBubble";
 import { TypingIndicator } from "./TypingIndicator";
@@ -369,12 +369,23 @@ export const MessagesPanel = ({ onBack, onLogin }: MessagesPanelProps) => {
                   <CardHeader className="border-b">
                     <div className="flex items-center justify-between">
                       <CardTitle className="text-lg flex items-center">
-                        <div className="w-8 h-8 bg-gradient-to-br from-emerald-400 to-teal-400 rounded-full flex items-center justify-center text-white text-sm font-bold mr-3">
-                          {selectedConversation?.avatar || 'U'}
+                        <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-bold mr-3 ${
+                          selectedConversation?.isAdminConversation
+                            ? 'bg-gradient-to-br from-blue-500 to-indigo-500'
+                            : 'bg-gradient-to-br from-emerald-400 to-teal-400'
+                        }`}>
+                          {selectedConversation?.isAdminConversation ? (
+                            <Headphones className="w-5 h-5" />
+                          ) : (
+                            selectedConversation?.avatar || 'U'
+                          )}
                         </div>
                         <div>
                           <div className="flex items-center">
                             {selectedConversation?.partner || 'Chat'}
+                            {selectedConversation?.isAdminConversation && (
+                              <Shield className="w-5 h-5 ml-2 text-blue-600" />
+                            )}
                             {selectedConversation?.status === 'completed' && (
                               <div className="ml-3 flex items-center text-green-600">
                                 <CheckCircle className="w-5 h-5 mr-1" />
@@ -382,9 +393,14 @@ export const MessagesPanel = ({ onBack, onLogin }: MessagesPanelProps) => {
                               </div>
                             )}
                           </div>
-                          {selectedConversation?.partnerUsername && (
+                          {selectedConversation?.partnerUsername && !selectedConversation?.isAdminConversation && (
                             <div className="text-sm text-gray-500">
                               @{selectedConversation.partnerUsername}
+                            </div>
+                          )}
+                          {selectedConversation?.isAdminConversation && (
+                            <div className="text-sm text-blue-600 font-medium">
+                              Customer Support
                             </div>
                           )}
                         </div>
@@ -392,6 +408,11 @@ export const MessagesPanel = ({ onBack, onLogin }: MessagesPanelProps) => {
                       {selectedConversation?.status === 'completed' && (
                         <Badge variant="secondary" className="bg-green-100 text-green-800">
                           Completed
+                        </Badge>
+                      )}
+                      {selectedConversation?.isAdminConversation && (
+                        <Badge variant="secondary" className="bg-blue-100 text-blue-800 border-blue-200">
+                          Support Chat
                         </Badge>
                       )}
                     </div>
