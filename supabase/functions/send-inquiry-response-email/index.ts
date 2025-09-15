@@ -25,8 +25,10 @@ const handler = async (req: Request): Promise<Response> => {
   try {
     const { email, name, subject, message, inquiryId }: EmailRequest = await req.json();
 
+    const fromAddress = Deno.env.get("RESEND_FROM_ADDRESS") || "Lovable <onboarding@resend.dev>";
+
     const emailResponse = await resend.emails.send({
-      from: "Support <support@yourapp.com>",
+      from: fromAddress,
       to: [email],
       subject: `Re: ${subject}`,
       html: `
@@ -36,7 +38,7 @@ const handler = async (req: Request): Promise<Response> => {
         <div style="background-color: #f9f9f9; padding: 15px; border-radius: 5px; margin: 15px 0;">
           ${message.replace(/\n/g, '<br>')}
         </div>
-        <p>You can also view this response and continue the conversation in your <a href="${Deno.env.get('SUPABASE_URL')}/messages">messages</a>.</p>
+        <p>You can also view this response and continue the conversation in your account messages page.</p>
         <p>Best regards,<br>Support Team</p>
       `,
     });
