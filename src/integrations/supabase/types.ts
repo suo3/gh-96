@@ -14,6 +14,71 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_conversations: {
+        Row: {
+          created_at: string
+          id: string
+          inquiry_id: string | null
+          is_active: boolean
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          inquiry_id?: string | null
+          is_active?: boolean
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          inquiry_id?: string | null
+          is_active?: boolean
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      admin_messages: {
+        Row: {
+          content: string
+          conversation_id: string
+          created_at: string
+          id: string
+          is_admin: boolean
+          is_read: boolean
+          sender_id: string
+        }
+        Insert: {
+          content: string
+          conversation_id: string
+          created_at?: string
+          id?: string
+          is_admin?: boolean
+          is_read?: boolean
+          sender_id: string
+        }
+        Update: {
+          content?: string
+          conversation_id?: string
+          created_at?: string
+          id?: string
+          is_admin?: boolean
+          is_read?: boolean
+          sender_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "admin_messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "admin_conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       admin_users: {
         Row: {
           granted_at: string | null
@@ -944,6 +1009,22 @@ export type Database = {
       delete_user_account: {
         Args: Record<PropertyKey, never>
         Returns: undefined
+      }
+      get_admin_conversations_with_latest: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          conv_id: string
+          created_at: string
+          inquiry_id: string
+          is_active: boolean
+          last_message: string
+          last_message_time: string
+          unread_count: number
+          updated_at: string
+          user_email: string
+          user_id: string
+          user_name: string
+        }[]
       }
       get_admin_role: {
         Args: { user_uuid?: string }

@@ -2,6 +2,7 @@
 import { create } from 'zustand';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuthStore } from './authStore';
+import { useAdminMessages } from '@/hooks/useAdminMessages';
 
 export interface Message {
   id: string;
@@ -25,6 +26,8 @@ export interface Conversation {
   isTyping?: boolean;
   isOwner?: boolean;
   listingId?: string;
+  isAdminConversation?: boolean;
+  inquiryId?: string;
 }
 
 interface MessageStore {
@@ -74,23 +77,45 @@ export const useMessageStore = create<MessageStore>((set, get) => ({
   
   sendMessage: async (conversationId, text) => {
     const { session } = useAuthStore.getState();
+    const { conversations } = get();
+    
     if (!session?.user) {
       console.error('User not authenticated');
       return;
     }
 
     try {
-      const { error } = await supabase
-        .from('messages')
-        .insert({
-          conversation_id: conversationId,
-          sender_id: session.user.id,
-          content: text
-        });
+      const selectedConv = conversations.find(c => c.id === conversationId);
+      
+      if (selectedConv?.isAdminConversation) {
+        // Send admin message
+        const { error } = await supabase
+          .from('admin_messages')
+          .insert({
+            conversation_id: conversationId,
+            sender_id: session.user.id,
+            is_admin: false,
+            content: text,
+          });
 
-      if (error) {
-        console.error('Error sending message:', error);
-        return;
+        if (error) {
+          console.error('Error sending admin message:', error);
+          return;
+        }
+      } else {
+        // Send regular message
+        const { error } = await supabase
+          .from('messages')
+          .insert({
+            conversation_id: conversationId,
+            sender_id: session.user.id,
+            content: text
+          });
+
+        if (error) {
+          console.error('Error sending message:', error);
+          return;
+        }
       }
 
       get().fetchMessages(conversationId);
@@ -304,57 +329,97 @@ export const useMessageStore = create<MessageStore>((set, get) => ({
     try {
       console.log('Fetching conversations for user:', session.user.id);
       
-      const { data, error } = await supabase.rpc('get_conversations_with_profiles');
+      // Fetch regular conversations
+      const { data: regularData, error: regularError } = await supabase.rpc('get_conversations_with_profiles');
 
-      if (error) {
-        console.error('Error fetching conversations:', error);
-        set({ isLoading: false, error: error.message });
+      if (regularError) {
+        console.error('Error fetching regular conversations:', regularError);
+        set({ isLoading: false, error: regularError.message });
         return;
       }
       
-      console.log('Fetched conversations data:', data);
-
-      if (!data || data.length === 0) {
-        console.log('No conversations found');
-        set({ conversations: [], isLoading: false, totalUnreadCount: 0, error: null });
-        return;
-      }
+      // Fetch admin conversations
+      const { data: adminData, error: adminError } = await supabase.rpc('get_admin_conversations_with_latest');
+      
+      console.log('Fetched regular conversations data:', regularData);
+      console.log('Fetched admin conversations data:', adminData);
 
       let totalUnread = 0;
-      const conversations: Conversation[] = data.map(conv => {
-        const isOwner = conv.user2_id === session.user.id;
-        
-        let timeDisplay = new Date(conv.created_at).toLocaleDateString();
-        if (conv.last_message_time) {
-          const messageDate = new Date(conv.last_message_time);
-          const today = new Date();
-          if (messageDate.toDateString() === today.toDateString()) {
-            timeDisplay = messageDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-          } else {
-            timeDisplay = messageDate.toLocaleDateString();
-          }
-        }
-        
-        const unreadCount = Number(conv.unread_count) || 0;
-        totalUnread += unreadCount;
-        
-        return {
-          id: conv.conv_id,
-          partner: conv.partner_name || 'Unknown User',
-          partnerUsername: conv.partner_username || '',
-          avatar: conv.partner_avatar || 'U',
-          lastMessage: conv.last_message || 'No messages yet.',
-          time: timeDisplay,
-          unread: unreadCount,
-          item: conv.item_title || 'Unknown Item',
-          status: 'matched' as const,
-          isOwner,
-          listingId: (conv as any).listing_id
-        };
-      });
+      let allConversations: Conversation[] = [];
 
-      console.log('Processed conversations:', conversations);
-      set({ conversations, isLoading: false, totalUnreadCount: totalUnread, error: null });
+      // Process admin conversations first (they appear at top)
+      if (adminData && !adminError) {
+        const adminConversations: Conversation[] = adminData.map(conv => {
+          let timeDisplay = new Date(conv.created_at).toLocaleDateString();
+          if (conv.last_message_time) {
+            const messageDate = new Date(conv.last_message_time);
+            const today = new Date();
+            if (messageDate.toDateString() === today.toDateString()) {
+              timeDisplay = messageDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            } else {
+              timeDisplay = messageDate.toLocaleDateString();
+            }
+          }
+          
+          const unreadCount = Number(conv.unread_count) || 0;
+          totalUnread += unreadCount;
+          
+          return {
+            id: conv.conv_id,
+            partner: 'Support Team',
+            partnerUsername: 'support',
+            avatar: '🛠️',
+            lastMessage: conv.last_message || 'No messages yet.',
+            time: timeDisplay,
+            unread: unreadCount,
+            item: 'Support Inquiry',
+            status: 'matched' as const,
+            isAdminConversation: true,
+            inquiryId: conv.inquiry_id,
+          };
+        });
+        allConversations = [...adminConversations];
+      }
+
+      // Process regular conversations
+      if (regularData && regularData.length > 0) {
+        const regularConversations: Conversation[] = regularData.map(conv => {
+          const isOwner = conv.user2_id === session.user.id;
+          
+          let timeDisplay = new Date(conv.created_at).toLocaleDateString();
+          if (conv.last_message_time) {
+            const messageDate = new Date(conv.last_message_time);
+            const today = new Date();
+            if (messageDate.toDateString() === today.toDateString()) {
+              timeDisplay = messageDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            } else {
+              timeDisplay = messageDate.toLocaleDateString();
+            }
+          }
+          
+          const unreadCount = Number(conv.unread_count) || 0;
+          totalUnread += unreadCount;
+          
+          return {
+            id: conv.conv_id,
+            partner: conv.partner_name || 'Unknown User',
+            partnerUsername: conv.partner_username || '',
+            avatar: conv.partner_avatar || 'U',
+            lastMessage: conv.last_message || 'No messages yet.',
+            time: timeDisplay,
+            unread: unreadCount,
+            item: conv.item_title || 'Unknown Item',
+            status: 'matched' as const,
+            isOwner,
+            listingId: (conv as any).listing_id,
+            isAdminConversation: false,
+          };
+        });
+        allConversations = [...allConversations, ...regularConversations];
+      }
+
+      console.log('Processed all conversations:', allConversations);
+      set({ conversations: allConversations, isLoading: false, totalUnreadCount: totalUnread, error: null });
       
     } catch (error) {
       console.error('Error in fetchConversations:', error);
@@ -364,39 +429,73 @@ export const useMessageStore = create<MessageStore>((set, get) => ({
 
   fetchMessages: async (conversationId) => {
     const { session } = useAuthStore.getState();
+    const { conversations } = get();
+    
     if (!session?.user) {
       console.error('User not authenticated');
       return;
     }
 
     try {
-      const { data, error } = await supabase
-        .from('messages')
-        .select('*')
-        .eq('conversation_id', conversationId)
-        .order('created_at', { ascending: true });
+      const selectedConv = conversations.find(c => c.id === conversationId);
+      
+      if (selectedConv?.isAdminConversation) {
+        // Fetch admin messages
+        const { data, error } = await supabase
+          .from('admin_messages')
+          .select('*')
+          .eq('conversation_id', conversationId)
+          .order('created_at', { ascending: true });
 
-      if (error) {
-        console.error('Error fetching messages:', error);
-        return;
-      }
-
-      const messages: Message[] = data.map(msg => ({
-        id: msg.id,
-        conversationId: msg.conversation_id,
-        sender: msg.sender_id === session.user.id ? 'me' : 'partner',
-        text: msg.content,
-        timestamp: new Date(msg.created_at),
-        read: msg.is_read,
-      }));
-
-      set((state) => ({
-        messages: {
-          ...state.messages,
-          [conversationId]: messages
+        if (error) {
+          console.error('Error fetching admin messages:', error);
+          return;
         }
-      }));
 
+        const messages: Message[] = data.map(msg => ({
+          id: msg.id,
+          conversationId: msg.conversation_id,
+          sender: msg.sender_id === session.user.id ? 'me' : 'partner',
+          text: msg.content,
+          timestamp: new Date(msg.created_at),
+          read: msg.is_read,
+        }));
+
+        set((state) => ({
+          messages: {
+            ...state.messages,
+            [conversationId]: messages
+          }
+        }));
+      } else {
+        // Fetch regular messages
+        const { data, error } = await supabase
+          .from('messages')
+          .select('*')
+          .eq('conversation_id', conversationId)
+          .order('created_at', { ascending: true });
+
+        if (error) {
+          console.error('Error fetching messages:', error);
+          return;
+        }
+
+        const messages: Message[] = data.map(msg => ({
+          id: msg.id,
+          conversationId: msg.conversation_id,
+          sender: msg.sender_id === session.user.id ? 'me' : 'partner',
+          text: msg.content,
+          timestamp: new Date(msg.created_at),
+          read: msg.is_read,
+        }));
+
+        set((state) => ({
+          messages: {
+            ...state.messages,
+            [conversationId]: messages
+          }
+        }));
+      }
     } catch (error) {
       console.error('Error fetching messages:', error);
     }

@@ -108,6 +108,7 @@ export const AdminInquiries = () => {
       const { data: user, error: userError } = await supabase.auth.getUser();
       if (userError) throw userError;
 
+      // Insert the response
       const { error } = await supabase
         .from('inquiry_responses')
         .insert({
@@ -118,6 +119,65 @@ export const AdminInquiries = () => {
         });
 
       if (error) throw error;
+
+      // If not internal, create/update admin conversation and send email
+      if (!isInternal) {
+        const inquiry = inquiries?.find(i => i.id === inquiryId);
+        if (inquiry) {
+          // Find or create admin conversation
+          let { data: adminConv, error: convError } = await supabase
+            .from('admin_conversations')
+            .select('*')
+            .eq('inquiry_id', inquiryId)
+            .single();
+
+          if (convError && convError.code !== 'PGRST116') {
+            throw convError;
+          }
+
+          if (!adminConv) {
+            const { data: newConv, error: createError } = await supabase
+              .from('admin_conversations')
+              .insert({
+                user_id: inquiry.user_id!,
+                inquiry_id: inquiryId,
+              })
+              .select()
+              .single();
+
+            if (createError) throw createError;
+            adminConv = newConv;
+          }
+
+          // Add message to admin conversation
+          const { error: msgError } = await supabase
+            .from('admin_messages')
+            .insert({
+              conversation_id: adminConv.id,
+              sender_id: user.user.id,
+              is_admin: true,
+              content: message,
+            });
+
+          if (msgError) throw msgError;
+
+          // Send email notification
+          try {
+            await supabase.functions.invoke('send-inquiry-response-email', {
+              body: {
+                email: inquiry.email,
+                name: inquiry.name,
+                subject: inquiry.subject,
+                message: message,
+                inquiryId: inquiryId,
+              },
+            });
+          } catch (emailError) {
+            console.error('Email sending failed:', emailError);
+            // Don't throw - email failure shouldn't block response
+          }
+        }
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['inquiry-responses'] });
