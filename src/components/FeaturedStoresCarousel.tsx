@@ -7,6 +7,7 @@ import { Star, Users, Medal, MapPin, ShoppingBag, Award, Crown, Eye } from "luci
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { UserRatingDisplay } from "@/components/UserRatingDisplay";
 
 interface FeaturedStore {
   id: string;
@@ -162,7 +163,10 @@ export const FeaturedStoresCarousel = () => {
                         {avatarInitial}
                       </div>
                     )}
-                    <span className="text-sm font-medium">{displayName}</span>
+                    <div className="flex flex-col items-start gap-1">
+                      <span className="text-sm font-medium">{displayName}</span>
+                      <UserRatingDisplay userId={profile.id} size="sm" />
+                    </div>
                     {profile.is_verified && (
                       <Award className="h-3 w-3 text-blue-500" />
                     )}
