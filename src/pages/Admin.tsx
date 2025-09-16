@@ -17,6 +17,7 @@ import { AdminBulkImport } from "@/components/admin/AdminBulkImport";
 import { AdminPromotions } from "@/components/admin/AdminPromotions";
 import { AdminManualFeaturing } from "@/components/admin/AdminManualFeaturing";
 import { AdminInquiries } from "@/components/admin/AdminInquiries";
+import { AdminMessages } from "@/components/admin/AdminMessages";
 import { AdminFeaturedStores } from "@/components/admin/AdminFeaturedStores";
 import { Footer } from "@/components/Footer";
 import { AppHeader } from "@/components/AppHeader";
@@ -105,7 +106,7 @@ const Admin = () => {
           </div>
 
           <Tabs defaultValue="analytics" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-9 lg:w-auto lg:grid-cols-9">
+            <TabsList className="grid w-full grid-cols-10 lg:w-auto lg:grid-cols-10">
               <TabsTrigger value="analytics" className="flex items-center gap-2">
                 <BarChart3 className="w-4 h-4" />
                 Analytics
@@ -133,6 +134,10 @@ const Admin = () => {
               <TabsTrigger value="inquiries" className="flex items-center gap-2">
                 <MessageSquare className="w-4 h-4" />
                 Inquiries
+              </TabsTrigger>
+              <TabsTrigger value="messages" className="flex items-center gap-2">
+                <MessageSquare className="w-4 h-4" />
+                Messages
               </TabsTrigger>
               <TabsTrigger value="moderation" className="flex items-center gap-2">
                 <Flag className="w-4 h-4" />
@@ -179,6 +184,10 @@ const Admin = () => {
 
             <TabsContent value="inquiries">
               <AdminInquiries />
+            </TabsContent>
+
+            <TabsContent value="messages">
+              <AdminMessages />
             </TabsContent>
             
             <TabsContent value="moderation">
