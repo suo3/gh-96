@@ -222,12 +222,25 @@ export const useMessageStore = create<MessageStore>((set, get) => ({
       totalUnreadCount: Math.max(0, state.totalUnreadCount - unreadToClear),
     }));
 
-    const { error } = await supabase
-      .from('messages')
-      .update({ is_read: true })
-      .eq('conversation_id', conversationId)
-      .eq('is_read', false)
-      .neq('sender_id', session.user.id);
+    let error = null as any;
+
+    if (conversation.isAdminConversation) {
+      const { error: adminErr } = await supabase
+        .from('admin_messages')
+        .update({ is_read: true })
+        .eq('conversation_id', conversationId)
+        .eq('is_read', false)
+        .neq('sender_id', session.user.id);
+      error = adminErr;
+    } else {
+      const { error: regularErr } = await supabase
+        .from('messages')
+        .update({ is_read: true })
+        .eq('conversation_id', conversationId)
+        .eq('is_read', false)
+        .neq('sender_id', session.user.id);
+      error = regularErr;
+    }
     
     if (error) {
       console.error('Error marking messages as read', error);
