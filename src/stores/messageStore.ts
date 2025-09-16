@@ -361,8 +361,9 @@ export const useMessageStore = create<MessageStore>((set, get) => ({
       let allConversations: Conversation[] = [];
 
       // Process admin conversations first (they appear at top)
-      if (adminData && !adminError) {
-        const adminConversations: Conversation[] = adminData.map(conv => {
+      let adminConversations: Conversation[] = [];
+      if (adminData && !adminError && adminData.length > 0) {
+        adminConversations = adminData.map((conv: any) => {
           let timeDisplay = new Date(conv.created_at).toLocaleDateString();
           if (conv.last_message_time) {
             const messageDate = new Date(conv.last_message_time);
@@ -392,6 +393,66 @@ export const useMessageStore = create<MessageStore>((set, get) => ({
           };
         });
         allConversations = [...adminConversations];
+      } else {
+        // Fallback: build admin conversations directly if RPC unavailable or empty
+        const { data: adminConvs, error: convsErr } = await supabase
+          .from('admin_conversations')
+          .select('id, inquiry_id, created_at, updated_at')
+          .eq('user_id', session.user.id)
+          .order('updated_at', { ascending: false });
+
+        if (convsErr) {
+          console.error('Error fetching admin conversations (fallback):', convsErr);
+        } else if (adminConvs && adminConvs.length > 0) {
+          const convIds = adminConvs.map((c: any) => c.id);
+          const { data: adminMsgs, error: msgsErr } = await supabase
+            .from('admin_messages')
+            .select('id, conversation_id, sender_id, content, created_at, is_read')
+            .in('conversation_id', convIds)
+            .order('created_at', { ascending: true });
+
+          if (msgsErr) {
+            console.error('Error fetching admin messages (fallback):', msgsErr);
+          } else {
+            const grouped: Record<string, any[]> = {};
+            (adminMsgs || []).forEach((m: any) => {
+              if (!grouped[m.conversation_id]) grouped[m.conversation_id] = [];
+              grouped[m.conversation_id].push(m);
+            });
+
+            adminConversations = adminConvs.map((conv: any) => {
+              const msgs = grouped[conv.id] || [];
+              const lastMsg = msgs.length ? msgs[msgs.length - 1] : null;
+
+              let timeDisplay = new Date(conv.updated_at || conv.created_at).toLocaleDateString();
+              if (lastMsg) {
+                const messageDate = new Date(lastMsg.created_at);
+                const today = new Date();
+                timeDisplay = messageDate.toDateString() === today.toDateString()
+                  ? messageDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                  : messageDate.toLocaleDateString();
+              }
+
+              const unreadCount = msgs.filter((m: any) => !m.is_read && m.sender_id !== session.user.id).length;
+              totalUnread += unreadCount;
+
+              return {
+                id: conv.id,
+                partner: 'Support Team',
+                partnerUsername: 'support',
+                avatar: '🛠️',
+                lastMessage: lastMsg?.content || 'No messages yet.',
+                time: timeDisplay,
+                unread: unreadCount,
+                item: 'Support Inquiry',
+                status: 'matched' as const,
+                isAdminConversation: true,
+                inquiryId: conv.inquiry_id,
+              };
+            });
+            allConversations = [...adminConversations];
+          }
+        }
       }
 
       // Process regular conversations
