@@ -16,6 +16,7 @@ import { Send } from 'lucide-react';
 const contactSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
   email: z.string().email('Please enter a valid email address'),
+  phoneNumber: z.string().min(10, 'Phone number must be at least 10 digits').optional(),
   inquiryType: z.enum(['promotion', 'advertisement', 'support', 'general'], {
     required_error: 'Please select an inquiry type'
   }),
@@ -35,6 +36,7 @@ export const ContactForm = () => {
     defaultValues: {
       name: '',
       email: user?.email || '',
+      phoneNumber: '',
       inquiryType: 'general',
       subject: '',
       message: '',
@@ -49,6 +51,7 @@ export const ContactForm = () => {
           user_id: user?.id || null,
           name: data.name,
           email: data.email,
+          phone_number: data.phoneNumber || null,
           inquiry_type: data.inquiryType,
           subject: data.subject,
           message: data.message,
@@ -113,6 +116,20 @@ export const ContactForm = () => {
             )}
           />
         </div>
+
+        <FormField
+          control={form.control}
+          name="phoneNumber"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Phone Number (Optional)</FormLabel>
+              <FormControl>
+                <Input type="tel" placeholder="Enter your phone number" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
         <FormField
           control={form.control}

@@ -16,6 +16,7 @@ interface Inquiry {
   id: string;
   name: string;
   email: string;
+  phone_number?: string;
   inquiry_type: string;
   subject: string;
   message: string;
@@ -298,6 +299,12 @@ export const AdminInquiries = () => {
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <Mail className="w-4 h-4" />
                     {inquiry.name} ({inquiry.email})
+                    {inquiry.phone_number && (
+                      <>
+                        <span>•</span>
+                        {inquiry.phone_number}
+                      </>
+                    )}
                     <span>•</span>
                     {format(new Date(inquiry.created_at), 'MMM dd, yyyy HH:mm')}
                   </div>
@@ -348,6 +355,9 @@ export const AdminInquiries = () => {
                               <p><strong>Subject:</strong> {selectedInquiry.subject}</p>
                               <p><strong>Type:</strong> <Badge className="capitalize">{selectedInquiry.inquiry_type}</Badge></p>
                               <p><strong>From:</strong> {selectedInquiry.name} ({selectedInquiry.email})</p>
+                              {selectedInquiry.phone_number && (
+                                <p><strong>Phone:</strong> {selectedInquiry.phone_number}</p>
+                              )}
                               <p><strong>Date:</strong> {format(new Date(selectedInquiry.created_at), 'MMM dd, yyyy HH:mm')}</p>
                               <div>
                                 <strong>Message:</strong>

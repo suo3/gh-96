@@ -337,6 +337,7 @@ export type Database = {
           inquiry_type: string
           message: string
           name: string
+          phone_number: string | null
           priority: string
           status: string
           subject: string
@@ -350,6 +351,7 @@ export type Database = {
           inquiry_type: string
           message: string
           name: string
+          phone_number?: string | null
           priority?: string
           status?: string
           subject: string
@@ -363,6 +365,7 @@ export type Database = {
           inquiry_type?: string
           message?: string
           name?: string
+          phone_number?: string | null
           priority?: string
           status?: string
           subject?: string
