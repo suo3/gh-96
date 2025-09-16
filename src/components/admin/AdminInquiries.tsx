@@ -29,9 +29,13 @@ interface Inquiry {
 interface InquiryResponse {
   id: string;
   message: string;
-  admin_user_id: string;
+  admin_user_id: string | null;
   is_internal: boolean;
   created_at: string;
+  type?: 'inquiry_response' | 'admin_message';
+  sender_name?: string;
+  content?: string;
+  is_admin?: boolean;
 }
 
 export const AdminInquiries = () => {
@@ -69,14 +73,55 @@ export const AdminInquiries = () => {
     queryFn: async () => {
       if (!selectedInquiry?.id) return [];
       
-      const { data, error } = await supabase
+      // Get inquiry responses
+      const { data: inquiryResponses, error: inquiryError } = await supabase
         .from('inquiry_responses')
-        .select('*')
+        .select('*, profiles!admin_user_id(first_name, last_name)')
         .eq('inquiry_id', selectedInquiry.id)
         .order('created_at', { ascending: true });
 
-      if (error) throw error;
-      return data;
+      if (inquiryError) throw inquiryError;
+
+      // Get admin conversation messages if they exist
+      let adminMessages: any[] = [];
+      if (selectedInquiry.user_id) {
+        const { data: conversation, error: convError } = await supabase
+          .from('admin_conversations')
+          .select('id')
+          .eq('inquiry_id', selectedInquiry.id)
+          .single();
+
+        if (!convError && conversation) {
+          const { data: messages, error: msgError } = await supabase
+            .from('admin_messages')
+            .select('*, profiles!sender_id(first_name, last_name)')
+            .eq('conversation_id', conversation.id)
+            .order('created_at', { ascending: true });
+
+          if (!msgError) {
+            adminMessages = messages || [];
+          }
+        }
+      }
+
+      // Combine and sort all responses by created_at
+      const allResponses = [
+        ...(inquiryResponses || []).map((r: any) => ({
+          ...r,
+          type: 'inquiry_response',
+          sender_name: r.profiles ? `${r.profiles.first_name} ${r.profiles.last_name}` : 'Admin'
+        })),
+        ...(adminMessages || []).map((m: any) => ({
+          ...m,
+          type: 'admin_message',
+          message: m.content,
+          admin_user_id: m.is_admin ? m.sender_id : null,
+          is_internal: false,
+          sender_name: m.profiles ? `${m.profiles.first_name} ${m.profiles.last_name}` : (m.is_admin ? 'Admin' : 'Customer')
+        }))
+      ].sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+
+      return allResponses;
     },
     enabled: !!selectedInquiry?.id,
   });
@@ -382,19 +427,37 @@ export const AdminInquiries = () => {
                           {responses.length > 0 && (
                             <div className="space-y-4">
                               <h3 className="font-semibold">Previous Responses</h3>
-                              {responses.map((response: InquiryResponse) => (
-                                <div key={response.id} className="p-3 border rounded-lg">
-                                  <div className="flex items-center justify-between mb-2">
-                                    <Badge variant={response.is_internal ? "secondary" : "default"}>
-                                      {response.is_internal ? "Internal Note" : "Customer Response"}
-                                    </Badge>
-                                    <span className="text-sm text-muted-foreground">
-                                      {format(new Date(response.created_at), 'MMM dd, yyyy HH:mm')}
-                                    </span>
+                              {responses.map((response: InquiryResponse) => {
+                                const isCustomer = response.type === 'admin_message' && !response.is_admin;
+                                const isAdmin = (response.type === 'inquiry_response') || (response.type === 'admin_message' && response.is_admin);
+                                const isInternal = response.is_internal;
+                                
+                                return (
+                                  <div key={response.id} className={`p-3 border rounded-lg ${
+                                    isInternal ? 'border-yellow-200 bg-yellow-50' : 
+                                    isAdmin ? 'border-blue-200 bg-blue-50' : 'border-green-200 bg-green-50'
+                                  }`}>
+                                    <div className="flex items-center justify-between mb-2">
+                                      <div className="flex items-center gap-2">
+                                        <Badge variant={isInternal ? "secondary" : 
+                                          isAdmin ? "default" : "outline"}>
+                                          {isInternal ? "Internal Note" : 
+                                           isAdmin ? "Admin Response" : "Customer Response"}
+                                        </Badge>
+                                        {response.sender_name && (
+                                          <span className="text-xs text-muted-foreground">
+                                            by {response.sender_name}
+                                          </span>
+                                        )}
+                                      </div>
+                                      <span className="text-sm text-muted-foreground">
+                                        {format(new Date(response.created_at), 'MMM dd, yyyy HH:mm')}
+                                      </span>
+                                    </div>
+                                    <p className="text-sm">{response.message || response.content}</p>
                                   </div>
-                                  <p className="text-sm">{response.message}</p>
-                                </div>
-                              ))}
+                                );
+                              })}
                             </div>
                           )}
 
