@@ -25,7 +25,14 @@ const handler = async (req: Request): Promise<Response> => {
   try {
     const { email, name, subject, message, inquiryId }: EmailRequest = await req.json();
 
-    const fromAddress = Deno.env.get("RESEND_FROM_ADDRESS") || "Lovable <onboarding@resend.dev>";
+    // Validate and choose a safe From address. Fall back to a Resend test domain if invalid/missing
+    const rawFrom = (Deno.env.get("RESEND_FROM_ADDRESS") || "").trim();
+    const defaultFrom = "Lovable <onboarding@resend.dev>";
+    const simpleEmail = /^[^<>@\s]+@[^<>@\s]+\.[^<>@\s]+$/;
+    const nameAddress = /^.+\s<[^<>@\s]+@[^<>@\s]+\.[^<>@\s]+>$/;
+    const fromAddress = rawFrom && (simpleEmail.test(rawFrom) || nameAddress.test(rawFrom))
+      ? rawFrom
+      : defaultFrom;
 
     const emailResponse = await resend.emails.send({
       from: fromAddress,
@@ -43,7 +50,16 @@ const handler = async (req: Request): Promise<Response> => {
       `,
     });
 
-    console.log("Email sent successfully:", emailResponse);
+    // If Resend returned an error object, treat it as a failure
+    if ((emailResponse as any)?.error) {
+      console.error("Resend error while sending inquiry response:", (emailResponse as any).error);
+      return new Response(
+        JSON.stringify({ error: (emailResponse as any).error }),
+        { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
+
+    console.log("Inquiry response email sent:", emailResponse);
 
     return new Response(JSON.stringify(emailResponse), {
       status: 200,

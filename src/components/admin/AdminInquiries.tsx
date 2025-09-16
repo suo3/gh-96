@@ -124,57 +124,68 @@ export const AdminInquiries = () => {
       if (!isInternal) {
         const inquiry = inquiries?.find(i => i.id === inquiryId);
         if (inquiry) {
-          // Find or create admin conversation
-          let { data: adminConv, error: convError } = await supabase
-            .from('admin_conversations')
-            .select('*')
-            .eq('inquiry_id', inquiryId)
-            .single();
-
-          if (convError && convError.code !== 'PGRST116') {
-            throw convError;
-          }
-
-          if (!adminConv) {
-            const { data: newConv, error: createError } = await supabase
+          // Find or create admin conversation (only if inquiry is tied to a user)
+          let adminConv: any = null;
+          if (inquiry.user_id) {
+            const { data: existingConv, error: convError } = await supabase
               .from('admin_conversations')
-              .insert({
-                user_id: inquiry.user_id!,
-                inquiry_id: inquiryId,
-              })
-              .select()
+              .select('*')
+              .eq('inquiry_id', inquiryId)
               .single();
 
-            if (createError) throw createError;
-            adminConv = newConv;
+            if (convError && convError.code !== 'PGRST116') {
+              throw convError;
+            }
+
+            adminConv = existingConv;
+
+            if (!adminConv) {
+              const { data: newConv, error: createError } = await supabase
+                .from('admin_conversations')
+                .insert({
+                  user_id: inquiry.user_id,
+                  inquiry_id: inquiryId,
+                })
+                .select()
+                .single();
+
+              if (createError) throw createError;
+              adminConv = newConv;
+            }
+
+            // Add message to admin conversation
+            const { error: msgError } = await supabase
+              .from('admin_messages')
+              .insert({
+                conversation_id: adminConv.id,
+                sender_id: user.user.id,
+                is_admin: true,
+                content: message,
+              });
+
+            if (msgError) throw msgError;
+          } else {
+            console.warn('Inquiry has no user_id; skipping admin_conversations creation. Email will still be sent.');
           }
 
-          // Add message to admin conversation
-          const { error: msgError } = await supabase
-            .from('admin_messages')
-            .insert({
-              conversation_id: adminConv.id,
-              sender_id: user.user.id,
-              is_admin: true,
-              content: message,
-            });
-
-          if (msgError) throw msgError;
-
           // Send email notification
-          try {
-            await supabase.functions.invoke('send-inquiry-response-email', {
-              body: {
-                email: inquiry.email,
-                name: inquiry.name,
-                subject: inquiry.subject,
-                message: message,
-                inquiryId: inquiryId,
-              },
+          const { data: emailData, error: emailError } = await supabase.functions.invoke('send-inquiry-response-email', {
+            body: {
+              email: inquiry.email,
+              name: inquiry.name,
+              subject: inquiry.subject,
+              message: message,
+              inquiryId: inquiryId,
+            },
+          });
+
+          if (emailError || (emailData as any)?.error) {
+            console.error('Email sending failed:', emailError || (emailData as any)?.error);
+            toast({
+              title: 'Email not sent',
+              description: 'We could not send the email notification. The reply is saved in the conversation.',
+              variant: 'destructive',
             });
-          } catch (emailError) {
-            console.error('Email sending failed:', emailError);
-            // Don't throw - email failure shouldn't block response
           }
         }
       }
