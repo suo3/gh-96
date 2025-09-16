@@ -27,7 +27,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Validate and choose a safe From address. Fall back to a Resend test domain if invalid/missing
     const rawFrom = (Deno.env.get("RESEND_FROM_ADDRESS") || "").trim();
-    const defaultFrom = "Lovable <onboarding@resend.dev>";
+    const defaultFrom = "KenteKart <onboarding@resend.dev>";
     const simpleEmail = /^[^<>@\s]+@[^<>@\s]+\.[^<>@\s]+$/;
     const nameAddress = /^.+\s<[^<>@\s]+@[^<>@\s]+\.[^<>@\s]+>$/;
     const fromAddress = rawFrom && (simpleEmail.test(rawFrom) || nameAddress.test(rawFrom))
@@ -46,7 +46,7 @@ const handler = async (req: Request): Promise<Response> => {
           ${message.replace(/\n/g, '<br>')}
         </div>
         <p>You can also view this response and continue the conversation in your account messages page.</p>
-        <p>Best regards,<br>Support Team</p>
+        <p>Best regards,<br>KenteKart Support Team</p>
       `,
     });
 
