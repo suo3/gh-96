@@ -7,6 +7,7 @@ import { Star, Users, Medal, MapPin, TrendingUp } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { UserRatingDisplay } from "@/components/UserRatingDisplay";
 
 export const FeaturedSellersSection = () => {
   const navigate = useNavigate();
@@ -103,13 +104,10 @@ export const FeaturedSellersSection = () => {
 
                     {/* Stats */}
                     <div className="space-y-2 mb-4">
-                      {profile.rating && profile.rating > 0 && (
-                        <div className="flex items-center justify-center gap-1">
-                          <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                          <span className="font-medium">{profile.rating.toFixed(1)}</span>
-                          <span className="text-sm text-muted-foreground">rating</span>
-                        </div>
-                      )}
+                      {/* Ratings */}
+                      <div className="flex justify-center">
+                        <UserRatingDisplay userId={profile.id} showCount={false} size="sm" />
+                      </div>
 
                       {profile.total_sales && profile.total_sales > 0 && (
                         <div className="flex items-center justify-center gap-1">
