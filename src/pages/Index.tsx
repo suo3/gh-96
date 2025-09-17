@@ -60,9 +60,7 @@ const Index = () => {
         onLogoClick={handleLogoClick}
       />
 
-      {/* Featured Stores Carousel - Above Hero */}
-      <FeaturedStoresCarousel />
-
+   
       {/* Platform Announcement */}
       {!settingsLoading && settings.announcementText && (
         <div className="container mx-auto px-4 pt-4">
@@ -80,7 +78,9 @@ const Index = () => {
           </div>
         </div>
       )}
-
+   {/* Featured Stores Carousel - Above Hero */}
+      <FeaturedStoresCarousel />
+      
       {/* Seller Onboarding Banner */}
       <SellerOnboardingBanner />
 
