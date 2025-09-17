@@ -8,6 +8,7 @@ import { Star, Award, MapPin, ShoppingBag, Users } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { UserRatingDisplay } from "./UserRatingDisplay";
+import kentePattern from "@/assets/kente-pattern.jpg";
 
 interface FeaturedStore {
   id: string;
@@ -115,26 +116,25 @@ export const FeaturedStoresSpotlight = () => {
 
             return (
               <CarouselItem key={store.id}>
-                <Card className="h-[400px] lg:h-[500px] xl:h-[600px] relative overflow-hidden bg-gradient-to-br from-primary/20 via-primary/10 to-primary/5 border-0 shadow-2xl">
-                  {/* Background avatar blur effect */}
-                  {profile.avatar && (
-                    <div className="absolute inset-0 opacity-20">
-                      <img 
-                        src={profile.avatar} 
-                        alt=""
-                        className="w-full h-full object-cover scale-110 blur-sm"
-                      />
-                    </div>
-                  )}
-
+                <Card className="h-[400px] lg:h-[500px] xl:h-[600px] relative overflow-hidden border-0 shadow-2xl">
+                  {/* Kente pattern background */}
+                  <div 
+                    className="absolute inset-0 opacity-30"
+                    style={{
+                      backgroundImage: `url(${kentePattern})`,
+                      backgroundSize: 'cover',
+                      backgroundPosition: 'center',
+                      backgroundRepeat: 'no-repeat'
+                    }}
+                  />
                   {/* Gradient overlay */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/60 to-background/30"></div>
+                  <div className="absolute inset-0 bg-gradient-to-t from-background/95 via-background/75 to-background/50"></div>
                   
                   {/* Content */}
                   <div className="relative h-full flex flex-col justify-between p-6">
                     {/* Header */}
                     <div className="flex justify-between items-start">
-                      <Badge className="bg-primary/20 text-primary border-primary/30">
+                      <Badge className="bg-amber-500/90 text-white border-amber-400/50 backdrop-blur-sm">
                         <Award className="w-3 h-3 mr-1" />
                         Featured Store
                       </Badge>
