@@ -78,9 +78,8 @@ const Index = () => {
           </div>
         </div>
       )}
-   {/* Featured Stores Carousel - Above Hero */}
-      <FeaturedStoresCarousel />
-      
+   
+
       {/* Seller Onboarding Banner */}
       <SellerOnboardingBanner />
 
@@ -89,7 +88,8 @@ const Index = () => {
         onPostItem={handlePostItem}
         onBrowseItems={handleBrowseItems}
       />
-      
+      {/* Featured Stores Carousel - Below Hero */}
+      <FeaturedStoresCarousel />
       {/* Featured content sections */}
       <div className="container mx-auto px-4 space-y-12 py-8">
         {/* Featured Items Carousel */}
