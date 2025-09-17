@@ -24,6 +24,7 @@ interface FeaturedStore {
     first_name: string | null;
     last_name: string | null;
     avatar: string | null;
+    profile_image_url: string | null;
     bio: string | null;
     rating: number | null;
     total_sales: number | null;
@@ -52,6 +53,7 @@ export const FeaturedStoresSpotlight = () => {
             first_name,
             last_name,
             avatar,
+            profile_image_url,
             bio,
             rating,
             total_sales,
@@ -129,7 +131,7 @@ export const FeaturedStoresSpotlight = () => {
 
             const displayName = getDisplayName(profile);
             const avatarInitial = getAvatarInitial(profile);
-            const backgroundImage = profile.avatar || getDefaultProfileImage(profile.id);
+            const backgroundImage = profile.profile_image_url || getDefaultProfileImage(profile.id);
 
             return (
               <CarouselItem key={store.id} className="basis-1/2 md:basis-1/3">
