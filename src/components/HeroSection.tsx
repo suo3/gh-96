@@ -1,8 +1,7 @@
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ArrowRight, Smartphone, Users, Shield } from "lucide-react";
-import heroWoman from "@/assets/hero-woman.jpg";
+import { FeaturedStoresSpotlight } from "./FeaturedStoresSpotlight";
 
 interface HeroSectionProps {
   onPostItem: () => void;
@@ -26,7 +25,7 @@ export const HeroSection = ({ onPostItem, onBrowseItems }: HeroSectionProps) => 
               variant="secondary" 
               className="inline-flex mb-4 px-4 py-2 text-sm font-medium animate-fade-in bg-primary/20 border border-primary/30 text-primary hover:bg-primary/30"
             >
-              Instructions For Today
+              🇬🇭 Ghana Marketplace
             </Badge>
             
             <h1 className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-bold mb-6 leading-tight text-foreground">
@@ -35,7 +34,7 @@ export const HeroSection = ({ onPostItem, onBrowseItems }: HeroSectionProps) => 
             </h1>
             
             <p className="text-lg lg:text-xl text-muted-foreground mb-8 max-w-lg animate-fade-in animate-delay-500 opacity-0 [animation-fill-mode:forwards] leading-relaxed">
-              People prefer purchasing and selling authentically Ghanaian products from local entrepreneurs. Find trusted sellers and great deals.
+              Join Ghana's fastest-growing marketplace. Buy and sell locally with trusted sellers. Mobile money payments supported.
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 animate-fade-in animate-delay-700 opacity-0 [animation-fill-mode:forwards]">
@@ -44,7 +43,7 @@ export const HeroSection = ({ onPostItem, onBrowseItems }: HeroSectionProps) => 
                 onClick={onBrowseItems}
                 className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-gold px-8 py-4 text-lg font-bold transition-all duration-300 hover:scale-105 group"
               >
-                Chop Reviews
+                Browse Items
                 <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
               </Button>
               
@@ -54,7 +53,7 @@ export const HeroSection = ({ onPostItem, onBrowseItems }: HeroSectionProps) => 
                 onClick={onPostItem}
                 className="border-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground px-8 py-4 text-lg font-bold transition-all duration-300 hover:scale-105"
               >
-                Join Today
+                Sell Something
               </Button>
             </div>
             
@@ -74,36 +73,9 @@ export const HeroSection = ({ onPostItem, onBrowseItems }: HeroSectionProps) => 
             </div>
           </div>
           
-          {/* Right Image */}
+          {/* Featured Stores Spotlight */}
           <div className="relative order-1 lg:order-2 animate-fade-in animate-delay-200 opacity-0 [animation-fill-mode:forwards]">
-            <div className="relative rounded-2xl overflow-hidden shadow-2xl">
-              <img 
-                src={heroWoman} 
-                alt="Smiling Ghanaian woman in traditional clothing at a marketplace"
-                className="w-full h-[400px] lg:h-[500px] xl:h-[600px] object-cover"
-              />
-              
-              {/* Overlay gradient */}
-              <div className="absolute inset-0 bg-gradient-to-t from-primary/20 to-transparent"></div>
-              
-              {/* Floating elements */}
-              <div className="absolute bottom-6 left-6 right-6">
-                <div className="flex items-center justify-between bg-white/90 backdrop-blur-sm rounded-lg p-4">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
-                      <Users className="h-4 w-4 text-white" />
-                    </div>
-                    <div>
-                      <p className="font-semibold text-sm">Smart Laycon</p>
-                      <p className="text-xs text-muted-foreground">₵150</p>
-                    </div>
-                  </div>
-                  <Button size="sm" className="bg-primary hover:bg-primary/90 text-white">
-                    Start Chat
-                  </Button>
-                </div>
-              </div>
-            </div>
+            <FeaturedStoresSpotlight />
           </div>
           
         </div>
