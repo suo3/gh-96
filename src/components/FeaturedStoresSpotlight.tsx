@@ -9,6 +9,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { UserRatingDisplay } from "./UserRatingDisplay";
 import kentePattern from "@/assets/kente-pattern.jpg";
+import defaultProfile1 from "@/assets/default-profile-1.jpg";
+import defaultProfile2 from "@/assets/default-profile-2.jpg";
+import defaultProfile3 from "@/assets/default-profile-3.jpg";
+import defaultProfile4 from "@/assets/default-profile-4.jpg";
 
 interface FeaturedStore {
   id: string;
@@ -31,6 +35,9 @@ interface FeaturedStore {
 
 export const FeaturedStoresSpotlight = () => {
   const navigate = useNavigate();
+  
+  // Array of default Ghana-inspired profile images
+  const defaultProfiles = [defaultProfile1, defaultProfile2, defaultProfile3, defaultProfile4];
 
   const { data: featuredStores, isLoading } = useQuery({
     queryKey: ['featured-stores-spotlight'],
@@ -83,6 +90,16 @@ export const FeaturedStoresSpotlight = () => {
     return null;
   };
 
+  const getDefaultProfileImage = (userId: string) => {
+    // Use a simple hash of the user ID to consistently assign the same default image
+    const hash = userId.split('').reduce((a, b) => {
+      a = ((a << 5) - a) + b.charCodeAt(0);
+      return a & a;
+    }, 0);
+    const index = Math.abs(hash) % defaultProfiles.length;
+    return defaultProfiles[index];
+  };
+  
   const getAvatarInitial = (profile: FeaturedStore['profiles']) => {
     if (!profile) return 'U';
     if (profile.first_name) return profile.first_name.charAt(0).toUpperCase();
@@ -113,22 +130,23 @@ export const FeaturedStoresSpotlight = () => {
             const displayName = getDisplayName(profile);
             const location = getLocationString(profile);
             const avatarInitial = getAvatarInitial(profile);
+            const backgroundImage = profile.avatar || getDefaultProfileImage(profile.id);
 
             return (
               <CarouselItem key={store.id}>
                 <Card className="h-[400px] lg:h-[500px] xl:h-[600px] relative overflow-hidden border-0 shadow-2xl">
-                  {/* Kente pattern background */}
+                  {/* Profile background */}
                   <div 
-                    className="absolute inset-0 opacity-70"
+                    className="absolute inset-0 opacity-60"
                     style={{
-                      backgroundImage: `url(${kentePattern})`,
+                      backgroundImage: `url(${backgroundImage})`,
                       backgroundSize: 'cover',
                       backgroundPosition: 'center',
                       backgroundRepeat: 'no-repeat'
                     }}
                   />
                   {/* Gradient overlay */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-background/85 via-background/40 to-background/30"></div>
+                  <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/60 to-background/40"></div>
                   
                   {/* Content */}
                   <div className="relative h-full flex flex-col justify-between p-6">
