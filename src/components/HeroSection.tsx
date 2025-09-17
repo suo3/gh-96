@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ArrowRight, Smartphone, Users, Shield } from "lucide-react";
+import heroBackground from "@/assets/hero-background.jpg";
 
 interface HeroSectionProps {
   onPostItem: () => void;
@@ -13,6 +14,15 @@ export const HeroSection = ({ onPostItem, onBrowseItems }: HeroSectionProps) => 
 
   return (
     <section className="relative overflow-hidden bg-gradient-to-br from-background via-background to-primary/5">
+      {/* Background Image */}
+      <div 
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-10"
+        style={{ 
+          backgroundImage: `url(${heroBackground})`,
+          backgroundPosition: '70% center'
+        }}
+      />
+      
       {/* Background Pattern */}
       <div className="absolute inset-0 opacity-5">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-primary/10"></div>
