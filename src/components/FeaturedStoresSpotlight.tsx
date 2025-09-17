@@ -119,7 +119,7 @@ export const FeaturedStoresSpotlight = () => {
                 <Card className="h-[400px] lg:h-[500px] xl:h-[600px] relative overflow-hidden border-0 shadow-2xl">
                   {/* Kente pattern background */}
                   <div 
-                    className="absolute inset-0 opacity-30"
+                    className="absolute inset-0 opacity-70"
                     style={{
                       backgroundImage: `url(${kentePattern})`,
                       backgroundSize: 'cover',
@@ -128,7 +128,7 @@ export const FeaturedStoresSpotlight = () => {
                     }}
                   />
                   {/* Gradient overlay */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-background/95 via-background/75 to-background/50"></div>
+                  <div className="absolute inset-0 bg-gradient-to-t from-background/85 via-background/40 to-background/30"></div>
                   
                   {/* Content */}
                   <div className="relative h-full flex flex-col justify-between p-6">
