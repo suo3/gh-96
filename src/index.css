@@ -6,8 +6,8 @@
 
 @layer base {
   :root {
-    /* Ghana-inspired color palette */
-    --background: 40 100% 98%;
+    /* Ghana-inspired orange/golden color palette */
+    --background: 0 0% 100%;
     --foreground: 0 0% 10%;
 
     --card: 0 0% 100%;
@@ -16,17 +16,17 @@
     --popover: 0 0% 100%;
     --popover-foreground: 0 0% 10%;
 
-    /* Updated color palette with green as primary */
-    --primary: 140 65% 45%; /* Green as primary color */
+    /* Updated color palette with orange/golden as primary */
+    --primary: 35 88% 55%; /* Orange/golden as primary color */
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 140 30% 90%; /* Light green for secondary */
-    --secondary-foreground: 140 65% 25%;
+    --secondary: 35 45% 95%; /* Light orange for secondary */
+    --secondary-foreground: 35 88% 35%;
 
-    --muted: 40 30% 96%;
+    --muted: 35 20% 96%;
     --muted-foreground: 0 0% 45%;
 
-    --accent: 140 50% 60%; /* Lighter green for accent */
+    --accent: 35 70% 65%; /* Lighter orange for accent */
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84% 60%;
@@ -34,18 +34,19 @@
 
     --border: 40 20% 88%;
     --input: 40 20% 95%;
-    --ring: 140 65% 45%;
+    --ring: 35 88% 55%;
 
     --radius: 0.75rem;
 
-    /* Green-themed gradients */
-    --gradient-ghana: linear-gradient(135deg, hsl(140 65% 45%), hsl(140 50% 60%), hsl(140 30% 70%));
-    --gradient-hero: linear-gradient(135deg, hsl(140 65% 45% / 0.1), hsl(140 50% 60% / 0.1));
-    --gradient-card: linear-gradient(180deg, hsl(0 0% 100%), hsl(140 20% 98%));
+    /* Orange/golden-themed gradients */
+    --gradient-ghana: linear-gradient(135deg, hsl(35 88% 55%), hsl(35 70% 65%), hsl(35 50% 75%));
+    --gradient-hero: linear-gradient(135deg, hsl(35 88% 55% / 0.1), hsl(35 70% 65% / 0.1));
+    --gradient-card: linear-gradient(180deg, hsl(0 0% 100%), hsl(35 20% 98%));
+    --gradient-hero-bg: linear-gradient(135deg, hsl(35 88% 55%), hsl(35 75% 60%));
 
-    /* Shadows with green colors */
-    --shadow-ghana: 0 10px 30px -10px hsl(140 65% 45% / 0.3);
-    --shadow-gold: 0 5px 20px -5px hsl(140 50% 60% / 0.4);
+    /* Shadows with orange/golden colors */
+    --shadow-ghana: 0 10px 30px -10px hsl(35 88% 55% / 0.3);
+    --shadow-gold: 0 5px 20px -5px hsl(35 70% 65% / 0.4);
     --shadow-elegant: 0 20px 50px -10px hsl(0 0% 0% / 0.1);
 
     /* Header styling */
