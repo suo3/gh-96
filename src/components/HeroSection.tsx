@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ArrowRight, Smartphone, Users, Shield } from "lucide-react";
 import { FeaturedStoresSpotlight } from "./FeaturedStoresSpotlight";
+import heroBackground from "@/assets/hero-background.jpg";
 
 interface HeroSectionProps {
   onPostItem: () => void;
@@ -12,9 +13,14 @@ export const HeroSection = ({ onPostItem, onBrowseItems }: HeroSectionProps) => 
 
 
   return (
-    <section className="relative overflow-hidden bg-gradient-to-br from-primary/20 via-primary/10 to-primary/5 min-h-[600px] lg:min-h-[700px]">
+    <section className="relative overflow-hidden min-h-[600px] lg:min-h-[700px]">
+      {/* Background image */}
+      <div 
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+        style={{ backgroundImage: `url(${heroBackground})` }}
+      ></div>
       {/* Background gradient overlay */}
-      <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-primary/20"></div>
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/30 via-primary/20 to-primary/40"></div>
       
       <div className="container mx-auto px-4 py-8 lg:py-12 relative z-10">
         <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center min-h-[500px] lg:min-h-[600px]">
