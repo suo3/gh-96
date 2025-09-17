@@ -71,9 +71,9 @@ export const FeaturedSellersSection = () => {
                   <CardContent className="p-6 text-center">
                     {/* Avatar */}
                     <div className="relative mx-auto mb-4">
-                      {profile.avatar ? (
+                      {profile.avatar || profile.profile_image_url ? (
                         <img
-                          src={profile.avatar}
+                          src={profile.profile_image_url || profile.avatar}
                           alt={displayName}
                           className="w-16 h-16 rounded-full object-cover mx-auto ring-4 ring-orange-200 group-hover:ring-orange-300 transition-all"
                         />

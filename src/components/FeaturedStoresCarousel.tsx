@@ -22,6 +22,7 @@ interface FeaturedStore {
     first_name: string | null;
     last_name: string | null;
     avatar: string | null;
+    profile_image_url: string | null;
     bio: string | null;
     rating: number | null;
     total_sales: number | null;
@@ -47,6 +48,7 @@ export const FeaturedStoresCarousel = () => {
             first_name,
             last_name,
             avatar,
+            profile_image_url,
             bio,
             rating,
             total_sales,
@@ -152,9 +154,9 @@ export const FeaturedStoresCarousel = () => {
                     className="h-auto flex items-center gap-2 px-3 py-2 hover:bg-primary/10 hover:border-primary/30 transition-all"
                     onClick={() => handleStoreClick(profile.id)}
                   >
-                    {profile.avatar ? (
+                    {profile.profile_image_url || profile.avatar ? (
                       <img
-                        src={profile.avatar}
+                        src={profile.profile_image_url || profile.avatar}
                         alt={displayName}
                         className="w-6 h-6 rounded-full object-cover"
                       />
