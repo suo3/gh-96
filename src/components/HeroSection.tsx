@@ -14,13 +14,26 @@ export const HeroSection = ({ onPostItem, onBrowseItems }: HeroSectionProps) => 
 
   return (
     <section className="relative overflow-hidden min-h-[500px] md:min-h-[600px] lg:min-h-[700px]">
-      {/* Background image */}
-      <div 
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-        style={{ backgroundImage: `url(${heroBackground})` }}
-      ></div>
-      {/* Background gradient overlay */}
-      <div className="absolute inset-0 bg-gradient-to-br from-primary/30 via-primary/20 to-primary/40"></div>
+      {/* Modern illustration background */}
+      <div className="absolute inset-0 bg-gradient-to-br from-background via-primary/5 to-secondary/10"></div>
+      
+      {/* Geometric shapes */}
+      <div className="absolute inset-0">
+        {/* Large abstract shapes */}
+        <div className="absolute top-10 right-10 w-72 h-72 bg-gradient-to-br from-primary/20 to-secondary/30 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute bottom-20 left-10 w-96 h-96 bg-gradient-to-tr from-accent/20 to-primary/20 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
+        
+        {/* Medium geometric elements */}
+        <div className="absolute top-1/4 left-1/4 w-32 h-32 bg-gradient-to-br from-primary/30 to-transparent rounded-2xl rotate-45 animate-bounce-slow"></div>
+        <div className="absolute bottom-1/3 right-1/3 w-24 h-24 bg-gradient-to-tl from-secondary/40 to-transparent rounded-full animate-bounce-slow" style={{ animationDelay: '2s' }}></div>
+        
+        {/* Small accent elements */}
+        <div className="absolute top-1/2 right-1/4 w-16 h-16 bg-primary/20 rounded-lg rotate-12 animate-fade-in animate-delay-500"></div>
+        <div className="absolute bottom-1/4 left-1/3 w-12 h-12 bg-secondary/30 rounded-full animate-fade-in animate-delay-700"></div>
+      </div>
+      
+      {/* Gradient mesh overlay */}
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-secondary/10"></div>
       
       <div className="container mx-auto px-4 py-6 md:py-8 lg:py-12 relative z-10">
         <div className="grid lg:grid-cols-2 gap-6 md:gap-8 lg:gap-12 items-center min-h-[400px] md:min-h-[500px] lg:min-h-[600px]">
