@@ -24,6 +24,7 @@ interface FeaturedStore {
     first_name: string | null;
     last_name: string | null;
     avatar: string | null;
+    profile_image_url: string | null;
     bio: string | null;
     rating: number | null;
     total_sales: number | null;
@@ -52,6 +53,7 @@ export const FeaturedStoresSpotlight = () => {
             first_name,
             last_name,
             avatar,
+            profile_image_url,
             bio,
             rating,
             total_sales,
@@ -120,105 +122,56 @@ export const FeaturedStoresSpotlight = () => {
   }
 
   return (
-    <div className="relative w-full h-[400px] lg:h-[500px] xl:h-[600px]">
-      <Carousel className="w-full h-full">
+    <div className="relative w-full h-[300px] flex items-center justify-center">
+      <Carousel className="w-full max-w-2xl">
         <CarouselContent>
           {featuredStores.map((store) => {
             const profile = store.profiles;
             if (!profile) return null;
 
             const displayName = getDisplayName(profile);
-            const location = getLocationString(profile);
             const avatarInitial = getAvatarInitial(profile);
-            const backgroundImage = profile.avatar || getDefaultProfileImage(profile.id);
+            const backgroundImage = profile.profile_image_url || getDefaultProfileImage(profile.id);
 
             return (
-              <CarouselItem key={store.id}>
-                <Card className="h-[400px] lg:h-[500px] xl:h-[600px] relative overflow-hidden border-0 shadow-2xl">
-                  {/* Profile background */}
-                  <div 
-                    className="absolute inset-0 opacity-60"
-                    style={{
-                      backgroundImage: `url(${backgroundImage})`,
-                      backgroundSize: 'cover',
-                      backgroundPosition: 'center',
-                      backgroundRepeat: 'no-repeat'
-                    }}
-                  />
-                  {/* Gradient overlay */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/60 to-background/40"></div>
-                  
-                  {/* Content */}
-                  <div className="relative h-full flex flex-col justify-between p-6">
-                    {/* Header */}
-                    <div className="flex justify-between items-start">
-                      <Badge className="bg-amber-500/90 text-white border-amber-400/50 backdrop-blur-sm">
-                        <Award className="w-3 h-3 mr-1" />
-                        Featured Store
-                      </Badge>
-                      <div className="text-right text-sm text-muted-foreground">
-                        #{store.position}
-                      </div>
-                    </div>
-
-                    {/* Store info */}
-                    <div className="flex-1 flex flex-col justify-center items-center text-center space-y-4">
-                      <Avatar className="w-24 h-24 ring-4 ring-primary/20">
-                        <AvatarImage src={profile.avatar || undefined} alt={displayName} />
-                        <AvatarFallback className="bg-gradient-to-br from-primary to-primary/80 text-primary-foreground text-2xl font-bold">
-                          {avatarInitial}
-                        </AvatarFallback>
-                      </Avatar>
-
-                      <div className="space-y-2">
-                        <div className="flex items-center justify-center gap-2">
-                          <h3 className="text-2xl font-bold">{displayName}</h3>
-                          {profile.is_verified && (
-                            <Badge variant="secondary" className="text-xs">
-                              <Award className="h-3 w-3 mr-1" />
-                              Verified
-                            </Badge>
-                          )}
+              <CarouselItem key={store.id} className="basis-1/2 md:basis-1/3">
+                <div className="p-4">
+                  <Card 
+                    className="relative overflow-hidden cursor-pointer transition-all duration-300 hover:scale-105 group border-0 shadow-lg bg-transparent backdrop-blur-sm rounded-full w-48 h-48 mx-auto"
+                    onClick={() => handleStoreClick(profile.id)}
+                  >
+                    {/* Background Image */}
+                    <div 
+                      className="absolute inset-0 bg-cover bg-center bg-no-repeat rounded-full"
+                      style={{ 
+                        backgroundImage: `url(${backgroundImage})` 
+                      }}
+                    />
+                    {/* Dark Gradient Overlay for text readability */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent rounded-full" />
+                    
+                    <div className="relative z-10 h-full flex flex-col justify-end items-center text-center p-4 pb-6">
+                      <div className="space-y-1">
+                        <h3 className="font-bold text-white text-sm leading-tight">
+                          {displayName}
+                        </h3>
+                        <div className="flex items-center justify-center gap-2 text-xs text-white/80">
+                          <span className="flex items-center gap-1">
+                            <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
+                            {(profile.rating || 0).toFixed(1)}
+                          </span>
+                          <span>{profile.total_sales || 0} sales</span>
                         </div>
-
-                        {profile.bio && (
-                          <p className="text-muted-foreground text-sm max-w-md mx-auto line-clamp-2">
-                            {profile.bio}
-                          </p>
+                        {profile.is_verified && (
+                          <Badge variant="secondary" className="bg-primary/80 text-white border-0 text-xs">
+                            <Award className="w-2 h-2 mr-1" />
+                            Verified
+                          </Badge>
                         )}
-
-                        <div className="flex items-center justify-center gap-4 text-sm">
-                          <UserRatingDisplay userId={profile.id} showCount size="sm" />
-                          
-                          {profile.total_sales && profile.total_sales > 0 && (
-                            <div className="flex items-center gap-1 text-muted-foreground">
-                              <ShoppingBag className="h-4 w-4" />
-                              <span>{profile.total_sales} sales</span>
-                            </div>
-                          )}
-                          
-                          {location && (
-                            <div className="flex items-center gap-1 text-muted-foreground">
-                              <MapPin className="h-4 w-4" />
-                              <span>{location}</span>
-                            </div>
-                          )}
-                        </div>
                       </div>
                     </div>
-
-                    {/* Action button */}
-                    <div className="flex justify-center">
-                      <Button 
-                        onClick={() => handleStoreClick(profile.id)}
-                        className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-3 font-semibold"
-                      >
-                        <Users className="w-4 h-4 mr-2" />
-                        Visit Store
-                      </Button>
-                    </div>
-                  </div>
-                </Card>
+                  </Card>
+                </div>
               </CarouselItem>
             );
           })}

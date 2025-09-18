@@ -8,6 +8,10 @@ import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { UserRatingDisplay } from "@/components/UserRatingDisplay";
+import defaultProfile1 from "@/assets/default-profile-1.jpg";
+import defaultProfile2 from "@/assets/default-profile-2.jpg";
+import defaultProfile3 from "@/assets/default-profile-3.jpg";
+import defaultProfile4 from "@/assets/default-profile-4.jpg";
 
 interface FeaturedStore {
   id: string;
@@ -22,6 +26,7 @@ interface FeaturedStore {
     first_name: string | null;
     last_name: string | null;
     avatar: string | null;
+    profile_image_url: string | null;
     bio: string | null;
     rating: number | null;
     total_sales: number | null;
@@ -33,6 +38,19 @@ interface FeaturedStore {
 
 export const FeaturedStoresCarousel = () => {
   const navigate = useNavigate();
+
+  // Array of default Ghana-inspired profile images
+  const defaultProfiles = [defaultProfile1, defaultProfile2, defaultProfile3, defaultProfile4];
+
+  const getDefaultProfileImage = (userId: string) => {
+    // Use a simple hash of the user ID to consistently assign the same default image
+    const hash = userId.split('').reduce((a, b) => {
+      a = ((a << 5) - a) + b.charCodeAt(0);
+      return a & a;
+    }, 0);
+    const index = Math.abs(hash) % defaultProfiles.length;
+    return defaultProfiles[index];
+  };
 
   const { data: featuredStores, isLoading, error } = useQuery({
     queryKey: ['featured-stores'],
@@ -47,6 +65,7 @@ export const FeaturedStoresCarousel = () => {
             first_name,
             last_name,
             avatar,
+            profile_image_url,
             bio,
             rating,
             total_sales,
@@ -152,17 +171,11 @@ export const FeaturedStoresCarousel = () => {
                     className="h-auto flex items-center gap-2 px-3 py-2 hover:bg-primary/10 hover:border-primary/30 transition-all"
                     onClick={() => handleStoreClick(profile.id)}
                   >
-                    {profile.avatar ? (
-                      <img
-                        src={profile.avatar}
-                        alt={displayName}
-                        className="w-6 h-6 rounded-full object-cover"
-                      />
-                    ) : (
-                      <div className="w-6 h-6 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white text-xs font-semibold">
-                        {avatarInitial}
-                      </div>
-                    )}
+                    <img
+                      src={profile.profile_image_url || profile.avatar || getDefaultProfileImage(profile.id)}
+                      alt={displayName}
+                      className="w-6 h-6 rounded-full object-cover"
+                    />
                     <div className="flex flex-col items-start gap-1">
                       <span className="text-sm font-medium">{displayName}</span>
                       <UserRatingDisplay userId={profile.id} size="sm" />

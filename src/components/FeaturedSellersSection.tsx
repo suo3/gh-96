@@ -8,11 +8,28 @@ import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { UserRatingDisplay } from "@/components/UserRatingDisplay";
+import defaultProfile1 from "@/assets/default-profile-1.jpg";
+import defaultProfile2 from "@/assets/default-profile-2.jpg";
+import defaultProfile3 from "@/assets/default-profile-3.jpg";
+import defaultProfile4 from "@/assets/default-profile-4.jpg";
 
 export const FeaturedSellersSection = () => {
   const navigate = useNavigate();
 
+  // Array of default Ghana-inspired profile images
+  const defaultProfiles = [defaultProfile1, defaultProfile2, defaultProfile3, defaultProfile4];
+
   const { data: featuredSellers, isLoading } = useFeaturedSellers();
+
+  const getDefaultProfileImage = (userId: string) => {
+    // Use a simple hash of the user ID to consistently assign the same default image
+    const hash = userId.split('').reduce((a, b) => {
+      a = ((a << 5) - a) + b.charCodeAt(0);
+      return a & a;
+    }, 0);
+    const index = Math.abs(hash) % defaultProfiles.length;
+    return defaultProfiles[index];
+  };
 
   if (isLoading) {
     return (
@@ -71,17 +88,11 @@ export const FeaturedSellersSection = () => {
                   <CardContent className="p-6 text-center">
                     {/* Avatar */}
                     <div className="relative mx-auto mb-4">
-                      {profile.avatar ? (
-                        <img
-                          src={profile.avatar}
-                          alt={displayName}
-                          className="w-16 h-16 rounded-full object-cover mx-auto ring-4 ring-orange-200 group-hover:ring-orange-300 transition-all"
-                        />
-                      ) : (
-                        <div className="w-16 h-16 rounded-full bg-gradient-to-br from-orange-400 to-red-400 flex items-center justify-center mx-auto text-white font-bold text-xl ring-4 ring-orange-200 group-hover:ring-orange-300 transition-all">
-                          {displayName.charAt(0).toUpperCase()}
-                        </div>
-                      )}
+                      <img
+                        src={profile.profile_image_url || profile.avatar || getDefaultProfileImage(profile.id)}
+                        alt={displayName}
+                        className="w-16 h-16 rounded-full object-cover mx-auto ring-4 ring-orange-200 group-hover:ring-orange-300 transition-all"
+                      />
                       
                       {/* Featured badge */}
                       <Badge className="absolute -top-1 -right-2 bg-orange-500 text-white text-xs px-2 py-1 rounded-full">
