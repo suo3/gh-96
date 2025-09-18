@@ -14,8 +14,14 @@ export const HeroSection = ({ onPostItem, onBrowseItems }: HeroSectionProps) => 
 
   return (
     <section className="relative overflow-hidden min-h-[500px] md:min-h-[600px] lg:min-h-[700px]">
-      {/* Modern illustration background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-background via-primary/5 to-secondary/10"></div>
+      {/* Background image */}
+      <div 
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+        style={{ backgroundImage: `url(${heroBackground})` }}
+      ></div>
+      
+      {/* Modern illustration overlay */}
+      <div className="absolute inset-0 bg-gradient-to-br from-background/80 via-primary/10 to-secondary/20"></div>
       
       {/* Geometric shapes */}
       <div className="absolute inset-0">
