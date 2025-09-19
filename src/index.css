@@ -6,7 +6,7 @@
 
 @layer base {
   :root {
-    /* Ghana-inspired orange/golden color palette */
+    /* African-inspired vibrant color palette */
     --background: 0 0% 100%;
     --foreground: 0 0% 10%;
 
@@ -16,104 +16,104 @@
     --popover: 0 0% 100%;
     --popover-foreground: 0 0% 10%;
 
-    /* Updated color palette with orange/golden as primary */
-    --primary: 35 88% 55%; /* Orange/golden as primary color */
+    /* Vibrant African-inspired primary colors */
+    --primary: 320 85% 45%; /* Deep purple/magenta as primary */
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 35 45% 95%; /* Light orange for secondary */
-    --secondary-foreground: 35 88% 35%;
+    --secondary: 45 95% 65%; /* Rich golden yellow for secondary */
+    --secondary-foreground: 320 85% 25%;
 
-    --muted: 35 20% 96%;
+    --muted: 320 15% 96%;
     --muted-foreground: 0 0% 45%;
 
-    --accent: 35 70% 65%; /* Lighter orange for accent */
+    --accent: 180 70% 55%; /* Teal/turquoise for accent */
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 40 20% 88%;
-    --input: 40 20% 95%;
-    --ring: 35 88% 55%;
+    --border: 320 20% 88%;
+    --input: 320 15% 95%;
+    --ring: 320 85% 45%;
 
     --radius: 0.75rem;
 
-    /* Orange/golden-themed gradients */
-    --gradient-ghana: linear-gradient(135deg, hsl(35 88% 55%), hsl(35 70% 65%), hsl(35 50% 75%));
-    --gradient-hero: linear-gradient(135deg, hsl(35 88% 55% / 0.1), hsl(35 70% 65% / 0.1));
-    --gradient-card: linear-gradient(180deg, hsl(0 0% 100%), hsl(35 20% 98%));
-    --gradient-hero-bg: linear-gradient(135deg, hsl(35 88% 55%), hsl(35 75% 60%));
+    /* African-inspired gradients */
+    --gradient-ghana: linear-gradient(135deg, hsl(320 85% 45%), hsl(45 95% 65%), hsl(180 70% 55%));
+    --gradient-hero: linear-gradient(135deg, hsl(320 85% 45% / 0.1), hsl(45 95% 65% / 0.1));
+    --gradient-card: linear-gradient(180deg, hsl(0 0% 100%), hsl(320 15% 98%));
+    --gradient-hero-bg: linear-gradient(135deg, hsl(320 85% 45%), hsl(45 95% 65%));
 
-    /* Shadows with orange/golden colors */
-    --shadow-ghana: 0 10px 30px -10px hsl(35 88% 55% / 0.3);
-    --shadow-gold: 0 5px 20px -5px hsl(35 70% 65% / 0.4);
+    /* Shadows with vibrant colors */
+    --shadow-ghana: 0 10px 30px -10px hsl(320 85% 45% / 0.3);
+    --shadow-gold: 0 5px 20px -5px hsl(45 95% 65% / 0.4);
     --shadow-elegant: 0 20px 50px -10px hsl(0 0% 0% / 0.1);
 
     /* Header styling */
-    --header-background: 55 100% 90%; /* Light yellow background */
+    --header-background: 45 95% 85%; /* Light golden background */
 
     /* Sidebar styling */
-    --sidebar-background: 0 0% 99%;
-    --sidebar-foreground: 0 0% 20%;
-    --sidebar-primary: 140 65% 45%;
+    --sidebar-background: 320 15% 98%;
+    --sidebar-foreground: 320 85% 25%;
+    --sidebar-primary: 320 85% 45%;
     --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 40 30% 96%;
-    --sidebar-accent-foreground: 0 0% 10%;
-    --sidebar-border: 40 20% 90%;
-    --sidebar-ring: 140 65% 45%;
+    --sidebar-accent: 45 50% 90%;
+    --sidebar-accent-foreground: 320 85% 25%;
+    --sidebar-border: 320 20% 88%;
+    --sidebar-ring: 320 85% 45%;
   }
 
   .dark {
-    --background: 0 0% 8%;
-    --foreground: 40 50% 95%;
+    --background: 320 15% 8%;
+    --foreground: 45 50% 95%;
 
-    --card: 0 0% 12%;
-    --card-foreground: 40 50% 95%;
+    --card: 320 20% 12%;
+    --card-foreground: 45 50% 95%;
 
-    --popover: 0 0% 12%;
-    --popover-foreground: 40 50% 95%;
+    --popover: 320 20% 12%;
+    --popover-foreground: 45 50% 95%;
 
-    --primary: 140 55% 55%; /* Green for dark mode */
+    --primary: 320 70% 65%; /* Lighter purple for dark mode */
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 140 25% 25%; /* Dark green for secondary */
-    --secondary-foreground: 140 30% 85%;
+    --secondary: 45 80% 70%; /* Golden yellow for dark secondary */
+    --secondary-foreground: 320 85% 15%;
 
-    --muted: 0 0% 15%;
-    --muted-foreground: 40 20% 65%;
+    --muted: 320 15% 15%;
+    --muted-foreground: 45 20% 65%;
 
-    --accent: 140 50% 60%; /* Lighter green for accent */
+    --accent: 180 60% 65%; /* Lighter teal for dark accent */
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 75% 55%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 0 0% 20%;
-    --input: 0 0% 18%;
-    --ring: 140 55% 55%;
+    --border: 320 15% 20%;
+    --input: 320 15% 18%;
+    --ring: 320 70% 65%;
 
-    /* Dark mode gradients */
-    --gradient-ghana: linear-gradient(135deg, hsl(140 55% 55%), hsl(140 50% 60%), hsl(140 45% 65%));
-    --gradient-hero: linear-gradient(135deg, hsl(140 55% 55% / 0.2), hsl(140 50% 60% / 0.2));
-    --gradient-card: linear-gradient(180deg, hsl(0 0% 12%), hsl(140 10% 15%));
+    /* Dark mode African gradients */
+    --gradient-ghana: linear-gradient(135deg, hsl(320 70% 65%), hsl(45 80% 70%), hsl(180 60% 65%));
+    --gradient-hero: linear-gradient(135deg, hsl(320 70% 65% / 0.2), hsl(45 80% 70% / 0.2));
+    --gradient-card: linear-gradient(180deg, hsl(320 20% 12%), hsl(320 15% 15%));
 
-    /* Dark shadows */
-    --shadow-ghana: 0 10px 30px -10px hsl(140 55% 55% / 0.5);
-    --shadow-gold: 0 5px 20px -5px hsl(140 50% 60% / 0.6);
+    /* Dark shadows with vibrant colors */
+    --shadow-ghana: 0 10px 30px -10px hsl(320 70% 65% / 0.5);
+    --shadow-gold: 0 5px 20px -5px hsl(45 80% 70% / 0.6);
     --shadow-elegant: 0 20px 50px -10px hsl(0 0% 0% / 0.8);
 
     /* Dark header */
-    --header-background: 55 30% 15%; /* Dark yellow background for dark mode */
+    --header-background: 45 40% 15%; /* Dark golden background for dark mode */
 
     /* Dark sidebar */
-    --sidebar-background: 0 0% 10%;
-    --sidebar-foreground: 40 30% 85%;
-    --sidebar-primary: 140 55% 55%;
+    --sidebar-background: 320 15% 10%;
+    --sidebar-foreground: 45 30% 85%;
+    --sidebar-primary: 320 70% 65%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 0 0% 15%;
-    --sidebar-accent-foreground: 40 30% 85%;
-    --sidebar-border: 0 0% 20%;
-    --sidebar-ring: 140 55% 55%;
+    --sidebar-accent: 320 15% 15%;
+    --sidebar-accent-foreground: 45 30% 85%;
+    --sidebar-border: 320 15% 20%;
+    --sidebar-ring: 320 70% 65%;
   }
 }
 
