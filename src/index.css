@@ -6,114 +6,115 @@
 
 @layer base {
   :root {
-    /* African-inspired vibrant color palette */
-    --background: 0 0% 100%;
-    --foreground: 0 0% 10%;
+    /* Warm African-inspired color palette matching the design */
+    --background: 36 100% 85%; /* Warm golden background */
+    --foreground: 20 15% 15%; /* Dark brown text */
 
-    --card: 0 0% 100%;
-    --card-foreground: 0 0% 10%;
+    --card: 0 0% 98%; /* Light cards */
+    --card-foreground: 20 15% 15%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 10%;
+    --popover: 0 0% 98%;
+    --popover-foreground: 20 15% 15%;
 
-    /* Vibrant African-inspired primary colors */
-    --primary: 320 85% 45%; /* Deep purple/magenta as primary */
-    --primary-foreground: 0 0% 100%;
+    /* Vibrant African marketplace colors */
+    --primary: 20 15% 15%; /* Dark brown/black for primary text and buttons */
+    --primary-foreground: 36 100% 85%;
 
-    --secondary: 45 95% 65%; /* Rich golden yellow for secondary */
-    --secondary-foreground: 320 85% 25%;
+    --secondary: 15 85% 65%; /* Coral/orange for secondary elements */
+    --secondary-foreground: 20 15% 15%;
 
-    --muted: 320 15% 96%;
-    --muted-foreground: 0 0% 45%;
+    --muted: 36 50% 90%;
+    --muted-foreground: 20 15% 45%;
 
-    --accent: 180 70% 55%; /* Teal/turquoise for accent */
+    --accent: 160 60% 50%; /* Teal green for accents */
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 320 20% 88%;
-    --input: 320 15% 95%;
-    --ring: 320 85% 45%;
+    --border: 36 30% 75%;
+    --input: 0 0% 100%;
+    --ring: 20 15% 15%;
 
-    --radius: 0.75rem;
+    --radius: 1rem;
 
-    /* African-inspired gradients */
-    --gradient-ghana: linear-gradient(135deg, hsl(320 85% 45%), hsl(45 95% 65%), hsl(180 70% 55%));
-    --gradient-hero: linear-gradient(135deg, hsl(320 85% 45% / 0.1), hsl(45 95% 65% / 0.1));
-    --gradient-card: linear-gradient(180deg, hsl(0 0% 100%), hsl(320 15% 98%));
-    --gradient-hero-bg: linear-gradient(135deg, hsl(320 85% 45%), hsl(45 95% 65%));
+    /* Kente-inspired gradients */
+    --gradient-ghana: linear-gradient(135deg, hsl(15 85% 65%), hsl(160 60% 50%), hsl(260 70% 65%));
+    --gradient-hero: linear-gradient(135deg, hsl(36 100% 85%), hsl(36 80% 75%));
+    --gradient-card: linear-gradient(180deg, hsl(0 0% 100%), hsl(36 50% 95%));
+    --gradient-kente: linear-gradient(90deg, hsl(15 85% 65%), hsl(160 60% 50%), hsl(260 70% 65%), hsl(45 95% 55%));
 
-    /* Shadows with vibrant colors */
-    --shadow-ghana: 0 10px 30px -10px hsl(320 85% 45% / 0.3);
-    --shadow-gold: 0 5px 20px -5px hsl(45 95% 65% / 0.4);
+    /* African marketplace shadows */
+    --shadow-ghana: 0 10px 30px -10px hsl(20 15% 15% / 0.2);
+    --shadow-gold: 0 5px 20px -5px hsl(36 80% 50% / 0.3);
     --shadow-elegant: 0 20px 50px -10px hsl(0 0% 0% / 0.1);
 
-    /* Header styling */
-    --header-background: 45 95% 85%; /* Light golden background */
+    /* Header styling - Kente pattern inspired */
+    --header-background: 36 100% 85%;
 
     /* Sidebar styling */
-    --sidebar-background: 320 15% 98%;
-    --sidebar-foreground: 320 85% 25%;
-    --sidebar-primary: 320 85% 45%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 45 50% 90%;
-    --sidebar-accent-foreground: 320 85% 25%;
-    --sidebar-border: 320 20% 88%;
-    --sidebar-ring: 320 85% 45%;
+    --sidebar-background: 36 50% 95%;
+    --sidebar-foreground: 20 15% 15%;
+    --sidebar-primary: 20 15% 15%;
+    --sidebar-primary-foreground: 36 100% 85%;
+    --sidebar-accent: 36 50% 90%;
+    --sidebar-accent-foreground: 20 15% 15%;
+    --sidebar-border: 36 30% 80%;
+    --sidebar-ring: 20 15% 15%;
   }
 
   .dark {
-    --background: 320 15% 8%;
-    --foreground: 45 50% 95%;
+    --background: 20 25% 8%; /* Dark brown background */
+    --foreground: 36 50% 90%;
 
-    --card: 320 20% 12%;
-    --card-foreground: 45 50% 95%;
+    --card: 20 20% 12%;
+    --card-foreground: 36 50% 90%;
 
-    --popover: 320 20% 12%;
-    --popover-foreground: 45 50% 95%;
+    --popover: 20 20% 12%;
+    --popover-foreground: 36 50% 90%;
 
-    --primary: 320 70% 65%; /* Lighter purple for dark mode */
-    --primary-foreground: 0 0% 100%;
+    --primary: 36 80% 75%; /* Golden primary for dark mode */
+    --primary-foreground: 20 25% 8%;
 
-    --secondary: 45 80% 70%; /* Golden yellow for dark secondary */
-    --secondary-foreground: 320 85% 15%;
+    --secondary: 15 75% 60%; /* Coral for dark secondary */
+    --secondary-foreground: 20 25% 8%;
 
-    --muted: 320 15% 15%;
-    --muted-foreground: 45 20% 65%;
+    --muted: 20 15% 15%;
+    --muted-foreground: 36 30% 65%;
 
-    --accent: 180 60% 65%; /* Lighter teal for dark accent */
+    --accent: 160 50% 55%; /* Muted teal for dark accent */
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 75% 55%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 320 15% 20%;
-    --input: 320 15% 18%;
-    --ring: 320 70% 65%;
+    --border: 20 15% 20%;
+    --input: 20 15% 18%;
+    --ring: 36 80% 75%;
 
-    /* Dark mode African gradients */
-    --gradient-ghana: linear-gradient(135deg, hsl(320 70% 65%), hsl(45 80% 70%), hsl(180 60% 65%));
-    --gradient-hero: linear-gradient(135deg, hsl(320 70% 65% / 0.2), hsl(45 80% 70% / 0.2));
-    --gradient-card: linear-gradient(180deg, hsl(320 20% 12%), hsl(320 15% 15%));
+    /* Dark mode gradients */
+    --gradient-ghana: linear-gradient(135deg, hsl(36 80% 75%), hsl(15 75% 60%), hsl(160 50% 55%));
+    --gradient-hero: linear-gradient(135deg, hsl(20 25% 8%), hsl(20 20% 12%));
+    --gradient-card: linear-gradient(180deg, hsl(20 20% 12%), hsl(20 15% 15%));
+    --gradient-kente: linear-gradient(90deg, hsl(15 75% 60%), hsl(160 50% 55%), hsl(260 60% 55%), hsl(36 80% 65%));
 
-    /* Dark shadows with vibrant colors */
-    --shadow-ghana: 0 10px 30px -10px hsl(320 70% 65% / 0.5);
-    --shadow-gold: 0 5px 20px -5px hsl(45 80% 70% / 0.6);
+    /* Dark shadows */
+    --shadow-ghana: 0 10px 30px -10px hsl(36 80% 75% / 0.3);
+    --shadow-gold: 0 5px 20px -5px hsl(36 80% 65% / 0.4);
     --shadow-elegant: 0 20px 50px -10px hsl(0 0% 0% / 0.8);
 
     /* Dark header */
-    --header-background: 45 40% 15%; /* Dark golden background for dark mode */
+    --header-background: 20 25% 10%;
 
     /* Dark sidebar */
-    --sidebar-background: 320 15% 10%;
-    --sidebar-foreground: 45 30% 85%;
-    --sidebar-primary: 320 70% 65%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 320 15% 15%;
-    --sidebar-accent-foreground: 45 30% 85%;
-    --sidebar-border: 320 15% 20%;
-    --sidebar-ring: 320 70% 65%;
+    --sidebar-background: 20 20% 10%;
+    --sidebar-foreground: 36 40% 85%;
+    --sidebar-primary: 36 80% 75%;
+    --sidebar-primary-foreground: 20 25% 8%;
+    --sidebar-accent: 20 15% 15%;
+    --sidebar-accent-foreground: 36 40% 85%;
+    --sidebar-border: 20 15% 20%;
+    --sidebar-ring: 36 80% 75%;
   }
 }
 
@@ -139,6 +140,15 @@
   
   .bg-gradient-card {
     background: var(--gradient-card);
+  }
+  
+  .bg-gradient-kente {
+    background: var(--gradient-kente);
+  }
+  
+  .kente-border {
+    background: var(--gradient-kente);
+    height: 8px;
   }
   
   .shadow-ghana {
