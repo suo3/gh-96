@@ -172,10 +172,14 @@ export const FeaturedStoresCarousel = () => {
                     onClick={() => handleStoreClick(profile.id)}
                   >
                     <img
+                    hidden={!profile.profile_image_url}
                       src={profile.profile_image_url || profile.avatar || getDefaultProfileImage(profile.id)}
                       alt={displayName}
                       className="w-6 h-6 rounded-full object-cover"
                     />
+                   <div className={`w-6 h-6 rounded-full bg-muted flex items-center justify-center text-sm font-semibold ${profile.profile_image_url ? 'hidden' : ''}`}>
+                      {avatarInitial}
+                    </div>
                     <div className="flex flex-col items-start gap-1">
                       <span className="text-sm font-medium">{displayName}</span>
                       <UserRatingDisplay userId={profile.id} size="sm" />
