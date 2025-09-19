@@ -138,10 +138,10 @@ export const FeaturedStoresCarousel = () => {
   };
 
   return (
-    <div className="w-full bg-gradient-to-r from-primary/5 to-secondary/5 border-y border-primary/10">
+    <div className="w-full bg-emerald-600  border-y border-primary/10">
       <div className="container mx-auto px-4 py-6">
-        <div className="text-center mb-6">
-          <h2 className="text-xl font-semibold text-foreground mb-2">Featured Stores</h2>
+        <div hidden className="text-left mb-1">
+          <h2 className="text-xl  font-semibold text-foreground mb-2">Featured Stores</h2>
           <p className="text-sm text-muted-foreground">
             Discover trusted sellers in our marketplace
           </p>
@@ -168,16 +168,16 @@ export const FeaturedStoresCarousel = () => {
                   <Button
                     variant="outline"
                     size="sm"
-                    className="h-auto flex items-center gap-2 px-3 py-2 hover:bg-primary/10 hover:border-primary/30 transition-all"
+                    className="h-auto flex ml-8 items-center  gap-2 px-3 py-2 bg-white border-black hover:bg-primary/5 hover:border-primary/50 ttransition-all"
                     onClick={() => handleStoreClick(profile.id)}
                   >
                     <img
                     hidden={!profile.profile_image_url}
                       src={profile.profile_image_url || profile.avatar || getDefaultProfileImage(profile.id)}
                       alt={displayName}
-                      className="w-6 h-6 rounded-full object-cover"
+                      className="w-8 h-8 rounded-full border-black/50 border object-cover"
                     />
-                   <div className={`w-6 h-6 rounded-full bg-muted flex items-center justify-center text-sm font-semibold ${profile.profile_image_url ? 'hidden' : ''}`}>
+                   <div className={`w-8 h-8 rounded-full bg-muted flex  hover:color-black items-center justify-center text-medium font-semibold ${profile.profile_image_url ? 'hidden' : ''}`}>
                       {avatarInitial}
                     </div>
                     <div className="flex flex-col items-start gap-1">
@@ -192,7 +192,7 @@ export const FeaturedStoresCarousel = () => {
               );
             })}
           </CarouselContent>
-          <CarouselPrevious className="hidden sm:flex -left-2 h-8 w-8" />
+          <CarouselPrevious className="hidden sm:flex -left-2 h-8 w-8 color-black" />
           <CarouselNext className="hidden sm:flex -right-2 h-8 w-8" />
         </Carousel>
       </div>

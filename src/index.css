@@ -7,7 +7,7 @@
 @layer base {
   :root {
     /* Warm African-inspired color palette matching the design */
-    --background: 36 100% 85%; /* Warm golden background */
+    --background: 25.38deg 100% 94.9%; /* Warm golden background */
     --foreground: 20 15% 15%; /* Dark brown text */
 
     --card: 0 0% 98%; /* Light cards */
@@ -18,7 +18,7 @@
 
     /* Vibrant African marketplace colors */
     --primary: 20 15% 15%; /* Dark brown/black for primary text and buttons */
-    --primary-foreground: 36 100% 85%;
+    --primary-foreground: 25.38deg 100% 94.9%;
 
     --secondary: 15 85% 65%; /* Coral/orange for secondary elements */
     --secondary-foreground: 20 15% 15%;
@@ -40,7 +40,7 @@
 
     /* Kente-inspired gradients */
     --gradient-ghana: linear-gradient(135deg, hsl(15 85% 65%), hsl(160 60% 50%), hsl(260 70% 65%));
-    --gradient-hero: linear-gradient(135deg, hsl(36 100% 85%), hsl(36 80% 75%));
+    --gradient-hero: linear-gradient(135deg, hsl(25.38deg 100% 94.9%), hsl(36 80% 75%));
     --gradient-card: linear-gradient(180deg, hsl(0 0% 100%), hsl(36 50% 95%));
     --gradient-kente: linear-gradient(90deg, hsl(15 85% 65%), hsl(160 60% 50%), hsl(260 70% 65%), hsl(45 95% 55%));
 
@@ -50,13 +50,13 @@
     --shadow-elegant: 0 20px 50px -10px hsl(0 0% 0% / 0.1);
 
     /* Header styling - Kente pattern inspired */
-    --header-background: 36 100% 85%;
+    --header-background: 25.38deg 100% 94.9%;
 
     /* Sidebar styling */
     --sidebar-background: 36 50% 95%;
     --sidebar-foreground: 20 15% 15%;
     --sidebar-primary: 20 15% 15%;
-    --sidebar-primary-foreground: 36 100% 85%;
+    --sidebar-primary-foreground: 25.38deg 100% 94.9%;
     --sidebar-accent: 36 50% 90%;
     --sidebar-accent-foreground: 20 15% 15%;
     --sidebar-border: 36 30% 80%;

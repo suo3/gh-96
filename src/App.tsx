@@ -99,7 +99,7 @@ const App = () => {
             </Routes>
           </BrowserRouter>
           <HealthCheck />
-          <UITestingPanel />
+        {/*   <UITestingPanel /> */}
         </TooltipProvider>
       </QueryClientProvider>
     </ErrorBoundary>

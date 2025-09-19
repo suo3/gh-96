@@ -27,7 +27,7 @@ export const FeaturedItemsCarousel = () => {
 
   return (
     <div className="relative">
-      <div className="flex items-center gap-2 mb-4">
+      <div className="flex items-center gap-2 my-6">
         <Sparkles className="h-6 w-6 text-primary animate-pulse" />
         <h2 className="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
           Featured Items

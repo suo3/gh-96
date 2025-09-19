@@ -90,8 +90,11 @@ const Index = () => {
       />
       {/* Featured Stores Carousel - Below Hero */}
       <FeaturedStoresCarousel />
+
+
       {/* Featured content sections */}
-      <div className="container mx-auto px-4 space-y-12 py-8">
+      <div className="container mx-auto px-0  space-y-12 pb-8">
+       
         {/* Featured Items Carousel */}
         <FeaturedItemsCarousel />
         
@@ -100,6 +103,7 @@ const Index = () => {
         
         {/* Featured Sellers */}
         <FeaturedSellersSection />
+       
       </div>
       
       <CategoryLinks />
