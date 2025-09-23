@@ -88,11 +88,20 @@ export const FeaturedSellersSection = () => {
                   <CardContent className="p-6 text-center">
                     {/* Avatar */}
                     <div className="relative mx-auto mb-4">
-                      <img
-                        src={profile.profile_image_url || profile.avatar || getDefaultProfileImage(profile.id)}
-                        alt={displayName}
-                        className="w-16 h-16 rounded-full object-cover mx-auto ring-4 ring-orange-200 group-hover:ring-orange-300 transition-all"
-                      />
+                      {profile.profile_image_url || profile.avatar ? (
+                        <img
+                          src={profile.profile_image_url || profile.avatar}
+                          alt={displayName}
+                          className="w-16 h-16 rounded-full object-cover mx-auto ring-4 ring-orange-200 group-hover:ring-orange-300 transition-all"
+                          onError={(e) => {
+                            e.currentTarget.style.display = 'none';
+                          }}
+                        />
+                      ) : (
+                        <div className="w-16 h-16 rounded-full bg-primary text-primary-foreground flex items-center justify-center mx-auto ring-4 ring-orange-200 group-hover:ring-orange-300 transition-all text-xl font-semibold">
+                          {displayName.charAt(0).toUpperCase()}
+                        </div>
+                      )}
                       
                       {/* Featured badge */}
                       <Badge className="absolute -top-1 -right-2 bg-emerald-800 text-white text-xs px-2 py-1 rounded-full">
