@@ -55,9 +55,9 @@ export const FeaturedSellersSection = () => {
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-2">
-        <Medal className="h-6 w-6 text-orange-500" />
-        <h2 className="text-2xl font-bold">Featured Sellers</h2>
-        <Badge variant="secondary" className="ml-2 bg-gradient-to-r from-blue-100 to-purple-100 text-blue-700">
+        <Medal className="h-6 w-6 text-emerald-800" />
+        <h2 className="text-2xl text-emerald-800 font-bold">Featured Sellers</h2>
+        <Badge variant="secondary" className="ml-2 bg-gradient-to-r from-emerald-100 to-emerald-100 text-emerald-800">
           <TrendingUp className="h-3 w-3 mr-1" />
           Trusted
         </Badge>
@@ -82,7 +82,7 @@ export const FeaturedSellersSection = () => {
             return (
               <CarouselItem key={seller.id} className="pl-2 md:pl-4 basis-full sm:basis-1/2 lg:basis-1/3 xl:basis-1/4">
                 <Card 
-                  className="group cursor-pointer hover:shadow-lg transition-all duration-300 hover:-translate-y-1 bg-gradient-to-br from-orange-50 to-red-50 border-orange-200"
+                  className="group border border-emerald-600 cursor-pointer hover:shadow-lg transition-all duration-300 hover:-translate-y-1 bg-gradient-to-br from-emerald-100 to-primary-200 "
                   onClick={() => handleSellerClick(profile.id)}
                 >
                   <CardContent className="p-6 text-center">
@@ -95,7 +95,7 @@ export const FeaturedSellersSection = () => {
                       />
                       
                       {/* Featured badge */}
-                      <Badge className="absolute -top-1 -right-2 bg-orange-500 text-white text-xs px-2 py-1 rounded-full">
+                      <Badge className="absolute -top-1 -right-2 bg-emerald-800 text-white text-xs px-2 py-1 rounded-full">
                         <Medal className="h-3 w-3 mr-1" />
                         Featured
                       </Badge>
@@ -120,20 +120,20 @@ export const FeaturedSellersSection = () => {
                         <UserRatingDisplay userId={profile.id} showCount={false} size="sm" />
                       </div>
 
-                      {profile.total_sales && profile.total_sales > 0 && (
+                     {/*  {profile.total_sales && profile.total_sales > 1 && (
                         <div className="flex items-center justify-center gap-1">
                           <Users className="h-4 w-4 text-green-500" />
                           <span className="font-medium">{profile.total_sales}</span>
                           <span className="text-sm text-muted-foreground">sales</span>
                         </div>
-                      )}
+                      )} */}
                     </div>
 
                     {/* View Profile Button */}
                     <Button 
                       variant="outline" 
                       size="sm" 
-                      className="w-full group-hover:bg-primary group-hover:text-primary-foreground transition-colors"
+                      className="w-full border-emerald-600 group-hover:bg-emerald-600 group-hover:text-primary-foreground transition-colors"
                       onClick={(e) => {
                         e.stopPropagation();
                         handleSellerClick(profile.id);

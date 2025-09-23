@@ -93,14 +93,15 @@ const Index = () => {
 
 
       {/* Featured content sections */}
-      <div className="container mx-auto px-0  space-y-12 pb-8">
+      <div className="container mx-auto   space-y-12 pb-8">
        
         {/* Featured Items Carousel */}
         <FeaturedItemsCarousel />
-        
+         <hr className="border-b border-border" />
         {/* Category Tabs with Items */}
         <CategoryTabsCarousel />
         
+        <hr className="border-b border-border" />
         {/* Featured Sellers */}
         <FeaturedSellersSection />
        

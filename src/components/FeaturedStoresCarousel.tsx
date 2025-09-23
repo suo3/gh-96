@@ -168,16 +168,16 @@ export const FeaturedStoresCarousel = () => {
                   <Button
                     variant="outline"
                     size="sm"
-                    className="h-auto flex ml-8 items-center  gap-2 px-3 py-2 bg-white border-black hover:bg-primary/5 hover:border-primary/50 ttransition-all"
+                    className="h-auto flex ml-8 items-center  gap-2 px-3 py-2 bg-white border-black hover:bg-black/10 hover:border-primary/50 ttransition-all"
                     onClick={() => handleStoreClick(profile.id)}
                   >
                     <img
                     hidden={!profile.profile_image_url}
                       src={profile.profile_image_url || profile.avatar || getDefaultProfileImage(profile.id)}
                       alt={displayName}
-                      className="w-8 h-8 rounded-full border-black/50 border object-cover"
+                      className="w-8 h-8 rounded-full border-white border object-cover"
                     />
-                   <div className={`w-8 h-8 rounded-full bg-muted flex  hover:color-black items-center justify-center text-medium font-semibold ${profile.profile_image_url ? 'hidden' : ''}`}>
+                   <div className={`w-8 h-8 rounded-full text-white  bg-emerald-600 flex border border-white  hover:color-black items-center justify-center text-medium font-semibold ${profile.profile_image_url ? 'hidden' : ''}`}>
                       {avatarInitial}
                     </div>
                     <div className="flex flex-col items-start gap-1">

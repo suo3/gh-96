@@ -142,16 +142,22 @@ export const FeaturedStoresSpotlight = () => {
                   >
                     {/* Background Image */}
                     <div 
+                    hidden={!backgroundImage}
                       className="absolute inset-0 bg-cover bg-center bg-no-repeat rounded-full"
                       style={{ 
                         backgroundImage: `url(${backgroundImage})` 
                       }}
-                    />
+                    /> 
+                      
                     {/* Dark Gradient Overlay for text readability */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent rounded-full" />
+                    <div className="absolute border border-white inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent rounded-full" />
                     
                     <div className="relative z-10 h-full flex flex-col justify-end items-center text-center p-4 pb-6">
                       <div className="space-y-1">
+                        <div 
+                    hidden={!!backgroundImage}
+                      className="absolute text-8xl text-white text-center  inset-0 bg-cover bg-center bg-no-repeat rounded-full"       
+                    >{avatarInitial} </div>
                         <h3 className="font-bold text-white text-sm leading-tight">
                           {displayName}
                         </h3>
@@ -177,7 +183,7 @@ export const FeaturedStoresSpotlight = () => {
           })}
         </CarouselContent>
         
-        <CarouselPrevious className="left-4" />
+        <CarouselPrevious className="left-4 -ml-1 z-200" />
         <CarouselNext className="right-4" />
       </Carousel>
     </div>

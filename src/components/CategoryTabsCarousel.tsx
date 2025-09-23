@@ -135,7 +135,7 @@ export const CategoryTabsCarousel = () => {
       {/* Category Tabs Carousel */}
       <div>
         <div className="flex items-center gap-2 mb-4">
-          <Zap className="h-6 w-6 text-blue-500" />
+          <Zap className="h-6 w-6 text-primary-800" />
           <h2 className="text-2xl font-bold">Shop by Category</h2>
         </div>
 
@@ -156,10 +156,10 @@ export const CategoryTabsCarousel = () => {
                     onClick={() => setSelectedCategory(
                       selectedCategory === category.name ? null : category.name
                     )}
-                    className={`whitespace-nowrap flex items-center gap-2 ${
+                    className={`whitespace-nowrap flex border-primary items-center gap-2 ${
                       selectedCategory === category.name 
-                        ? 'bg-primary text-primary-foreground shadow-lg' 
-                        : 'hover:bg-primary/10'
+                        ? 'bg-emerald-600 text-white shadow-lg' 
+                        : 'hover:bg-primary/10 hover:text-primary'
                     }`}
                   >
                     <IconComponent className="h-4 w-4" />
@@ -204,7 +204,7 @@ export const CategoryTabsCarousel = () => {
                 return (
                   <Card 
                     key={item.id}
-                    className="group cursor-pointer hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
+                    className="group border border-black cursor-pointer hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
                     onClick={() => handleItemClick(item.id)}
                   >
                     <div className="relative overflow-hidden rounded-t-lg">

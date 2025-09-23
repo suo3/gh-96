@@ -24,38 +24,6 @@ export const HeroSection = ({ onPostItem, onBrowseItems }: HeroSectionProps) => 
       {/* Background overlay with African theme */}
       <div className="absolute inset-0 bg-gradient-to-br from-background/80 via-primary/10 to-secondary/20"></div>
       
-      {/* Market stall illustration area */}
-      <div className="absolute right-8 lg:right-16 top-16 lg:top-24 z-10">
-        <div className="relative">
-          {/* Market stall */}
-          <div className="w-48 lg:w-64 h-48 lg:h-64 relative">
-            {/* Awning */}
-            <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-40 lg:w-52 h-8 lg:h-10 bg-gradient-to-r from-secondary via-accent to-secondary rounded-t-3xl border-b-4 border-primary"></div>
-            <div className="absolute top-6 lg:top-8 left-1/2 transform -translate-x-1/2 w-36 lg:w-48 h-6 lg:h-8 bg-primary rounded-full"></div>
-            
-            {/* Store front */}
-            <div className="absolute top-12 lg:top-16 left-1/2 transform -translate-x-1/2 w-32 lg:w-40 h-32 lg:w-40 bg-card/90 backdrop-blur-sm rounded-lg border-2 border-border">
-              {/* Clothing items */}
-              <div className="flex justify-center items-center h-full p-2">
-                <div className="grid grid-cols-3 gap-1 w-full">
-                  <div className="w-6 lg:w-8 h-8 lg:h-10 bg-secondary rounded-sm"></div>
-                  <div className="w-6 lg:w-8 h-8 lg:h-10 bg-accent rounded-sm"></div>
-                  <div className="w-6 lg:w-8 h-8 lg:h-10 bg-secondary rounded-sm"></div>
-                  <div className="w-6 lg:w-8 h-8 lg:h-10 bg-accent rounded-sm"></div>
-                  <div className="w-6 lg:w-8 h-8 lg:h-10 bg-destructive rounded-sm"></div>
-                  <div className="w-6 lg:w-8 h-8 lg:h-10 bg-accent rounded-sm"></div>
-                </div>
-              </div>
-            </div>
-            
-            {/* Bags on side */}
-            <div className="absolute top-20 lg:top-24 -left-4 w-8 lg:w-10 h-12 lg:h-16 bg-secondary/90 backdrop-blur-sm rounded-lg border border-border"></div>
-            <div className="absolute top-28 lg:top-32 -left-2 w-6 lg:w-8 h-10 lg:h-12 bg-accent/90 backdrop-blur-sm rounded-lg border border-border"></div>
-          </div>
-        </div>
-      </div>
-      
-        
         <div className="container mx-auto px-4 py-6 md:py-8 lg:py-12 relative z-10">
           <div className="grid lg:grid-cols-2 gap-6 md:gap-8 lg:gap-12 items-center min-h-[400px] md:min-h-[500px] lg:min-h-[600px]">
             
@@ -73,7 +41,7 @@ export const HeroSection = ({ onPostItem, onBrowseItems }: HeroSectionProps) => 
                 <span className="block text-primary animate-fade-in animate-delay-300 opacity-0 [animation-fill-mode:forwards]">Ghana Style.</span>
               </h1>
               
-              <p className="text-base md:text-lg lg:text-xl text-muted-foreground mb-6 md:mb-8 max-w-lg animate-fade-in animate-delay-500 opacity-0 [animation-fill-mode:forwards] leading-relaxed">
+              <p className="text-base md:text-lg lg:text-xl text-white mb-6 md:mb-8 max-w-lg animate-fade-in animate-delay-500 opacity-0 [animation-fill-mode:forwards] leading-relaxed">
                 Join Ghana's fastest-growing marketplace. Buy and sell locally with trusted sellers. Mobile money payments supported.
               </p>
               
@@ -97,17 +65,17 @@ export const HeroSection = ({ onPostItem, onBrowseItems }: HeroSectionProps) => 
                 </Button>
               </div>
               
-              <div className="flex flex-wrap gap-4 md:gap-6 pt-3 md:pt-4 text-xs md:text-sm text-muted-foreground animate-fade-in animate-delay-900 opacity-0 [animation-fill-mode:forwards]">
+              <div className="flex flex-wrap gap-4 md:gap-6 pt-3 md:pt-4 text-xs md:text-sm text-white animate-fade-in animate-delay-900 opacity-0 [animation-fill-mode:forwards]">
                 <span className="flex items-center gap-2 hover:text-primary transition-colors duration-300">
-                  <Shield className="h-4 w-4 text-primary" />
+                  <Shield className="h-4 w-4 text-white" />
                   100% Secure Trading
                 </span>
                 <span className="flex items-center gap-2 hover:text-primary transition-colors duration-300">
-                  <Smartphone className="h-4 w-4 text-primary" />
+                  <Smartphone className="h-4 w-4 text-white" />
                   Mobile Money Ready
                 </span>
                 <span className="flex items-center gap-2 hover:text-primary transition-colors duration-300">
-                  <Users className="h-4 w-4 text-primary" />
+                  <Users className="h-4 w-4 text-white" />
                   50K+ Active Users
                 </span>
               </div>

@@ -29,10 +29,10 @@ export const FeaturedItemsCarousel = () => {
     <div className="relative">
       <div className="flex items-center gap-2 my-6">
         <Sparkles className="h-6 w-6 text-primary animate-pulse" />
-        <h2 className="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+        <h2 className="text-2xl font-bold bg-gradient-to-r from-primary to-red-600 bg-clip-text text-transparent">
           Featured Items
         </h2>
-        <Badge variant="secondary" className="ml-2 bg-gradient-to-r from-orange-100 to-red-100 text-orange-700">
+        <Badge variant="secondary" className="ml-2 border border-red-400 bg-gradient-to-r from-red-100 to-red-200 text-red-700">
           <Zap className="h-3 w-3 mr-1" />
           Hot Deals
         </Badge>
@@ -59,7 +59,7 @@ export const FeaturedItemsCarousel = () => {
             return (
               <CarouselItem key={item.id} className="pl-2 md:pl-4 basis-full sm:basis-1/2 lg:basis-1/3 xl:basis-1/4">
                 <Card 
-                  className="group cursor-pointer hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border-2 border-gradient-to-r from-primary to-accent bg-gradient-card shadow-gold relative overflow-hidden"
+                  className="group cursor-pointer border border-yellow-700 hover:shadow-lg transition-all duration-300 hover:-translate-y-1  bg-gradient-card shadow-gold relative "
                   onClick={() => handleItemClick(listing.id)}
                 >
                   {/* Premium glow effect */}
