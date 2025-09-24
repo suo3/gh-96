@@ -138,7 +138,7 @@ export default function Categories() {
                   <Card className="p-4 md:p-8 h-full hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border border-primary/10 group-hover:border-primary/30">
                     <div className="flex flex-col items-center text-center">
                       <div className="p-3 md:p-4 rounded-2xl bg-primary/10 group-hover:bg-primary/20 transition-colors mb-4 md:mb-6">
-                        <IconComponent className="h-8 w-8 md:h-12 md:w-12 text-primary" />
+                        <IconComponent className="h-8 w-8 md:h-12 md:w-12 text-emerald-600" />
                       </div>
                       
                       <h3 className="text-lg md:text-xl font-bold mb-2 md:mb-3 group-hover:text-primary transition-colors">

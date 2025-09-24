@@ -83,7 +83,7 @@ export const CategoryLinks = () => {
                 onClick={() => handleCategoryClick(category.name)}
               >
                 <div className="p-4 rounded-2xl bg-primary/10 group-hover:bg-primary/20 transition-colors mx-auto mb-4 w-fit">
-                  <IconComponent className="h-8 w-8 text-primary" />
+                  <IconComponent className="h-8 w-8 text-emerald-600" />
                 </div>
                 <h3 className="font-bold text-foreground mb-2 group-hover:text-primary transition-colors text-sm md:text-base">
                   {category.name}

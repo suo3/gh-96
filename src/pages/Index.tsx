@@ -97,11 +97,11 @@ const Index = () => {
        
         {/* Featured Items Carousel */}
         <FeaturedItemsCarousel />
-         <hr className="border-b border-border" />
+         <hr className="border-b border-border border-emerald-600" />
         {/* Category Tabs with Items */}
         <CategoryTabsCarousel />
         
-        <hr className="border-b border-border" />
+        <hr className="border-b border-border border-emerald-600" />
         {/* Featured Sellers */}
         <FeaturedSellersSection />
        
