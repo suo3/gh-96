@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { MapPin, Plus, Bell, User, Shield, Package, Heart, Grid3X3 } from "lucide-react";
+import { MapPin, Plus, Bell, User, Shield, Package, Heart, Grid3X3, Store } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -107,6 +107,13 @@ export const AppHeader = ({ userLocation, onLocationDetect, onPostItem, onLogoCl
                 Categories
               </Link>
               <Link 
+                to="/marketplace" 
+                className="text-gray-600 hover:text-emerald-600 transition-colors font-medium flex items-center gap-2"
+              >
+                <Store className="h-4 w-4" />
+                Marketplace
+              </Link>
+              <Link 
                 to="/favorites" 
                 className="text-gray-600 hover:text-emerald-600 transition-colors font-medium flex items-center gap-2"
               >
@@ -208,6 +215,12 @@ export const AppHeader = ({ userLocation, onLocationDetect, onPostItem, onLogoCl
                       <Link to="/categories" className="flex items-center">
                         <Grid3X3 className="mr-2 h-4 w-4" />
                         Categories
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link to="/marketplace" className="flex items-center">
+                        <Store className="mr-2 h-4 w-4" />
+                        Marketplace
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={handleProfile}>
