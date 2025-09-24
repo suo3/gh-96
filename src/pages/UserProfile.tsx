@@ -252,18 +252,18 @@ const UserProfile = () => {
           </div>
 
           {/* User Profile Header */}
-          <Card className="mb-8 border border-primary/10">
-            <CardHeader className="p-4 md:p-6">
-              <div className="flex flex-col sm:flex-row gap-4 md:gap-6">
-                <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-emerald-400 to-teal-400 rounded-full flex items-center justify-center text-white text-xl sm:text-2xl font-bold mx-auto sm:mx-0">
+          <Card className="mb-6 md:mb-8 border border-primary/10">
+            <CardHeader className="p-3 md:p-6">
+              <div className="flex flex-col sm:flex-row gap-3 md:gap-6">
+                <div className="w-14 h-14 sm:w-20 sm:h-20 bg-gradient-to-br from-emerald-400 to-teal-400 rounded-full flex items-center justify-center text-white text-lg sm:text-2xl font-bold mx-auto sm:mx-0">
                   {getUserAvatar(profile)}
                 </div>
                 
                 <div className="flex-1 text-center sm:text-left">
-                  <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between mb-3 md:mb-4">
-                    <div className="mb-3 sm:mb-0">
-                      <div className="flex flex-col sm:flex-row sm:items-center gap-2 mb-2">
-                        <h1 className="text-2xl sm:text-3xl font-bold text-foreground">{displayName}</h1>
+                  <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between mb-2 md:mb-4">
+                    <div className="mb-2 sm:mb-0">
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 mb-1 md:mb-2">
+                        <h1 className="text-xl sm:text-3xl font-bold text-foreground">{displayName}</h1>
                         <div className="flex flex-wrap items-center justify-center sm:justify-start gap-1">
                           {profile.is_verified && (
                             <Badge variant="secondary" className="bg-blue-100 text-blue-800 text-xs">
@@ -279,30 +279,30 @@ const UserProfile = () => {
                           )}
                         </div>
                       </div>
-                      <div className="mb-2">
-                        <UserRatingDisplay userId={profile.id} showCount={true} size="md" />
+                      <div className="mb-1">
+                        <UserRatingDisplay userId={profile.id} showCount={true} size="sm" />
                       </div>
                       {profile.username && (
-                        <p className="text-muted-foreground text-sm">@{profile.username}</p>
+                        <p className="text-muted-foreground text-xs sm:text-sm">@{profile.username}</p>
                       )}
                     </div>
                   </div>
 
                   {profile.bio && (
-                    <p className="text-muted-foreground mb-4 text-sm leading-relaxed">{profile.bio}</p>
+                    <p className="text-muted-foreground mb-3 md:mb-4 text-xs sm:text-sm leading-relaxed">{profile.bio}</p>
                   )}
                   
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4 text-sm">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 md:gap-4 text-xs sm:text-sm">
                     <div className="flex items-center justify-center sm:justify-start gap-2 p-2 bg-gray-50 rounded-lg">
-                      <MapPin className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                      <MapPin className="w-3 h-3 sm:w-4 sm:h-4 text-muted-foreground flex-shrink-0" />
                       <span className="truncate">{getLocationString(profile)}</span>
                     </div>
                     <div className="flex items-center justify-center sm:justify-start gap-2 p-2 bg-gray-50 rounded-lg">
-                      <Calendar className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                      <Calendar className="w-3 h-3 sm:w-4 sm:h-4 text-muted-foreground flex-shrink-0" />
                       <span className="truncate">Joined {formatJoinDate(profile.joined_date)}</span>
                     </div>
                     <div className="flex items-center justify-center sm:justify-start gap-2 p-2 bg-gray-50 rounded-lg sm:col-span-2 lg:col-span-1">
-                      <ShoppingBag className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                      <ShoppingBag className="w-3 h-3 sm:w-4 sm:h-4 text-muted-foreground flex-shrink-0" />
                       <span className="truncate">{profile.total_sales || 0} successful sales</span>
                     </div>
                   </div>
