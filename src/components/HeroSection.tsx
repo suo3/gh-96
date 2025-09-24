@@ -45,21 +45,21 @@ export const HeroSection = ({ onPostItem, onBrowseItems }: HeroSectionProps) => 
                 Join Ghana's fastest-growing marketplace. Buy and sell locally with trusted sellers. Mobile money payments supported.
               </p>
               
-              <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 md:gap-4 animate-fade-in animate-delay-700 opacity-0 [animation-fill-mode:forwards]">
+              <div className="flex flex-col gap-3 sm:flex-row sm:gap-3 md:gap-4 animate-fade-in animate-delay-700 opacity-0 [animation-fill-mode:forwards]">
                 <Button 
                   size="lg" 
                   onClick={onBrowseItems}
-                  className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-gold px-4 sm:px-6 md:px-8 py-3 md:py-4 text-sm sm:text-base md:text-lg font-bold transition-all duration-300 hover:scale-105 group w-full sm:w-auto min-h-[44px] touch-target"
+                  className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-gold px-6 py-4 text-base font-bold transition-all duration-300 active:scale-95 w-full sm:w-auto min-h-[48px] flex items-center justify-center"
                 >
                   Browse Items
-                  <ArrowRight className="ml-2 h-4 w-4 md:h-5 md:w-5 transition-transform group-hover:translate-x-1" />
+                  <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
                 </Button>
                 
                 <Button 
                   variant="outline" 
                   size="lg"
                   onClick={onPostItem}
-                  className="border-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground px-4 sm:px-6 md:px-8 py-3 md:py-4 text-sm sm:text-base md:text-lg font-bold transition-all duration-300 hover:scale-105 w-full sm:w-auto min-h-[44px] touch-target"
+                  className="border-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground bg-white/10 backdrop-blur-sm px-6 py-4 text-base font-bold transition-all duration-300 active:scale-95 w-full sm:w-auto min-h-[48px] flex items-center justify-center"
                 >
                   Sell Something
                 </Button>
