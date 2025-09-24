@@ -2,9 +2,10 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, MapPin, Star, ShoppingBag, Crown, Calendar, Award } from "lucide-react";
+import { ArrowLeft, MapPin, Star, ShoppingBag, Crown, Calendar, Award, ChevronDown, ChevronUp } from "lucide-react";
 import { AppHeader } from "@/components/AppHeader";
 import { Footer } from "@/components/Footer";
 import { ItemCard } from "@/components/ItemCard";
@@ -40,6 +41,7 @@ const UserProfile = () => {
   const [listings, setListings] = useState<Listing[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isDetailsExpanded, setIsDetailsExpanded] = useState(false);
 
   useEffect(() => {
     if (!userId) {
@@ -254,17 +256,95 @@ const UserProfile = () => {
           {/* User Profile Header */}
           <Card className="mb-6 md:mb-8 border border-primary/10">
             <CardHeader className="p-3 md:p-6">
-              <div className="flex flex-col sm:flex-row gap-3 md:gap-6">
-                <div className="w-14 h-14 sm:w-20 sm:h-20 bg-gradient-to-br from-emerald-400 to-teal-400 rounded-full flex items-center justify-center text-white text-lg sm:text-2xl font-bold mx-auto sm:mx-0">
+              {/* Mobile Layout */}
+              <div className="block sm:hidden">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-12 h-12 bg-gradient-to-br from-emerald-400 to-teal-400 rounded-full flex items-center justify-center text-white text-lg font-bold">
+                    {getUserAvatar(profile)}
+                  </div>
+                  <div className="flex-1">
+                    <h1 className="text-lg font-bold text-foreground">{displayName}</h1>
+                    <div className="flex justify-start">
+                      <UserRatingDisplay userId={profile.id} showCount={true} size="sm" />
+                    </div>
+                  </div>
+                </div>
+
+                <Collapsible open={isDetailsExpanded} onOpenChange={setIsDetailsExpanded}>
+                  <CollapsibleTrigger asChild>
+                    <Button 
+                      variant="ghost" 
+                      className="w-full justify-center gap-2 text-sm text-muted-foreground hover:bg-primary/5 p-2"
+                    >
+                      {isDetailsExpanded ? "Hide Details" : "Show Details"}
+                      {isDetailsExpanded ? (
+                        <ChevronUp className="w-4 h-4" />
+                      ) : (
+                        <ChevronDown className="w-4 h-4" />
+                      )}
+                    </Button>
+                  </CollapsibleTrigger>
+                  
+                  <CollapsibleContent className="space-y-3">
+                    <div className="pt-3 border-t border-border/50">
+                      {/* Badges */}
+                      <div className="flex flex-wrap items-center justify-center gap-1 mb-3">
+                        {profile.is_verified && (
+                          <Badge variant="secondary" className="bg-blue-100 text-blue-800 text-xs">
+                            <Award className="w-3 h-3 mr-1" />
+                            Verified
+                          </Badge>
+                        )}
+                        {isPopularSeller(profile) && (
+                          <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 text-xs">
+                            <Crown className="w-3 h-3 mr-1" />
+                            Popular Seller
+                          </Badge>
+                        )}
+                      </div>
+
+                      {/* Username */}
+                      {profile.username && (
+                        <p className="text-muted-foreground text-xs text-center mb-3">@{profile.username}</p>
+                      )}
+
+                      {/* Bio */}
+                      {profile.bio && (
+                        <p className="text-muted-foreground mb-3 text-xs leading-relaxed text-center">{profile.bio}</p>
+                      )}
+                      
+                      {/* Details Grid */}
+                      <div className="grid grid-cols-1 gap-2 text-xs">
+                        <div className="flex items-center justify-center gap-2 p-2 bg-gray-50 rounded-lg">
+                          <MapPin className="w-3 h-3 text-muted-foreground flex-shrink-0" />
+                          <span className="truncate">{getLocationString(profile)}</span>
+                        </div>
+                        <div className="flex items-center justify-center gap-2 p-2 bg-gray-50 rounded-lg">
+                          <Calendar className="w-3 h-3 text-muted-foreground flex-shrink-0" />
+                          <span className="truncate">Joined {formatJoinDate(profile.joined_date)}</span>
+                        </div>
+                        <div className="flex items-center justify-center gap-2 p-2 bg-gray-50 rounded-lg">
+                          <ShoppingBag className="w-3 h-3 text-muted-foreground flex-shrink-0" />
+                          <span className="truncate">{profile.total_sales || 0} successful sales</span>
+                        </div>
+                      </div>
+                    </div>
+                  </CollapsibleContent>
+                </Collapsible>
+              </div>
+
+              {/* Desktop Layout */}
+              <div className="hidden sm:flex gap-6">
+                <div className="w-20 h-20 bg-gradient-to-br from-emerald-400 to-teal-400 rounded-full flex items-center justify-center text-white text-2xl font-bold">
                   {getUserAvatar(profile)}
                 </div>
                 
-                <div className="flex-1 text-center sm:text-left">
-                  <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between mb-2 md:mb-4">
-                    <div className="mb-2 sm:mb-0">
-                      <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 mb-1 md:mb-2">
-                        <h1 className="text-xl sm:text-3xl font-bold text-foreground">{displayName}</h1>
-                        <div className="flex flex-wrap items-center justify-center sm:justify-start gap-1">
+                <div className="flex-1">
+                  <div className="flex items-start justify-between mb-4">
+                    <div>
+                      <div className="flex items-center gap-2 mb-2">
+                        <h1 className="text-3xl font-bold text-foreground">{displayName}</h1>
+                        <div className="flex items-center gap-1">
                           {profile.is_verified && (
                             <Badge variant="secondary" className="bg-blue-100 text-blue-800 text-xs">
                               <Award className="w-3 h-3 mr-1" />
@@ -279,30 +359,30 @@ const UserProfile = () => {
                           )}
                         </div>
                       </div>
-                      <div className="mb-1 flex justify-center sm:justify-start">
+                      <div className="mb-1 flex justify-start">
                         <UserRatingDisplay userId={profile.id} showCount={true} size="sm" />
                       </div>
                       {profile.username && (
-                        <p className="text-muted-foreground text-xs sm:text-sm">@{profile.username}</p>
+                        <p className="text-muted-foreground text-sm">@{profile.username}</p>
                       )}
                     </div>
                   </div>
 
                   {profile.bio && (
-                    <p className="text-muted-foreground mb-3 md:mb-4 text-xs sm:text-sm leading-relaxed">{profile.bio}</p>
+                    <p className="text-muted-foreground mb-4 text-sm leading-relaxed">{profile.bio}</p>
                   )}
                   
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 md:gap-4 text-xs sm:text-sm">
-                    <div className="flex items-center justify-center sm:justify-start gap-2 p-2 bg-gray-50 rounded-lg">
-                      <MapPin className="w-3 h-3 sm:w-4 sm:h-4 text-muted-foreground flex-shrink-0" />
+                  <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
+                    <div className="flex items-center gap-2 p-2 bg-gray-50 rounded-lg">
+                      <MapPin className="w-4 h-4 text-muted-foreground flex-shrink-0" />
                       <span className="truncate">{getLocationString(profile)}</span>
                     </div>
-                    <div className="flex items-center justify-center sm:justify-start gap-2 p-2 bg-gray-50 rounded-lg">
-                      <Calendar className="w-3 h-3 sm:w-4 sm:h-4 text-muted-foreground flex-shrink-0" />
+                    <div className="flex items-center gap-2 p-2 bg-gray-50 rounded-lg">
+                      <Calendar className="w-4 h-4 text-muted-foreground flex-shrink-0" />
                       <span className="truncate">Joined {formatJoinDate(profile.joined_date)}</span>
                     </div>
-                    <div className="flex items-center justify-center sm:justify-start gap-2 p-2 bg-gray-50 rounded-lg sm:col-span-2 lg:col-span-1">
-                      <ShoppingBag className="w-3 h-3 sm:w-4 sm:h-4 text-muted-foreground flex-shrink-0" />
+                    <div className="flex items-center gap-2 p-2 bg-gray-50 rounded-lg col-span-2 lg:col-span-1">
+                      <ShoppingBag className="w-4 h-4 text-muted-foreground flex-shrink-0" />
                       <span className="truncate">{profile.total_sales || 0} successful sales</span>
                     </div>
                   </div>
