@@ -275,13 +275,12 @@ const UserProfile = () => {
                           </Badge>
                         )}
                       </div>
+                      <div className="mb-2">
+                        <UserRatingDisplay userId={profile.id} showCount={true} size="md" />
+                      </div>
                       {profile.username && (
                         <p className="text-muted-foreground">@{profile.username}</p>
                       )}
-                    </div>
-                    
-                    <div className="flex flex-col md:items-end gap-2">
-                      <UserRatingDisplay userId={profile.id} showCount={true} size="md" />
                     </div>
                   </div>
 
