@@ -234,15 +234,17 @@ const UserProfile = () => {
         />
 
         {/* Featured Stores Carousel */}
-        <FeaturedStoresCarousel />
+        <div className="hidden sm:block">
+          <FeaturedStoresCarousel />
+        </div>
         
-        <div className="container mx-auto px-4 py-8">
+        <div className="container mx-auto px-4 py-6 md:py-8">
           {/* Back Button */}
-          <div className="mb-8">
+          <div className="mb-6 md:mb-8">
             <Button 
               variant="ghost" 
               onClick={() => navigate(-1)}
-              className="gap-2 hover:bg-primary/10"
+              className="gap-2 hover:bg-primary/10 p-2 md:p-3"
             >
               <ArrowLeft className="h-4 w-4" />
               Back
@@ -251,55 +253,57 @@ const UserProfile = () => {
 
           {/* User Profile Header */}
           <Card className="mb-8 border border-primary/10">
-            <CardHeader>
-              <div className="flex flex-col md:flex-row gap-6">
-                <div className="w-20 h-20 bg-gradient-to-br from-emerald-400 to-teal-400 rounded-full flex items-center justify-center text-white text-2xl font-bold">
+            <CardHeader className="p-4 md:p-6">
+              <div className="flex flex-col sm:flex-row gap-4 md:gap-6">
+                <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-emerald-400 to-teal-400 rounded-full flex items-center justify-center text-white text-xl sm:text-2xl font-bold mx-auto sm:mx-0">
                   {getUserAvatar(profile)}
                 </div>
                 
-                <div className="flex-1">
-                  <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-4">
-                    <div>
-                      <div className="flex items-center gap-2 mb-2">
-                        <h1 className="text-3xl font-bold text-foreground">{displayName}</h1>
-                        {profile.is_verified && (
-                          <Badge variant="secondary" className="bg-blue-100 text-blue-800">
-                            <Award className="w-3 h-3 mr-1" />
-                            Verified
-                          </Badge>
-                        )}
-                        {isPopularSeller(profile) && (
-                          <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">
-                            <Crown className="w-3 h-3 mr-1" />
-                            Popular Seller
-                          </Badge>
-                        )}
+                <div className="flex-1 text-center sm:text-left">
+                  <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between mb-3 md:mb-4">
+                    <div className="mb-3 sm:mb-0">
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-2 mb-2">
+                        <h1 className="text-2xl sm:text-3xl font-bold text-foreground">{displayName}</h1>
+                        <div className="flex flex-wrap items-center justify-center sm:justify-start gap-1">
+                          {profile.is_verified && (
+                            <Badge variant="secondary" className="bg-blue-100 text-blue-800 text-xs">
+                              <Award className="w-3 h-3 mr-1" />
+                              Verified
+                            </Badge>
+                          )}
+                          {isPopularSeller(profile) && (
+                            <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 text-xs">
+                              <Crown className="w-3 h-3 mr-1" />
+                              Popular Seller
+                            </Badge>
+                          )}
+                        </div>
                       </div>
                       <div className="mb-2">
                         <UserRatingDisplay userId={profile.id} showCount={true} size="md" />
                       </div>
                       {profile.username && (
-                        <p className="text-muted-foreground">@{profile.username}</p>
+                        <p className="text-muted-foreground text-sm">@{profile.username}</p>
                       )}
                     </div>
                   </div>
 
                   {profile.bio && (
-                    <p className="text-muted-foreground mb-4">{profile.bio}</p>
+                    <p className="text-muted-foreground mb-4 text-sm leading-relaxed">{profile.bio}</p>
                   )}
                   
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-                    <div className="flex items-center gap-2">
-                      <MapPin className="w-4 h-4 text-muted-foreground" />
-                      <span>{getLocationString(profile)}</span>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4 text-sm">
+                    <div className="flex items-center justify-center sm:justify-start gap-2 p-2 bg-gray-50 rounded-lg">
+                      <MapPin className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                      <span className="truncate">{getLocationString(profile)}</span>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <Calendar className="w-4 h-4 text-muted-foreground" />
-                      <span>Joined {formatJoinDate(profile.joined_date)}</span>
+                    <div className="flex items-center justify-center sm:justify-start gap-2 p-2 bg-gray-50 rounded-lg">
+                      <Calendar className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                      <span className="truncate">Joined {formatJoinDate(profile.joined_date)}</span>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <ShoppingBag className="w-4 h-4 text-muted-foreground" />
-                      <span>{profile.total_sales || 0} successful sales</span>
+                    <div className="flex items-center justify-center sm:justify-start gap-2 p-2 bg-gray-50 rounded-lg sm:col-span-2 lg:col-span-1">
+                      <ShoppingBag className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                      <span className="truncate">{profile.total_sales || 0} successful sales</span>
                     </div>
                   </div>
                 </div>
@@ -309,22 +313,22 @@ const UserProfile = () => {
 
           {/* User's Listings */}
           <div className="mb-8">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold text-foreground">
+            <div className="flex items-center justify-between mb-4 md:mb-6">
+              <h2 className="text-xl md:text-2xl font-bold text-foreground">
                 Items for Sale ({listings.length})
               </h2>
             </div>
 
             {listings.length === 0 ? (
-              <Card className="p-12 text-center">
-                <ShoppingBag className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-                <h3 className="text-xl font-semibold text-foreground mb-2">No items for sale</h3>
-                <p className="text-muted-foreground">
+              <Card className="p-8 md:p-12 text-center">
+                <ShoppingBag className="w-12 h-12 md:w-16 md:h-16 text-muted-foreground mx-auto mb-4" />
+                <h3 className="text-lg md:text-xl font-semibold text-foreground mb-2">No items for sale</h3>
+                <p className="text-muted-foreground text-sm md:text-base">
                   {displayName} doesn't have any active listings at the moment.
                 </p>
               </Card>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
                 {listings.map((item) => (
                   <ItemCard
                     key={item.id}
