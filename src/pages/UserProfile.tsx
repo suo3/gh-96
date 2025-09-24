@@ -8,6 +8,7 @@ import { ArrowLeft, MapPin, Star, ShoppingBag, Crown, Calendar, Award } from "lu
 import { AppHeader } from "@/components/AppHeader";
 import { Footer } from "@/components/Footer";
 import { ItemCard } from "@/components/ItemCard";
+import { UserRatingDisplay } from "@/components/UserRatingDisplay";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Listing } from "@/stores/listingStore";
@@ -280,12 +281,7 @@ const UserProfile = () => {
                     </div>
                     
                     <div className="flex flex-col md:items-end gap-2">
-                      {profile.rating !== undefined && profile.rating > 0 && (
-                        <div className="flex items-center gap-1">
-                          <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                          <span className="font-semibold">{profile.rating.toFixed(1)}</span>
-                        </div>
-                      )}
+                      <UserRatingDisplay userId={profile.id} showCount={true} size="md" />
                     </div>
                   </div>
 
