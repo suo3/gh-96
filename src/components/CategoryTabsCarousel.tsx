@@ -159,7 +159,7 @@ export const CategoryTabsCarousel = () => {
                     className={`whitespace-nowrap flex border-primary items-center gap-2 ${
                       selectedCategory === category.name 
                         ? 'bg-emerald-600 text-white shadow-lg' 
-                        : 'hover:bg-primary/10 hover:text-primary'
+                        : 'hover:bg-primary/10 hover:text-primary bg-white'
                     }`}
                   >
                     <IconComponent className="h-4 w-4" />

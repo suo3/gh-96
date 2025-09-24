@@ -139,7 +139,7 @@ const Marketplace = () => {
       ) : (
         // Desktop layout with sidebar
         <SidebarProvider defaultOpen={true}>
-          <div className="min-h-screen flex w-full bg-background">
+          <div className="min-h-screen flex w-full bg-white">
             {/* Sidebar for filters */}
             <Sidebar className="border-r border-border shadow-lg" collapsible="offcanvas">
               <SidebarContent>
@@ -154,8 +154,8 @@ const Marketplace = () => {
             {/* Main content area */}
             <div className="flex-1 flex flex-col">
               {/* Header */}
-              <div className="sticky top-0 z-40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border">
-                <div className="px-4 py-2">
+              <div className="sticky top-0 z-40 bg-white backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border">
+                <div className="px-0 py-0">
                   <AppHeader
                     userLocation={userLocation}
                     onLocationDetect={handleLocationDetect}
@@ -187,7 +187,7 @@ const Marketplace = () => {
 
               {/* Content Controls - with filter trigger for desktop */}
               {filteredListings.length > 0 && (
-                <div className="bg-card/50 backdrop-blur-sm border-b border-border">
+                <div className="bg-white backdrop-blur-sm border-b border-border">
                   <div className="container mx-auto px-4 py-3">
                     <ContentControls
                       displayMode={displayMode}

@@ -76,7 +76,7 @@ export const ItemCard = ({ item, onItemClick, onItemLike }: ItemCardProps) => {
   };
 
   return (
-    <Card className="overflow-hidden hover:shadow-lg transition-shadow">
+    <Card className="overflow-hidden hover:shadow-lg transition-shadow border border-primary/50">
       <div className="cursor-pointer" onClick={handleItemClick}>
         <div className="relative overflow-hidden">
           <img

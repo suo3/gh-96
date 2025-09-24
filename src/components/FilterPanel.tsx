@@ -199,7 +199,7 @@ export const FilterPanel = ({ onFilterChange, isVisible, isMobile = false, showS
   if (!isVisible) return null;
 
   return (
-    <div className="h-full flex flex-col bg-gradient-to-b from-background to-secondary/20">
+    <div className="h-full flex flex-col bg-gradient-to-b from-background to-primary/5">
       {/* Header */}
       <div className="p-4 md:p-6 border-b border-border/50">
         <div className="flex items-center gap-2 md:gap-3 mb-2">
@@ -226,7 +226,7 @@ export const FilterPanel = ({ onFilterChange, isVisible, isMobile = false, showS
               placeholder="Search items..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full transition-all duration-200 focus:ring-2 focus:ring-primary/20"
+              className="w-full outline outline-1 outline-primary/90 transition-all duration-200 focus:ring-2 focus:ring-primary/20"
             />
           </div>
         )}
@@ -241,7 +241,7 @@ export const FilterPanel = ({ onFilterChange, isVisible, isMobile = false, showS
             setSelectedCategory(value);
             setTimeout(applyFilters, 0);
           }} disabled={isLoadingOptions}>
-            <SelectTrigger className="w-full transition-all duration-200 hover:border-primary/50">
+            <SelectTrigger className="w-full outline outline-1 outline-primary/90 transition-all duration-200 hover:border-primary/50">
               <SelectValue placeholder={isLoadingOptions ? "Loading..." : "All Categories"} />
             </SelectTrigger>
             <SelectContent className="bg-background border border-border shadow-lg">
@@ -265,7 +265,7 @@ export const FilterPanel = ({ onFilterChange, isVisible, isMobile = false, showS
             setSelectedCondition(value);
             setTimeout(applyFilters, 0);
           }} disabled={isLoadingOptions}>
-            <SelectTrigger className="w-full transition-all duration-200 hover:border-primary/50">
+            <SelectTrigger className="w-full outline outline-1 outline-primary/90 transition-all duration-200 hover:border-primary/50">
               <SelectValue placeholder={isLoadingOptions ? "Loading..." : "All Conditions"} />
             </SelectTrigger>
             <SelectContent className="bg-background border border-border shadow-lg">
@@ -286,7 +286,7 @@ export const FilterPanel = ({ onFilterChange, isVisible, isMobile = false, showS
             <label className="text-sm font-medium text-foreground">Availability</label>
           </div>
           <Select value={availabilityFilter} onValueChange={setAvailabilityFilter}>
-            <SelectTrigger className="w-full transition-all duration-200 hover:border-primary/50">
+            <SelectTrigger className="w-full outline outline-1 outline-primary/90 transition-all duration-200 hover:border-primary/50">
               <SelectValue placeholder="All Items" />
             </SelectTrigger>
             <SelectContent className="bg-background border border-border shadow-lg">
@@ -306,7 +306,7 @@ export const FilterPanel = ({ onFilterChange, isVisible, isMobile = false, showS
             <label className="text-sm font-medium text-foreground">Sort by</label>
           </div>
           <Select value={sortBy} onValueChange={setSortBy}>
-            <SelectTrigger className="w-full transition-all duration-200 hover:border-primary/50">
+            <SelectTrigger className="w-full outline outline-1 outline-primary/90 transition-all duration-200 hover:border-primary/50">
               <SelectValue placeholder="Newest First" />
             </SelectTrigger>
             <SelectContent className="bg-background border border-border shadow-lg">
@@ -319,7 +319,7 @@ export const FilterPanel = ({ onFilterChange, isVisible, isMobile = false, showS
           </Select>
         </div>
 
-        <Separator className="my-6" />
+        <Separator className="my-6 bg-white" />
 
         {/* Price Range */}
         <div className="space-y-4 animate-fade-in">
@@ -329,7 +329,7 @@ export const FilterPanel = ({ onFilterChange, isVisible, isMobile = false, showS
               Price Range
             </label>
           </div>
-          <div className="bg-secondary/30 rounded-lg p-4 space-y-4">
+          <div className="bg-primary/20 rounded-lg p-4 space-y-4">
             <div className="text-center">
               <span className="text-lg font-semibold text-primary">
                 GH₵{selectedPriceRange[0]} - GH₵{selectedPriceRange[1]}
@@ -369,7 +369,7 @@ export const FilterPanel = ({ onFilterChange, isVisible, isMobile = false, showS
               Distance
             </label>
           </div>
-          <div className="bg-secondary/30 rounded-lg p-4 space-y-3">
+          <div className="bg-primary/20 rounded-lg p-4 space-y-3">
             <div className="text-center">
               <span className="text-lg font-semibold text-primary">
                 {selectedRadius[0]} miles
@@ -383,7 +383,7 @@ export const FilterPanel = ({ onFilterChange, isVisible, isMobile = false, showS
               step={1}
               className="w-full"
             />
-            <div className="flex justify-between text-xs text-muted-foreground">
+            <div className="flex justify-between text-xs text-primary">
               <span>1 mi</span>
               <span>100 mi</span>
             </div>
@@ -398,7 +398,7 @@ export const FilterPanel = ({ onFilterChange, isVisible, isMobile = false, showS
               Minimum Rating
             </label>
           </div>
-          <div className="bg-secondary/30 rounded-lg p-4 space-y-3">
+          <div className="bg-primary/20 rounded-lg p-4 space-y-3">
             <div className="text-center flex items-center justify-center gap-1">
               <span className="text-lg font-semibold text-primary">
                 {selectedMinRating[0]}
@@ -414,7 +414,7 @@ export const FilterPanel = ({ onFilterChange, isVisible, isMobile = false, showS
               step={1}
               className="w-full"
             />
-            <div className="flex justify-between text-xs text-muted-foreground">
+            <div className="flex justify-between text-xs text-primary">
               <span>0 stars</span>
               <span>5 stars</span>
             </div>
@@ -430,12 +430,12 @@ export const FilterPanel = ({ onFilterChange, isVisible, isMobile = false, showS
             <label className="text-sm font-medium text-foreground">Your Location</label>
           </div>
           <div className="relative">
-            <MapPin className="absolute left-3 top-3 w-4 h-4 text-muted-foreground" />
+            <MapPin className="absolute left-3 top-3 w-4 h-4 text-primary" />
             <Input
               placeholder="Set location in profile"
               value={user?.location || ""}
               readOnly
-              className="pl-10 bg-muted/50 cursor-not-allowed transition-all duration-200"
+              className="pl-10 outline outline-1 outline-primary/90 border-primary border-1 bg-muted/50 cursor-not-allowed transition-all duration-200"
               title="Update your location in your profile settings"
             />
           </div>
