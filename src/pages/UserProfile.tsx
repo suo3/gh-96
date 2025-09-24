@@ -279,7 +279,7 @@ const UserProfile = () => {
                           )}
                         </div>
                       </div>
-                      <div className="mb-1">
+                      <div className="mb-1 flex justify-center sm:justify-start">
                         <UserRatingDisplay userId={profile.id} showCount={true} size="sm" />
                       </div>
                       {profile.username && (
