@@ -273,6 +273,75 @@ export type Database = {
           },
         ]
       }
+      distributor_profiles: {
+        Row: {
+          address: string | null
+          business_type: string | null
+          category: string
+          city: string | null
+          contact_person: string | null
+          contact_person_role: string | null
+          created_at: string
+          description: string | null
+          email: string | null
+          id: string
+          is_active: boolean | null
+          name: string
+          notes: string | null
+          phone_number: string | null
+          region: string | null
+          social_media_handles: Json | null
+          source: string | null
+          updated_at: string
+          verification_status: string | null
+          website: string | null
+        }
+        Insert: {
+          address?: string | null
+          business_type?: string | null
+          category: string
+          city?: string | null
+          contact_person?: string | null
+          contact_person_role?: string | null
+          created_at?: string
+          description?: string | null
+          email?: string | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          notes?: string | null
+          phone_number?: string | null
+          region?: string | null
+          social_media_handles?: Json | null
+          source?: string | null
+          updated_at?: string
+          verification_status?: string | null
+          website?: string | null
+        }
+        Update: {
+          address?: string | null
+          business_type?: string | null
+          category?: string
+          city?: string | null
+          contact_person?: string | null
+          contact_person_role?: string | null
+          created_at?: string
+          description?: string | null
+          email?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          notes?: string | null
+          phone_number?: string | null
+          region?: string | null
+          social_media_handles?: Json | null
+          source?: string | null
+          updated_at?: string
+          verification_status?: string | null
+          website?: string | null
+        }
+        Relationships: []
+      }
       featured_sellers: {
         Row: {
           created_at: string

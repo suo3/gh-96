@@ -19,6 +19,7 @@ import { AdminManualFeaturing } from "@/components/admin/AdminManualFeaturing";
 import { AdminInquiries } from "@/components/admin/AdminInquiries";
 import { AdminMessages } from "@/components/admin/AdminMessages";
 import { AdminFeaturedStores } from "@/components/admin/AdminFeaturedStores";
+import { AdminDistributors } from "@/components/admin/AdminDistributors";
 import { Footer } from "@/components/Footer";
 import { AppHeader } from "@/components/AppHeader";
 
@@ -106,7 +107,7 @@ const Admin = () => {
           </div>
 
           <Tabs defaultValue="analytics" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-10 lg:w-auto lg:grid-cols-10">
+            <TabsList className="grid w-full grid-cols-11 lg:w-auto lg:grid-cols-11">
               <TabsTrigger value="analytics" className="flex items-center gap-2">
                 <BarChart3 className="w-4 h-4" />
                 Analytics
@@ -118,6 +119,10 @@ const Admin = () => {
               <TabsTrigger value="approval" className="flex items-center gap-2">
                 <CheckCircle className="w-4 h-4" />
                 Listings
+              </TabsTrigger>
+              <TabsTrigger value="distributors" className="flex items-center gap-2">
+                <Shield className="w-4 h-4" />
+                Distributors
               </TabsTrigger>
               <TabsTrigger value="bulk-import" className="flex items-center gap-2">
                 <Shield className="w-4 h-4" />
@@ -165,6 +170,10 @@ const Admin = () => {
                 </div>
                 <AdminListingApproval />
               </div>
+            </TabsContent>
+
+            <TabsContent value="distributors">
+              <AdminDistributors />
             </TabsContent>
 
             <TabsContent value="bulk-import">
