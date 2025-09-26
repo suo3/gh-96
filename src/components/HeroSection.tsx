@@ -29,12 +29,12 @@ export const HeroSection = ({ onPostItem, onBrowseItems }: HeroSectionProps) => 
             
             {/* Left Content */}
             <div className="space-y-3 sm:space-y-4 md:space-y-6 lg:space-y-8 order-2 lg:order-1">
-              <Badge 
+            {/*   <Badge 
                 variant="secondary" 
                 className="inline-flex mb-1 sm:mb-2 md:mb-4 px-2 sm:px-3 md:px-4 py-1 sm:py-1.5 md:py-2 text-xs font-medium animate-fade-in bg-primary/20 border border-primary/30 text-primary hover:bg-primary/30"
               >
                 🇬🇭 Ghana Marketplace
-              </Badge>
+              </Badge> */}
               
               <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold mb-3 sm:mb-4 md:mb-6 leading-tight text-foreground">
                 <span className="block mb-1 animate-fade-in animate-delay-100 opacity-0 [animation-fill-mode:forwards]">Buy, Sell,</span>
