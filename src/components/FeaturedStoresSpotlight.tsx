@@ -183,8 +183,14 @@ export const FeaturedStoresSpotlight = () => {
           })}
         </CarouselContent>
         
-        <CarouselPrevious className="left-4 -ml-1 z-200" />
-        <CarouselNext className="right-4" />
+        <CarouselPrevious 
+          className="left-4 -ml-1 z-200" 
+          onClick={(e) => e.stopPropagation()} 
+        />
+        <CarouselNext 
+          className="right-4" 
+          onClick={(e) => e.stopPropagation()} 
+        />
       </Carousel>
     </div>
   );
