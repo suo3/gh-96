@@ -46,13 +46,27 @@ interface UserProfile {
   is_verified: boolean | null;
 }
 
+interface DistributorProfile {
+  id: string;
+  name: string;
+  email: string | null;
+  phone_number: string | null;
+  region: string | null;
+  city: string | null;
+  category: string;
+  verification_status: string;
+  is_active: boolean;
+}
+
 interface AdminFeaturedStoresProps {
   adminRole: string | null;
 }
 
 export const AdminFeaturedStores = ({ adminRole }: AdminFeaturedStoresProps) => {
   const [searchQuery, setSearchQuery] = useState("");
+  const [distributorSearchQuery, setDistributorSearchQuery] = useState("");
   const [selectedPosition, setSelectedPosition] = useState(1);
+  const [activeTab, setActiveTab] = useState<'users' | 'distributors'>('users');
   const queryClient = useQueryClient();
 
   // Fetch featured stores
@@ -102,13 +116,34 @@ export const AdminFeaturedStores = ({ adminRole }: AdminFeaturedStoresProps) => 
     enabled: searchQuery.length >= 2,
   });
 
+  // Search distributors
+  const { data: distributorSearchResults, isLoading: distributorSearchLoading } = useQuery({
+    queryKey: ['distributor-search', distributorSearchQuery],
+    queryFn: async () => {
+      if (!distributorSearchQuery || distributorSearchQuery.length < 2) return [];
+
+      const { data, error } = await supabase
+        .from('distributor_profiles')
+        .select('id, name, email, phone_number, region, city, category, verification_status, is_active')
+        .or(`name.ilike.%${distributorSearchQuery}%, email.ilike.%${distributorSearchQuery}%, category.ilike.%${distributorSearchQuery}%`)
+        .eq('is_active', true)
+        .eq('verification_status', 'approved')
+        .limit(10);
+
+      if (error) throw error;
+      return data as DistributorProfile[];
+    },
+    enabled: distributorSearchQuery.length >= 2,
+  });
+
   // Add featured store mutation
   const addFeaturedStore = useMutation({
-    mutationFn: async ({ userId, position }: { userId: string; position: number }) => {
+    mutationFn: async ({ userId, position, type }: { userId: string; position: number; type: 'user' | 'distributor' }) => {
       const { error } = await supabase
         .from('featured_sellers')
         .insert({
-          user_id: userId,
+          user_id: type === 'user' ? userId : null,
+          distributor_id: type === 'distributor' ? userId : null,
           position: position,
           is_active: true
         });
@@ -120,6 +155,7 @@ export const AdminFeaturedStores = ({ adminRole }: AdminFeaturedStoresProps) => 
       queryClient.invalidateQueries({ queryKey: ['featured-stores'] });
       toast.success('Store added to featured list');
       setSearchQuery("");
+      setDistributorSearchQuery("");
     },
     onError: (error) => {
       console.error('Error adding featured store:', error);
@@ -195,8 +231,12 @@ export const AdminFeaturedStores = ({ adminRole }: AdminFeaturedStoresProps) => 
     return 'U';
   };
 
-  const isUserAlreadyFeatured = (userId: string) => {
-    return featuredStores?.some(store => store.user_id === userId);
+  const isUserAlreadyFeatured = (userId: string, type: 'user' | 'distributor') => {
+    if (type === 'user') {
+      return featuredStores?.some(store => store.user_id === userId);
+    } else {
+      return featuredStores?.some(store => store.distributor_id === userId);
+    }
   };
 
   const getNextAvailablePosition = () => {
@@ -250,115 +290,231 @@ export const AdminFeaturedStores = ({ adminRole }: AdminFeaturedStoresProps) => 
             <Plus className="w-5 h-5" />
             Add Featured Store
           </CardTitle>
+          <div className="flex gap-2">
+            <Button
+              variant={activeTab === 'users' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setActiveTab('users')}
+            >
+              <User className="w-4 h-4 mr-2" />
+              Users
+            </Button>
+            <Button
+              variant={activeTab === 'distributors' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setActiveTab('distributors')}
+            >
+              <ShoppingBag className="w-4 h-4 mr-2" />
+              Distributors
+            </Button>
+          </div>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div>
-            <Label htmlFor="search">Search Users</Label>
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-              <Input
-                id="search"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search by username, first name, or last name..."
-                className="pl-10"
-              />
+          {activeTab === 'users' ? (
+            <div>
+              <Label htmlFor="search">Search Users</Label>
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                <Input
+                  id="search"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search by username, first name, or last name..."
+                  className="pl-10"
+                />
+              </div>
             </div>
-          </div>
-
-          {searchLoading && searchQuery.length >= 2 && (
-            <div className="text-center py-4">
-              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary mx-auto"></div>
-              <p className="text-sm text-muted-foreground mt-2">Searching...</p>
+          ) : (
+            <div>
+              <Label htmlFor="distributor-search">Search Distributors</Label>
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                <Input
+                  id="distributor-search"
+                  value={distributorSearchQuery}
+                  onChange={(e) => setDistributorSearchQuery(e.target.value)}
+                  placeholder="Search by name, email, or category..."
+                  className="pl-10"
+                />
+              </div>
             </div>
           )}
 
-          {searchResults && searchResults.length > 0 && (
-            <div className="space-y-2 max-h-64 overflow-y-auto border rounded-lg p-4">
-              {searchResults.map((user) => {
-                const isAlreadyFeatured = isUserAlreadyFeatured(user.id);
-                const displayName = getDisplayName(user);
-                const location = getLocationString(user);
-                const avatarInitial = getAvatarInitial(user);
+          {activeTab === 'users' ? (
+            <>
+              {searchLoading && searchQuery.length >= 2 && (
+                <div className="text-center py-4">
+                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary mx-auto"></div>
+                  <p className="text-sm text-muted-foreground mt-2">Searching users...</p>
+                </div>
+              )}
 
-                return (
-                  <div
-                    key={user.id}
-                    className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50"
-                  >
-                    <div className="flex items-center gap-3">
-                      {user.avatar ? (
-                        <img
-                          src={user.avatar}
-                          alt={displayName}
-                          className="w-10 h-10 rounded-full object-cover"
-                        />
-                      ) : (
-                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white font-semibold">
-                          {avatarInitial}
+              {searchResults && searchResults.length > 0 && (
+                <div className="space-y-2 max-h-64 overflow-y-auto border rounded-lg p-4">
+                  {searchResults.map((user) => {
+                    const isAlreadyFeatured = isUserAlreadyFeatured(user.id, 'user');
+                    const displayName = getDisplayName(user);
+                    const location = getLocationString(user);
+                    const avatarInitial = getAvatarInitial(user);
+
+                    return (
+                      <div
+                        key={user.id}
+                        className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50"
+                      >
+                        <div className="flex items-center gap-3">
+                          {user.avatar ? (
+                            <img
+                              src={user.avatar}
+                              alt={displayName}
+                              className="w-10 h-10 rounded-full object-cover"
+                            />
+                          ) : (
+                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white font-semibold">
+                              {avatarInitial}
+                            </div>
+                          )}
+                          
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-1">
+                              <p className="font-medium truncate">{displayName}</p>
+                              {user.is_verified && (
+                                <Badge variant="secondary" className="text-xs">
+                                  <Award className="h-3 w-3 mr-1" />
+                                  Verified
+                                </Badge>
+                              )}
+                            </div>
+                            
+                            <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                              {user.rating && user.rating > 0 && (
+                                <div className="flex items-center gap-1">
+                                  <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
+                                  <span>{user.rating.toFixed(1)}</span>
+                                </div>
+                              )}
+                              {user.total_sales && user.total_sales > 0 && (
+                                <div className="flex items-center gap-1">
+                                  <ShoppingBag className="h-3 w-3" />
+                                  <span>{user.total_sales} sales</span>
+                                </div>
+                              )}
+                              {location && (
+                                <div className="flex items-center gap-1">
+                                  <MapPin className="h-3 w-3" />
+                                  <span className="truncate">{location}</span>
+                                </div>
+                              )}
+                            </div>
+                          </div>
                         </div>
-                      )}
-                      
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
-                          <p className="font-medium truncate">{displayName}</p>
-                          {user.is_verified && (
-                            <Badge variant="secondary" className="text-xs">
-                              <Award className="h-3 w-3 mr-1" />
-                              Verified
-                            </Badge>
-                          )}
-                        </div>
-                        
-                        <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                          {user.rating && user.rating > 0 && (
-                            <div className="flex items-center gap-1">
-                              <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
-                              <span>{user.rating.toFixed(1)}</span>
-                            </div>
-                          )}
-                          {user.total_sales && user.total_sales > 0 && (
-                            <div className="flex items-center gap-1">
-                              <ShoppingBag className="h-3 w-3" />
-                              <span>{user.total_sales} sales</span>
-                            </div>
-                          )}
-                          {location && (
-                            <div className="flex items-center gap-1">
-                              <MapPin className="h-3 w-3" />
-                              <span className="truncate">{location}</span>
-                            </div>
+
+                        <div className="flex items-center gap-2">
+                          {isAlreadyFeatured ? (
+                            <Badge variant="secondary" className="text-xs">Already Featured</Badge>
+                          ) : (
+                            <Button
+                              size="sm"
+                              onClick={() => addFeaturedStore.mutate({ 
+                                userId: user.id, 
+                                position: getNextAvailablePosition(),
+                                type: 'user'
+                              })}
+                              disabled={addFeaturedStore.isPending}
+                            >
+                              {addFeaturedStore.isPending ? "Adding..." : "Add"}
+                            </Button>
                           )}
                         </div>
                       </div>
-                    </div>
+                    );
+                  })}
+                </div>
+              )}
 
-                    <div className="flex items-center gap-2">
-                      {isAlreadyFeatured ? (
-                        <Badge variant="secondary" className="text-xs">Already Featured</Badge>
-                      ) : (
-                        <Button
-                          size="sm"
-                          onClick={() => addFeaturedStore.mutate({ 
-                            userId: user.id, 
-                            position: getNextAvailablePosition() 
-                          })}
-                          disabled={addFeaturedStore.isPending}
-                        >
-                          {addFeaturedStore.isPending ? "Adding..." : "Add"}
-                        </Button>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
+              {searchQuery.length >= 2 && searchResults && searchResults.length === 0 && !searchLoading && (
+                <div className="text-center py-4">
+                  <p className="text-muted-foreground">No users found matching your search.</p>
+                </div>
+              )}
+            </>
+          ) : (
+            <>
+              {distributorSearchLoading && distributorSearchQuery.length >= 2 && (
+                <div className="text-center py-4">
+                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary mx-auto"></div>
+                  <p className="text-sm text-muted-foreground mt-2">Searching distributors...</p>
+                </div>
+              )}
 
-          {searchQuery.length >= 2 && searchResults && searchResults.length === 0 && !searchLoading && (
-            <div className="text-center py-4">
-              <p className="text-muted-foreground">No users found matching your search.</p>
-            </div>
+              {distributorSearchResults && distributorSearchResults.length > 0 && (
+                <div className="space-y-2 max-h-64 overflow-y-auto border rounded-lg p-4">
+                  {distributorSearchResults.map((distributor) => {
+                    const isAlreadyFeatured = isUserAlreadyFeatured(distributor.id, 'distributor');
+                    const location = distributor.city && distributor.region ? `${distributor.city}, ${distributor.region}` : distributor.region || distributor.city;
+
+                    return (
+                      <div
+                        key={distributor.id}
+                        className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center text-white font-semibold">
+                            {distributor.name.charAt(0).toUpperCase()}
+                          </div>
+                          
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-1">
+                              <p className="font-medium truncate">{distributor.name}</p>
+                              <Badge variant="secondary" className="text-xs">
+                                <ShoppingBag className="h-3 w-3 mr-1" />
+                                Distributor
+                              </Badge>
+                            </div>
+                            
+                            <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                              <div className="flex items-center gap-1">
+                                <span className="font-medium">{distributor.category}</span>
+                              </div>
+                              {location && (
+                                <div className="flex items-center gap-1">
+                                  <MapPin className="h-3 w-3" />
+                                  <span className="truncate">{location}</span>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          {isAlreadyFeatured ? (
+                            <Badge variant="secondary" className="text-xs">Already Featured</Badge>
+                          ) : (
+                            <Button
+                              size="sm"
+                              onClick={() => addFeaturedStore.mutate({ 
+                                userId: distributor.id, 
+                                position: getNextAvailablePosition(),
+                                type: 'distributor'
+                              })}
+                              disabled={addFeaturedStore.isPending}
+                            >
+                              {addFeaturedStore.isPending ? "Adding..." : "Add"}
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
+              {distributorSearchQuery.length >= 2 && distributorSearchResults && distributorSearchResults.length === 0 && !distributorSearchLoading && (
+                <div className="text-center py-4">
+                  <p className="text-muted-foreground">No distributors found matching your search.</p>
+                </div>
+              )}
+            </>
           )}
         </CardContent>
       </Card>
