@@ -122,8 +122,8 @@ export const FeaturedStoresSpotlight = () => {
   }
 
   return (
-    <div className="relative w-full h-[300px] flex items-center justify-center">
-      <Carousel className="w-full max-w-2xl">
+    <div className="relative w-full h-[200px] sm:h-[250px] md:h-[300px] flex items-center justify-center">
+      <Carousel className="w-full max-w-sm sm:max-w-lg md:max-w-2xl">
         <CarouselContent>
           {featuredStores.map((store) => {
             const profile = store.profiles;
@@ -134,10 +134,10 @@ export const FeaturedStoresSpotlight = () => {
             const backgroundImage = profile.profile_image_url || getDefaultProfileImage(profile.id);
 
             return (
-              <CarouselItem key={store.id} className="basis-1/2 md:basis-1/3">
-                <div className="p-4">
+              <CarouselItem key={store.id} className="basis-3/4 sm:basis-1/2 md:basis-1/3">
+                <div className="p-2 sm:p-3 md:p-4">
                   <Card 
-                    className="relative overflow-hidden cursor-pointer transition-all duration-300 hover:scale-105 group border-0 shadow-lg bg-transparent backdrop-blur-sm rounded-full w-48 h-48 mx-auto"
+                    className="relative overflow-hidden cursor-pointer transition-all duration-300 hover:scale-105 group border-0 shadow-lg bg-transparent backdrop-blur-sm rounded-full w-32 h-32 sm:w-40 sm:h-40 md:w-48 md:h-48 mx-auto"
                     onClick={() => handleStoreClick(profile.id)}
                   >
                     {/* Background Image */}
