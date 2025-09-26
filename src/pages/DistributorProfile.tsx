@@ -66,13 +66,13 @@ const DistributorProfile = () => {
         .select('*')
         .eq('id', distributorId)
         .eq('is_active', true)
-        .eq('verification_status', 'approved')
+        .eq('verification_status', 'verified')
         .single();
 
       if (error) throw error;
       
       if (!data) {
-        setError("Distributor not found or not approved");
+        setError("Distributor not found or not verified");
         return;
       }
 
