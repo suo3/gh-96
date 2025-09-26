@@ -9,6 +9,9 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { UserPlus, Search, Shield, Users } from "lucide-react";
 import { toast } from "sonner";
+import { CreateUserDialog } from "./CreateUserDialog";
+import { EditUserDialog } from "./EditUserDialog";
+import { UserListingsManager } from "./UserListingsManager";
 
 interface User {
   id: string;
@@ -176,6 +179,7 @@ export const AdminUserManagement = ({ adminRole }: AdminUserManagementProps) => 
                 <SelectItem value="user">Regular Users</SelectItem>
               </SelectContent>
             </Select>
+            <CreateUserDialog onUserCreated={fetchUsers} />
           </div>
 
           <div className="overflow-x-auto">
@@ -219,7 +223,12 @@ export const AdminUserManagement = ({ adminRole }: AdminUserManagementProps) => 
                       )}
                     </TableCell>
                     <TableCell>
-                      <div className="flex gap-2">
+                      <div className="flex gap-2 flex-wrap">
+                        <EditUserDialog user={user} onUserUpdated={fetchUsers} />
+                        <UserListingsManager 
+                          userId={user.id} 
+                          userName={`${user.firstName} ${user.lastName}`.trim() || user.username || 'Unknown User'} 
+                        />
                         {adminRole === 'super_admin' && !user.isAdmin && (
                           <div className="flex gap-2">
                             <Button 
