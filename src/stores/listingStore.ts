@@ -218,11 +218,39 @@ export const useListingStore = create<ListingStore>((set, get) => ({
       const { session } = useAuthStore.getState();
       if (!session?.user) throw new Error('User not authenticated');
 
-      // Only update specific fields to avoid RLS policy violations
-      const updatePayload = {
-        status: updatedListing.status,
+      // Create update payload with only the fields we're updating
+      const updatePayload: any = {
         updated_at: new Date().toISOString()
       };
+      
+      // Add specific fields being updated
+      if (updatedListing.status !== undefined) {
+        updatePayload.status = updatedListing.status;
+      }
+      if (updatedListing.title !== undefined) {
+        updatePayload.title = updatedListing.title;
+      }
+      if (updatedListing.description !== undefined) {
+        updatePayload.description = updatedListing.description;
+      }
+      if (updatedListing.category !== undefined) {
+        updatePayload.category = updatedListing.category;
+      }
+      if (updatedListing.condition !== undefined) {
+        updatePayload.condition = updatedListing.condition;
+      }
+      if (updatedListing.price !== undefined) {
+        updatePayload.price = updatedListing.price;
+      }
+      if (updatedListing.location !== undefined) {
+        updatePayload.location = updatedListing.location;
+      }
+      if (updatedListing.images !== undefined) {
+        updatePayload.images = updatedListing.images;
+      }
+      if (updatedListing.wanted_items !== undefined) {
+        updatePayload.wanted_items = updatedListing.wanted_items;
+      }
       
       console.log('UpdateListing payload:', updatePayload);
       console.log('User ID:', session.user.id);
@@ -232,10 +260,14 @@ export const useListingStore = create<ListingStore>((set, get) => ({
         .from('listings')
         .update(updatePayload)
         .eq('id', id)
+        .eq('user_id', session.user.id)
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase update error:', error);
+        throw error;
+      }
 
       set(state => ({
         listings: state.listings.map(listing => 
