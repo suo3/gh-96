@@ -33,6 +33,7 @@ interface DistributorProfile {
   is_active: boolean;
   source: string;
   notes?: string;
+  products_services?: string;
   created_at: string;
   updated_at: string;
 }
@@ -63,7 +64,8 @@ export const AdminDistributors: React.FC = () => {
     contact_person_role: '',
     verification_status: 'pending',
     is_active: true,
-    notes: ''
+    notes: '',
+    products_services: ''
   });
 
   // Fetch distributors
@@ -247,7 +249,8 @@ export const AdminDistributors: React.FC = () => {
       contact_person_role: '',
       verification_status: 'pending',
       is_active: true,
-      notes: ''
+      notes: '',
+      products_services: ''
     });
   };
 
@@ -268,7 +271,8 @@ export const AdminDistributors: React.FC = () => {
       contact_person_role: distributor.contact_person_role || '',
       verification_status: distributor.verification_status,
       is_active: distributor.is_active,
-      notes: distributor.notes || ''
+      notes: distributor.notes || '',
+      products_services: distributor.products_services || ''
     });
   };
 
@@ -482,6 +486,16 @@ export const AdminDistributors: React.FC = () => {
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   placeholder="Company description and services"
                   rows={3}
+                />
+              </div>
+              <div className="col-span-2">
+                <Label htmlFor="products_services">Products & Services</Label>
+                <Textarea
+                  id="products_services"
+                  value={formData.products_services}
+                  onChange={(e) => setFormData({ ...formData, products_services: e.target.value })}
+                  placeholder="List the products and services offered by this distributor"
+                  rows={4}
                 />
               </div>
               <div className="col-span-2">

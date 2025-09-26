@@ -289,6 +289,7 @@ export type Database = {
           name: string
           notes: string | null
           phone_number: string | null
+          products_services: string | null
           region: string | null
           social_media_handles: Json | null
           source: string | null
@@ -311,6 +312,7 @@ export type Database = {
           name: string
           notes?: string | null
           phone_number?: string | null
+          products_services?: string | null
           region?: string | null
           social_media_handles?: Json | null
           source?: string | null
@@ -333,6 +335,7 @@ export type Database = {
           name?: string
           notes?: string | null
           phone_number?: string | null
+          products_services?: string | null
           region?: string | null
           social_media_handles?: Json | null
           source?: string | null

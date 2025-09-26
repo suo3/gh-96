@@ -31,6 +31,7 @@ interface DistributorProfile {
   contact_person_role?: string;
   verification_status: string;
   is_active: boolean;
+  products_services?: string;
   created_at: string;
 }
 
@@ -65,13 +66,13 @@ const DistributorProfile = () => {
         .select('*')
         .eq('id', distributorId)
         .eq('is_active', true)
-        .eq('verification_status', 'verified')
+        .eq('verification_status', 'approved')
         .single();
 
       if (error) throw error;
       
       if (!data) {
-        setError("Distributor not found or not verified");
+        setError("Distributor not found or not approved");
         return;
       }
 
@@ -168,7 +169,7 @@ const DistributorProfile = () => {
           <div className="text-center">
             <h2 className="text-2xl font-bold text-foreground mb-2">Distributor Not Found</h2>
             <p className="text-muted-foreground mb-6">
-              {error || "The distributor you're looking for doesn't exist or is not verified."}
+              {error || "The distributor you're looking for doesn't exist or is not approved."}
             </p>
             <Button onClick={() => navigate('/')}>
               Return to Homepage
@@ -425,14 +426,22 @@ const DistributorProfile = () => {
               </h2>
             </div>
 
-            <Card className="p-8 md:p-12 text-center">
-              <Building2 className="w-12 h-12 md:w-16 md:h-16 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-lg md:text-xl font-semibold text-foreground mb-2">Coming Soon</h3>
-              <p className="text-muted-foreground text-sm md:text-base">
-                {distributor.name} will be listing their products and services here soon. 
-                Contact them directly for current availability and pricing.
-              </p>
-            </Card>
+            {distributor.products_services ? (
+              <Card className="p-6">
+                <div className="whitespace-pre-wrap text-sm md:text-base leading-relaxed">
+                  {distributor.products_services}
+                </div>
+              </Card>
+            ) : (
+              <Card className="p-8 md:p-12 text-center">
+                <Building2 className="w-12 h-12 md:w-16 md:h-16 text-muted-foreground mx-auto mb-4" />
+                <h3 className="text-lg md:text-xl font-semibold text-foreground mb-2">Coming Soon</h3>
+                <p className="text-muted-foreground text-sm md:text-base">
+                  {distributor.name} will be listing their products and services here soon. 
+                  Contact them directly for current availability and pricing.
+                </p>
+              </Card>
+            )}
           </div>
         </div>
       </div>
