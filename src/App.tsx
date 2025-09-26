@@ -25,6 +25,8 @@ import Trademark from "./pages/Trademark";
 import Categories from "./pages/Categories";
 import Category from "./pages/Category";
 import UserProfile from "./pages/UserProfile";
+import DistributorProfile from "./pages/DistributorProfile";
+import Distributors from "./pages/Distributors";
 import Subscription from "./pages/Subscription";
 import SellerOnboarding from "./pages/SellerOnboarding";
 import { PaymentSuccess } from "./pages/PaymentSuccess";
@@ -87,6 +89,8 @@ const App = () => {
               <Route path="/categories" element={<Categories />} />
               <Route path="/category/:categorySlug" element={<Category />} />
               <Route path="/user/:userId" element={<UserProfile />} />
+              <Route path="/distributor/:distributorId" element={<DistributorProfile />} />
+              <Route path="/distributors" element={<Distributors />} />
               <Route path="/seller-onboarding" element={<SellerOnboarding />} />
               <Route path="/subscription" element={<Subscription />} />
               <Route path="/payment-success" element={<PaymentSuccess />} />

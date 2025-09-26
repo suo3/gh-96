@@ -16,6 +16,7 @@ import { CategoryTabsCarousel } from "@/components/CategoryTabsCarousel";
 import { FeaturedSellersSection } from "@/components/FeaturedSellersSection";
 import { FeaturedStoresCarousel } from "@/components/FeaturedStoresCarousel";
 import { SellerOnboardingBanner } from "@/components/SellerOnboardingBanner";
+import { VerifiedDistributorsSection } from "@/components/VerifiedDistributorsSection";
 import { useIndexLogic } from "@/hooks/useIndexLogic";
 import { usePlatformSettings } from "@/hooks/usePlatformSettings";
 
@@ -104,6 +105,10 @@ const Index = () => {
         <hr className="border-b border-border border-emerald-600" />
         {/* Featured Sellers */}
         <FeaturedSellersSection />
+
+        <hr className="border-b border-border border-emerald-600" />
+        {/* Verified Distributors */}
+        <VerifiedDistributorsSection />
        
       </div>
       

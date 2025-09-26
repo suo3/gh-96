@@ -11,8 +11,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { Plus, Search, Eye, Edit, Trash2, Building2, Phone, Mail, MapPin } from 'lucide-react';
+import { Plus, Search, Eye, Edit, Trash2, Building2, Phone, Mail, MapPin, CheckSquare, XSquare, Check } from 'lucide-react';
 import { AdminDistributorsBulkImport } from './AdminDistributorsBulkImport';
+import { Checkbox } from '@/components/ui/checkbox';
 
 interface DistributorProfile {
   id: string;
@@ -44,6 +45,7 @@ export const AdminDistributors: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState('all');
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [editingDistributor, setEditingDistributor] = useState<DistributorProfile | null>(null);
+  const [selectedDistributors, setSelectedDistributors] = useState<string[]>([]);
 
   // Form state for new/edit distributor
   const [formData, setFormData] = useState({
@@ -175,6 +177,60 @@ export const AdminDistributors: React.FC = () => {
     }
   });
 
+  // Bulk approve mutation
+  const bulkApproveMutation = useMutation({
+    mutationFn: async (distributorIds: string[]) => {
+      const { error } = await supabase
+        .from('distributor_profiles')
+        .update({ verification_status: 'verified' })
+        .in('id', distributorIds);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['distributors'] });
+      toast({
+        title: "Success",
+        description: `${selectedDistributors.length} distributors approved successfully`,
+      });
+      setSelectedDistributors([]);
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: "Failed to approve distributors",
+        variant: "destructive",
+      });
+      console.error('Error approving distributors:', error);
+    }
+  });
+
+  // Bulk reject mutation
+  const bulkRejectMutation = useMutation({
+    mutationFn: async (distributorIds: string[]) => {
+      const { error } = await supabase
+        .from('distributor_profiles')
+        .update({ verification_status: 'rejected' })
+        .in('id', distributorIds);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['distributors'] });
+      toast({
+        title: "Success",
+        description: `${selectedDistributors.length} distributors rejected`,
+      });
+      setSelectedDistributors([]);
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: "Failed to reject distributors",
+        variant: "destructive",
+      });
+      console.error('Error rejecting distributors:', error);
+    }
+  });
+
   const resetForm = () => {
     setFormData({
       name: '',
@@ -231,6 +287,32 @@ export const AdminDistributors: React.FC = () => {
       case 'rejected': return 'destructive';
       default: return 'outline';
     }
+  };
+
+  const handleSelectAll = () => {
+    if (selectedDistributors.length === distributors?.length) {
+      setSelectedDistributors([]);
+    } else {
+      setSelectedDistributors(distributors?.map(d => d.id) || []);
+    }
+  };
+
+  const handleSelectDistributor = (distributorId: string) => {
+    setSelectedDistributors(prev => 
+      prev.includes(distributorId) 
+        ? prev.filter(id => id !== distributorId)
+        : [...prev, distributorId]
+    );
+  };
+
+  const handleBulkApprove = () => {
+    if (selectedDistributors.length === 0) return;
+    bulkApproveMutation.mutate(selectedDistributors);
+  };
+
+  const handleBulkReject = () => {
+    if (selectedDistributors.length === 0) return;
+    bulkRejectMutation.mutate(selectedDistributors);
   };
 
   return (
@@ -534,6 +616,13 @@ export const AdminDistributors: React.FC = () => {
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead className="w-12">
+                    <Checkbox
+                      checked={selectedDistributors.length === distributors?.length && distributors?.length > 0}
+                      onCheckedChange={handleSelectAll}
+                      aria-label="Select all distributors"
+                    />
+                  </TableHead>
                   <TableHead>Company</TableHead>
                   <TableHead>Category</TableHead>
                   <TableHead>Contact</TableHead>
@@ -546,6 +635,13 @@ export const AdminDistributors: React.FC = () => {
               <TableBody>
                 {distributors?.map((distributor) => (
                   <TableRow key={distributor.id}>
+                    <TableCell>
+                      <Checkbox
+                        checked={selectedDistributors.includes(distributor.id)}
+                        onCheckedChange={() => handleSelectDistributor(distributor.id)}
+                        aria-label={`Select ${distributor.name}`}
+                      />
+                    </TableCell>
                     <TableCell>
                       <div>
                         <div className="font-medium">{distributor.name}</div>
