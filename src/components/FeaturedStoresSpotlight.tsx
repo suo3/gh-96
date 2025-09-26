@@ -137,7 +137,7 @@ export const FeaturedStoresSpotlight = () => {
               <CarouselItem key={store.id} className="basis-1/2 sm:basis-1/3 md:basis-1/4">
                 <div className="p-1 sm:p-2 md:p-3">
                   <Card 
-                    className="relative overflow-hidden cursor-pointer transition-all duration-300 hover:scale-105 group border-0 shadow-lg bg-transparent backdrop-blur-sm rounded-full w-32 h-32 sm:w-40 sm:h-40 md:w-48 md:h-48 mx-auto"
+                    className="relative overflow-hidden cursor-pointer transition-all duration-300 hover:scale-105 hover:z-50 group border-0 shadow-lg bg-transparent backdrop-blur-sm rounded-full w-32 h-32 sm:w-40 sm:h-40 md:w-48 md:h-48 mx-auto"
                     onClick={() => handleStoreClick(profile.id)}
                   >
                     {/* Background Image */}
