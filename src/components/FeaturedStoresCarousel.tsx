@@ -15,7 +15,8 @@ import defaultProfile4 from "@/assets/default-profile-4.jpg";
 
 interface FeaturedStore {
   id: string;
-  user_id: string;
+  user_id: string | null;
+  distributor_id: string | null;
   position: number;
   is_active: boolean;
   created_at: string;
@@ -33,6 +34,17 @@ interface FeaturedStore {
     region: string | null;
     city: string | null;
     is_verified: boolean | null;
+  } | null;
+  distributor_profiles: {
+    id: string;
+    name: string;
+    email: string | null;
+    phone_number: string | null;
+    region: string | null;
+    city: string | null;
+    category: string;
+    verification_status: string;
+    is_active: boolean;
   } | null;
 }
 
@@ -72,6 +84,17 @@ export const FeaturedStoresCarousel = () => {
             region,
             city,
             is_verified
+          ),
+          distributor_profiles!featured_sellers_distributor_id_fkey (
+            id,
+            name,
+            email,
+            phone_number,
+            region,
+            city,
+            category,
+            verification_status,
+            is_active
           )
         `)
         .eq('is_active', true)
@@ -107,8 +130,12 @@ export const FeaturedStoresCarousel = () => {
     return null;
   }
 
-  const handleStoreClick = (storeId: string) => {
-    navigate(`/user/${storeId}`);
+  const handleStoreClick = (storeId: string, type: 'user' | 'distributor') => {
+    if (type === 'user') {
+      navigate(`/user/${storeId}`);
+    } else {
+      navigate(`/distributor/${storeId}`);
+    }
   };
 
   const getDisplayName = (profile: FeaturedStore['profiles']) => {
@@ -158,38 +185,66 @@ export const FeaturedStoresCarousel = () => {
           <CarouselContent className="-ml-2">
             {featuredStores.map((store) => {
               const profile = store.profiles;
-              if (!profile) return null;
+              const distributorProfile = store.distributor_profiles;
+              
+              // For user stores
+              if (profile) {
+                const displayName = getDisplayName(profile);
+                const avatarInitial = getAvatarInitial(profile);
 
-              const displayName = getDisplayName(profile);
-              const avatarInitial = getAvatarInitial(profile);
+                return (
+                  <CarouselItem key={store.id} className="pl-2 basis-auto">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-auto flex ml-8 items-center  gap-2 px-3 py-2 bg-white border-black hover:bg-black/10 hover:border-primary/50 ttransition-all"
+                      onClick={() => handleStoreClick(profile.id, 'user')}
+                    >
+                      <img
+                      hidden={!profile.profile_image_url}
+                        src={profile.profile_image_url || profile.avatar || getDefaultProfileImage(profile.id)}
+                        alt={displayName}
+                        className="w-8 h-8 rounded-full border-white border object-cover"
+                      />
+                     <div className={`w-8 h-8 rounded-full text-white  bg-emerald-600 flex border border-white  hover:color-black items-center justify-center text-medium font-semibold ${profile.profile_image_url ? 'hidden' : ''}`}>
+                        {avatarInitial}
+                      </div>
+                      <div className="flex flex-col items-start gap-1">
+                        <span className="text-sm font-medium">{displayName}</span>
+                        <UserRatingDisplay userId={profile.id} size="sm" />
+                      </div>
+                      {profile.is_verified && (
+                        <Award className="h-3 w-3 text-blue-500" />
+                      )}
+                    </Button>
+                  </CarouselItem>
+                );
+              }
 
-              return (
-                <CarouselItem key={store.id} className="pl-2 basis-auto">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="h-auto flex ml-8 items-center  gap-2 px-3 py-2 bg-white border-black hover:bg-black/10 hover:border-primary/50 ttransition-all"
-                    onClick={() => handleStoreClick(profile.id)}
-                  >
-                    <img
-                    hidden={!profile.profile_image_url}
-                      src={profile.profile_image_url || profile.avatar || getDefaultProfileImage(profile.id)}
-                      alt={displayName}
-                      className="w-8 h-8 rounded-full border-white border object-cover"
-                    />
-                   <div className={`w-8 h-8 rounded-full text-white  bg-emerald-600 flex border border-white  hover:color-black items-center justify-center text-medium font-semibold ${profile.profile_image_url ? 'hidden' : ''}`}>
-                      {avatarInitial}
-                    </div>
-                    <div className="flex flex-col items-start gap-1">
-                      <span className="text-sm font-medium">{displayName}</span>
-                      <UserRatingDisplay userId={profile.id} size="sm" />
-                    </div>
-                    {profile.is_verified && (
-                      <Award className="h-3 w-3 text-blue-500" />
-                    )}
-                  </Button>
-                </CarouselItem>
-              );
+              // For distributor stores
+              if (distributorProfile) {
+                return (
+                  <CarouselItem key={store.id} className="pl-2 basis-auto">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-auto flex ml-8 items-center  gap-2 px-3 py-2 bg-white border-black hover:bg-black/10 hover:border-primary/50 ttransition-all"
+                      onClick={() => handleStoreClick(distributorProfile.id, 'distributor')}
+                    >
+                      <div className="w-8 h-8 rounded-full text-white bg-emerald-600 flex border border-white items-center justify-center text-medium font-semibold">
+                        {distributorProfile.name.charAt(0).toUpperCase()}
+                      </div>
+                      <div className="flex flex-col items-start gap-1">
+                        <span className="text-sm font-medium">{distributorProfile.name}</span>
+                        <span className="text-xs text-muted-foreground">{distributorProfile.category}</span>
+                      </div>
+                      <ShoppingBag className="h-3 w-3 text-emerald-600" />
+                    </Button>
+                  </CarouselItem>
+                );
+              }
+
+              return null;
             })}
           </CarouselContent>
           <CarouselPrevious className="hidden sm:flex -left-2 h-8 w-8 color-black" />

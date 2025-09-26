@@ -12,7 +12,8 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 interface FeaturedStore {
   id: string;
-  user_id: string;
+  user_id: string | null;
+  distributor_id: string | null;
   position: number;
   is_active: boolean;
   created_at: string;
@@ -29,6 +30,17 @@ interface FeaturedStore {
     region: string | null;
     city: string | null;
     is_verified: boolean | null;
+  } | null;
+  distributor_profiles: {
+    id: string;
+    name: string;
+    email: string | null;
+    phone_number: string | null;
+    region: string | null;
+    city: string | null;
+    category: string;
+    verification_status: string;
+    is_active: boolean;
   } | null;
 }
 
@@ -89,6 +101,17 @@ export const AdminFeaturedStores = ({ adminRole }: AdminFeaturedStoresProps) => 
             region,
             city,
             is_verified
+          ),
+          distributor_profiles!featured_sellers_distributor_id_fkey (
+            id,
+            name,
+            email,
+            phone_number,
+            region,
+            city,
+            category,
+            verification_status,
+            is_active
           )
         `)
         .order('position', { ascending: true });
@@ -539,119 +562,234 @@ export const AdminFeaturedStores = ({ adminRole }: AdminFeaturedStoresProps) => 
             <div className="space-y-4">
               {featuredStores.map((store) => {
                 const profile = store.profiles;
-                if (!profile) return null;
+                const distributorProfile = store.distributor_profiles;
+                
+                // For user stores
+                if (profile) {
+                  const displayName = getDisplayName(profile);
+                  const location = getLocationString(profile);
+                  const avatarInitial = getAvatarInitial(profile);
 
-                const displayName = getDisplayName(profile);
-                const location = getLocationString(profile);
-                const avatarInitial = getAvatarInitial(profile);
-
-                return (
-                  <div
-                    key={store.id}
-                    className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50"
-                  >
-                    <div className="flex items-center gap-4">
-                      <div className="flex items-center gap-2">
-                        <Badge variant="outline" className="text-xs font-mono">
-                          #{store.position}
-                        </Badge>
-                      </div>
-
-                      {profile.avatar ? (
-                        <img
-                          src={profile.avatar}
-                          alt={displayName}
-                          className="w-12 h-12 rounded-full object-cover ring-2 ring-primary/20"
-                        />
-                      ) : (
-                        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white font-semibold ring-2 ring-primary/20">
-                          {avatarInitial}
-                        </div>
-                      )}
-                      
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
-                          <h4 className="font-medium truncate">{displayName}</h4>
-                          {profile.is_verified && (
-                            <Badge variant="secondary" className="text-xs">
-                              <Award className="h-3 w-3 mr-1" />
-                              Verified
-                            </Badge>
-                          )}
-                          <Badge className="text-xs bg-gradient-to-r from-orange-100 to-amber-100 text-orange-700">
-                            <Crown className="h-3 w-3 mr-1" />
-                            Featured
+                  return (
+                    <div
+                      key={store.id}
+                      className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50"
+                    >
+                      <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-2">
+                          <Badge variant="outline" className="text-xs font-mono">
+                            #{store.position}
                           </Badge>
                         </div>
+
+                        {profile.avatar ? (
+                          <img
+                            src={profile.avatar}
+                            alt={displayName}
+                            className="w-12 h-12 rounded-full object-cover ring-2 ring-primary/20"
+                          />
+                        ) : (
+                          <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white font-semibold ring-2 ring-primary/20">
+                            {avatarInitial}
+                          </div>
+                        )}
                         
-                        <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                          {profile.rating && profile.rating > 0 && (
-                            <div className="flex items-center gap-1">
-                              <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
-                              <span>{profile.rating.toFixed(1)}</span>
-                            </div>
-                          )}
-                          {profile.total_sales && profile.total_sales > 0 && (
-                            <div className="flex items-center gap-1">
-                              <ShoppingBag className="h-3 w-3" />
-                              <span>{profile.total_sales} sales</span>
-                            </div>
-                          )}
-                          {location && (
-                            <div className="flex items-center gap-1">
-                              <MapPin className="h-3 w-3" />
-                              <span className="truncate">{location}</span>
-                            </div>
-                          )}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1">
+                            <h4 className="font-medium truncate">{displayName}</h4>
+                            {profile.is_verified && (
+                              <Badge variant="secondary" className="text-xs">
+                                <Award className="h-3 w-3 mr-1" />
+                                Verified
+                              </Badge>
+                            )}
+                            <Badge className="text-xs bg-gradient-to-r from-orange-100 to-amber-100 text-orange-700">
+                              <Crown className="h-3 w-3 mr-1" />
+                              Featured
+                            </Badge>
+                          </div>
+                          
+                          <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                            {profile.rating && profile.rating > 0 && (
+                              <div className="flex items-center gap-1">
+                                <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
+                                <span>{profile.rating.toFixed(1)}</span>
+                              </div>
+                            )}
+                            {profile.total_sales && profile.total_sales > 0 && (
+                              <div className="flex items-center gap-1">
+                                <ShoppingBag className="h-3 w-3" />
+                                <span>{profile.total_sales} sales</span>
+                              </div>
+                            )}
+                            {location && (
+                              <div className="flex items-center gap-1">
+                                <MapPin className="h-3 w-3" />
+                                <span className="truncate">{location}</span>
+                              </div>
+                            )}
+                          </div>
                         </div>
                       </div>
-                    </div>
 
-                    <div className="flex items-center gap-2">
-                      <Input
-                        type="number"
-                        min="1"
-                        value={store.position}
-                        onChange={(e) => {
-                          const newPosition = parseInt(e.target.value) || 1;
-                          if (newPosition !== store.position) {
-                            updatePosition.mutate({ 
-                              storeId: store.id, 
-                              newPosition 
-                            });
-                          }
-                        }}
-                        className="w-20"
-                        disabled={updatePosition.isPending}
-                      />
-                      
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button variant="outline" size="sm">
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>Remove Featured Store</AlertDialogTitle>
-                            <AlertDialogDescription>
-                              Are you sure you want to remove "{displayName}" from the featured stores? This action cannot be undone.
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction
-                              onClick={() => removeFeaturedStore.mutate(store.id)}
-                              className="bg-destructive text-destructive-foreground"
+                      <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-2">
+                          <Label htmlFor={`position-${store.id}`} className="text-xs text-muted-foreground">
+                            Position
+                          </Label>
+                          <Input
+                            id={`position-${store.id}`}
+                            type="number"
+                            min="1"
+                            value={store.position}
+                            onChange={(e) => {
+                              const newPosition = parseInt(e.target.value);
+                              if (newPosition > 0) {
+                                updatePosition.mutate({ storeId: store.id, newPosition });
+                              }
+                            }}
+                            className="w-16 h-8 text-xs"
+                            disabled={updatePosition.isPending}
+                          />
+                        </div>
+
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button
+                              variant="destructive"
+                              size="sm"
+                              disabled={removeFeaturedStore.isPending}
                             >
-                              Remove
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Remove Featured Store</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                Are you sure you want to remove "{displayName}" from the featured stores? This action cannot be undone.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction
+                                onClick={() => removeFeaturedStore.mutate(store.id)}
+                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                              >
+                                Remove
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      </div>
                     </div>
-                  </div>
-                );
+                  );
+                }
+
+                // For distributor stores
+                if (distributorProfile) {
+                  const location = distributorProfile.city && distributorProfile.region 
+                    ? `${distributorProfile.city}, ${distributorProfile.region}` 
+                    : distributorProfile.region || distributorProfile.city;
+
+                  return (
+                    <div
+                      key={store.id}
+                      className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50"
+                    >
+                      <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-2">
+                          <Badge variant="outline" className="text-xs font-mono">
+                            #{store.position}
+                          </Badge>
+                        </div>
+
+                        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center text-white font-semibold ring-2 ring-emerald-200">
+                          {distributorProfile.name.charAt(0).toUpperCase()}
+                        </div>
+                        
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1">
+                            <h4 className="font-medium truncate">{distributorProfile.name}</h4>
+                            <Badge variant="secondary" className="text-xs">
+                              <ShoppingBag className="h-3 w-3 mr-1" />
+                              Distributor
+                            </Badge>
+                            <Badge className="text-xs bg-gradient-to-r from-orange-100 to-amber-100 text-orange-700">
+                              <Crown className="h-3 w-3 mr-1" />
+                              Featured
+                            </Badge>
+                          </div>
+                          
+                          <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                            <div className="flex items-center gap-1">
+                              <span className="font-medium">{distributorProfile.category}</span>
+                            </div>
+                            {location && (
+                              <div className="flex items-center gap-1">
+                                <MapPin className="h-3 w-3" />
+                                <span className="truncate">{location}</span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-2">
+                          <Label htmlFor={`position-${store.id}`} className="text-xs text-muted-foreground">
+                            Position
+                          </Label>
+                          <Input
+                            id={`position-${store.id}`}
+                            type="number"
+                            min="1"
+                            value={store.position}
+                            onChange={(e) => {
+                              const newPosition = parseInt(e.target.value);
+                              if (newPosition > 0) {
+                                updatePosition.mutate({ storeId: store.id, newPosition });
+                              }
+                            }}
+                            className="w-16 h-8 text-xs"
+                            disabled={updatePosition.isPending}
+                          />
+                        </div>
+
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button
+                              variant="destructive"
+                              size="sm"
+                              disabled={removeFeaturedStore.isPending}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Remove Featured Store</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                Are you sure you want to remove "{distributorProfile.name}" from the featured stores? This action cannot be undone.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction
+                                onClick={() => removeFeaturedStore.mutate(store.id)}
+                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                              >
+                                Remove
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      </div>
+                    </div>
+                  );
+                }
+
+                return null;
               })}
             </div>
           )}

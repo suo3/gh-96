@@ -345,6 +345,7 @@ export type Database = {
       featured_sellers: {
         Row: {
           created_at: string
+          distributor_id: string | null
           id: string
           is_active: boolean
           position: number
@@ -353,6 +354,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          distributor_id?: string | null
           id?: string
           is_active?: boolean
           position?: number
@@ -361,6 +363,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          distributor_id?: string | null
           id?: string
           is_active?: boolean
           position?: number
@@ -368,6 +371,13 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "featured_sellers_distributor_id_fkey"
+            columns: ["distributor_id"]
+            isOneToOne: false
+            referencedRelation: "distributor_profiles"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "featured_sellers_user_id_fkey"
             columns: ["user_id"]
