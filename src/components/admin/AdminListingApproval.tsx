@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Clock, Eye, Check, X } from "lucide-react";
+import { Clock, Eye, Check, X, Trash } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface PendingListing {
@@ -123,6 +123,35 @@ export const AdminListingApproval = () => {
     }
   };
 
+  const deleteListing = async (listingId: string) => {
+    try {
+      const confirmDelete = window.confirm("Are you sure you want to permanently delete this listing?");
+      if (!confirmDelete) return;
+
+      const { data, error } = await supabase.functions.invoke('admin-delete-listing', {
+        body: { listingId },
+      });
+
+      if (error) {
+        console.error('Function delete error:', error);
+        throw error;
+      }
+
+      toast({
+        title: "Deleted",
+        description: "Listing deleted successfully.",
+      });
+      fetchPendingListings();
+    } catch (error: any) {
+      console.error('Error deleting listing:', error);
+      toast({
+        title: "Error",
+        description: `Failed to delete listing: ${error.message || error}`,
+        variant: "destructive",
+      });
+    }
+  };
+
   const filteredListings = listings.filter(listing => {
     const matchesStatus = statusFilter === "all" || listing.status === statusFilter;
     const matchesSearch = listing.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -131,7 +160,6 @@ export const AdminListingApproval = () => {
 
     return matchesStatus && matchesSearch;
   });
-
   if (loading) {
     return (
       <Card>
@@ -260,6 +288,14 @@ export const AdminListingApproval = () => {
                             Reactivate
                           </Button>
                         )}
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => deleteListing(listing.id)}
+                        >
+                          <Trash className="w-4 h-4 mr-1" />
+                          Delete
+                        </Button>
                       </div>
                     </TableCell>
                   </TableRow>

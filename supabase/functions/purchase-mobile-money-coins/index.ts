@@ -199,10 +199,11 @@ serve(async (req) => {
       status: 200,
     });
 
-  } catch (error) {
+  } catch (error: unknown) {
     console.error("Error in purchase-mobile-money-coins function:", error);
+    const message = error instanceof Error ? error.message : String(error);
     return new Response(JSON.stringify({ 
-      error: error.message,
+      error: message,
       success: false
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
