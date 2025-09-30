@@ -54,12 +54,40 @@ export const AdminBulkImport = () => {
 "Toy Building Blocks","Educational building blocks set for creative play.",150,"Baby & Kids","New","Accra","https://images.unsplash.com/photo-1558877385-bc7c71e40c23?w=400","Other Toys, Cash"
 "High Chair Baby","Adjustable high chair for feeding time. Easy to clean.",320,"Baby & Kids","Used - Good","Tema","https://images.unsplash.com/photo-1586024408152-5b96006f2518?w=400","Booster Seat, Cash"`;
 
-  const loadSampleData = () => {
-    setCsvData(sampleData);
-    toast({
-      title: "Sample Data Loaded",
-      description: "Ghana marketplace sample data has been loaded. You can edit it before importing.",
-    });
+  const loadSampleData = async () => {
+    try {
+      const { data: categories, error } = await supabase
+        .from('categories')
+        .select('name')
+        .order('name');
+      if (error) throw error;
+
+      const conditions = ["New", "Used - Like New", "Used - Good"];
+      const locations = ["Accra", "Kumasi", "Tema", "Takoradi", "Cape Coast"];
+      const header = 'title,description,price,category,condition,location,images,wanted_items';
+      const lines: string[] = [header];
+
+      (categories || []).forEach((c: { name: string }, idx: number) => {
+        const category = c.name;
+        for (let i = 1; i <= 6; i++) {
+          const title = `Sample ${category} Item ${i}`;
+          const desc = `High-quality ${category.toLowerCase()} sample item ${i} for Ghana marketplace.`;
+          const price = 100 + i * 10 + idx;
+          const condition = conditions[i % conditions.length];
+          const location = locations[(i + idx) % locations.length];
+          const image = 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400';
+          const wanted = 'Cash';
+          lines.push(`"${title}","${desc}",${price},"${category}","${condition}","${location}","${image}","${wanted}"`);
+        }
+      });
+
+      const csv = lines.join('\n');
+      setCsvData(csv);
+      toast({ title: 'Sample Data Loaded', description: 'Generated 6+ items per category.' });
+    } catch (e) {
+      console.error('Error generating sample CSV:', e);
+      toast({ title: 'Failed to load sample data', description: 'Could not generate sample dataset.', variant: 'destructive' });
+    }
   };
 
   const parseCsvData = () => {
@@ -110,43 +138,27 @@ export const AdminBulkImport = () => {
     }
   };
 
-  const createSampleUsers = async () => {
-    // Create or get the KentaKart user
-    const kentaKartUser = {
-      id: 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
-      first_name: 'KentaKart',
-      last_name: 'Marketplace',
-      username: 'KentaKart',
-      location: 'Accra, Ghana',
-      region: 'Greater Accra',
-      city: 'Accra',
-      bio: 'Premium marketplace offering quality products across Ghana',
-      rating: 4.9,
-      total_sales: 150,
-      is_verified: true
-    };
-
-    try {
-      console.log('Attempting to create/update KentaKart user:', kentaKartUser);
-      
-      const { error } = await supabase
-        .from('profiles')
-        .upsert(kentaKartUser, { onConflict: 'id' });
-      
-      if (error) {
-        console.error('KentaKart user creation error:', error);
-        throw error;
+  const ensureMinPerCategory = (items: BulkProduct[], min = 6): BulkProduct[] => {
+    const map = new Map<string, BulkProduct[]>();
+    items.forEach((p) => {
+      const arr = map.get(p.category) || [];
+      arr.push(p);
+      map.set(p.category, arr);
+    });
+    const result: BulkProduct[] = [];
+    map.forEach((arr) => {
+      const needed = Math.max(0, min - arr.length);
+      for (let i = 0; i < needed; i++) {
+        const base = arr[i % arr.length];
+        result.push({
+          ...base,
+          title: `${base.title} (Sample ${i + 1})`,
+          price: Math.max(0, (base.price || 0) + (i + 1) * 5),
+        });
       }
-      
-      console.log('KentaKart user created/updated successfully');
-      return [kentaKartUser.id];
-    } catch (error) {
-      console.error('Error creating KentaKart user:', error);
-      // Fallback to current user if KentaKart user creation fails
-      const fallbackId = user?.id;
-      console.log('Using fallback user ID:', fallbackId);
-      return fallbackId ? [fallbackId] : [];
-    }
+      result.push(...arr);
+    });
+    return result;
   };
 
   const importProducts = async () => {
@@ -162,57 +174,25 @@ export const AdminBulkImport = () => {
     setLoading(true);
 
     try {
-      console.log('Starting import process...');
-      
-      // First, create sample user profiles for the products if they don't exist
-      console.log('Creating KentaKart user...');
-      const sampleUserIds = await createSampleUsers();
-      console.log('KentaKart user created/found:', sampleUserIds);
-      
-      if (sampleUserIds.length === 0) {
-        throw new Error('No valid user ID available for import');
-      }
-      
-      // Convert products to database format
-      const listingsData = products.map((product, index) => ({
-        title: product.title,
-        description: product.description,
-        price: product.price,
-        category: product.category,
-        condition: product.condition,
-        location: product.location,
-        images: product.images,
-        wanted_items: product.wanted_items,
-        user_id: sampleUserIds[0], // All products uploaded by KentaKart
-        status: 'active'
-      }));
+      const expanded = ensureMinPerCategory(products, 6);
+      const { data, error } = await supabase.functions.invoke('admin-bulk-import-listings', {
+        body: { products: expanded },
+      });
 
-      console.log('Prepared listings data:', listingsData.length, 'items');
-      console.log('Sample listing:', listingsData[0]);
-
-      const { data, error } = await supabase
-        .from('listings')
-        .insert(listingsData);
-
-      if (error) {
-        console.error('Database insertion error:', error);
-        throw error;
-      }
-
-      console.log('Database insertion successful:', data);
+      if (error) throw error;
 
       toast({
         title: "Import Successful",
-        description: `${products.length} products have been imported successfully.`,
+        description: `${expanded.length} products imported as KentaKart.`,
       });
 
       setProducts([]);
       setCsvData("");
-    } catch (error) {
-      console.error('Error importing products:', error);
+    } catch (error: any) {
+      console.error('Import error:', error);
       toast({
         title: "Import Failed",
-        description: `Failed to import products: ${error.message || 'Unknown error'}`,
+        description: error?.message || 'Failed to import products.',
         variant: "destructive",
       });
     } finally {
