@@ -96,12 +96,17 @@ export const AdminListingApproval = () => {
 
   const updateListingStatus = async (listingId: string, status: string) => {
     try {
+      console.log('Attempting to update listing:', listingId, 'to status:', status);
+      
       const { error } = await supabase
         .from('listings')
         .update({ status })
         .eq('id', listingId);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase error:', error);
+        throw error;
+      }
 
       toast({
         title: "Success",
@@ -112,7 +117,7 @@ export const AdminListingApproval = () => {
       console.error('Error updating listing:', error);
       toast({
         title: "Error",
-        description: "Failed to update listing",
+        description: `Failed to update listing: ${error.message || error}`,
         variant: "destructive",
       });
     }
