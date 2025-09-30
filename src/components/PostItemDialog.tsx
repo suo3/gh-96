@@ -106,6 +106,7 @@ export const PostItemDialog = ({ open, onOpenChange }: PostItemDialogProps) => {
       price: "",
       location: "",
       wantedItems: "",
+      whatsappNumber: "",
       images: [],
     },
   });
@@ -162,9 +163,22 @@ export const PostItemDialog = ({ open, onOpenChange }: PostItemDialogProps) => {
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     console.log('Form submitted with values:', values);
+    console.log('Form validation errors:', form.formState.errors);
     setIsPending(true);
     
     try {
+      console.log('About to call addListing with:', {
+        title: values.title,
+        description: values.description,
+        category: values.category,
+        condition: values.condition,
+        price: values.price ? parseFloat(values.price) : undefined,
+        location: values.location,
+        wanted_items: values.wantedItems ? [values.wantedItems] : [],
+        images: values.images || [],
+        whatsapp_number: values.whatsappNumber
+      });
+      
       await addListing({
         title: values.title,
         description: values.description,
@@ -177,6 +191,8 @@ export const PostItemDialog = ({ open, onOpenChange }: PostItemDialogProps) => {
         whatsapp_number: values.whatsappNumber
       });
 
+      console.log('addListing completed successfully');
+
       toast({
         title: "Item Posted!",
         description: "Your item has been successfully posted to the marketplace.",
@@ -185,6 +201,12 @@ export const PostItemDialog = ({ open, onOpenChange }: PostItemDialogProps) => {
       onOpenChange(false);
     } catch (error: any) {
       console.error('Error posting item:', error);
+      console.error('Error details:', {
+        message: error?.message,
+        code: error?.code,
+        details: error?.details,
+        hint: error?.hint
+      });
       
       // Handle specific error cases
       if (error?.message?.includes('can_create_listing')) {
@@ -225,7 +247,12 @@ export const PostItemDialog = ({ open, onOpenChange }: PostItemDialogProps) => {
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <form onSubmit={(e) => {
+            console.log('Form submit event triggered');
+            console.log('Form is valid:', form.formState.isValid);
+            console.log('Form errors:', form.formState.errors);
+            form.handleSubmit(onSubmit)(e);
+          }} className="space-y-4">
             <FormField
               control={form.control}
               name="title"
@@ -431,7 +458,16 @@ export const PostItemDialog = ({ open, onOpenChange }: PostItemDialogProps) => {
             />
             
             <DialogFooter>
-              <Button type="submit" disabled={isPending || isLoadingOptions}>
+              <Button 
+                type="submit" 
+                disabled={isPending || isLoadingOptions}
+                onClick={() => {
+                  console.log('Submit button clicked');
+                  console.log('isPending:', isPending);
+                  console.log('isLoadingOptions:', isLoadingOptions);
+                  console.log('Form valid:', form.formState.isValid);
+                }}
+              >
                 {isPending ? "Posting..." : "Post Item"}
               </Button>
             </DialogFooter>
