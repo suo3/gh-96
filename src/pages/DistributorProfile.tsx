@@ -142,7 +142,7 @@ const DistributorProfile = () => {
         <AppHeader 
           userLocation={null}
           onLocationDetect={() => {}}
-          onPostItem={() => navigate('/post-item')}
+          onPostItem={() => navigate('/post')}
           onLogoClick={() => navigate('/')}
         />
         <div className="min-h-screen bg-background flex items-center justify-center">
@@ -162,7 +162,7 @@ const DistributorProfile = () => {
         <AppHeader 
           userLocation={null}
           onLocationDetect={() => {}}
-          onPostItem={() => navigate('/post-item')}
+          onPostItem={() => navigate('/post')}
           onLogoClick={() => navigate('/')}
         />
         <div className="min-h-screen bg-background flex items-center justify-center">
@@ -192,7 +192,7 @@ const DistributorProfile = () => {
         <AppHeader 
           userLocation={null}
           onLocationDetect={() => {}}
-          onPostItem={() => navigate('/post-item')}
+          onPostItem={() => navigate('/post')}
           onLogoClick={() => navigate('/')}
         />
 

@@ -87,7 +87,7 @@ const DistributorsPage = () => {
         <AppHeader 
           userLocation={null}
           onLocationDetect={() => {}}
-          onPostItem={() => navigate('/post-item')}
+          onPostItem={() => navigate('/post')}
           onLogoClick={() => navigate('/')}
         />
 

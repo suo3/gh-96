@@ -10,16 +10,16 @@ const PostItem = () => {
   const [isOpen, setIsOpen] = useState(true);
 
   useEffect(() => {
-    // If dialog is closed, navigate back
+    // If dialog is closed, go to marketplace
     if (!isOpen) {
-      navigate(-1);
+      navigate('/marketplace');
     }
   }, [isOpen, navigate]);
 
   const handleOpenChange = (open: boolean) => {
     setIsOpen(open);
     if (!open) {
-      navigate(-1);
+      navigate('/marketplace');
     }
   };
 

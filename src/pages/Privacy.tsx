@@ -70,7 +70,7 @@ export default function Privacy() {
         <AppHeader 
           userLocation={null}
           onLocationDetect={() => {}}
-          onPostItem={() => navigate('/post-item')}
+          onPostItem={() => navigate('/post')}
           onLogoClick={() => navigate('/')}
         />
         <div className="container mx-auto px-4 py-16">

@@ -19,7 +19,7 @@ const NotFound = () => {
       <AppHeader 
         userLocation={null}
         onLocationDetect={() => {}}
-        onPostItem={() => navigate('/post-item')}
+        onPostItem={() => navigate('/post')}
         onLogoClick={() => navigate('/')}
       />
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-50 via-white to-teal-50 p-4 pt-24">
