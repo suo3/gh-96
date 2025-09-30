@@ -27,6 +27,7 @@ export const useIndexLogic = () => {
   const [userLocation, setUserLocation] = useState<Location | null>(null);
   const [showHeroSection, setShowHeroSection] = useState(true);
   const [hasUserInteracted, setHasUserInteracted] = useState(false);
+  const [showPostItemDialog, setShowPostItemDialog] = useState(false);
   
   const { totalUnreadCount, fetchConversations } = useMessageStore();
   const { isAuthenticated, canCreateListing, canMakeSale, user } = useAuthStore();
@@ -214,7 +215,7 @@ export const useIndexLogic = () => {
       return;
     }
 
-    navigate("/post");
+    setShowPostItemDialog(true);
   };
 
   const handleLogoClick = () => {
@@ -239,11 +240,13 @@ export const useIndexLogic = () => {
     isMobile,
     showHeroSection,
     hasUserInteracted,
+    showPostItemDialog,
     
     // Setters
     setDisplayMode,
     setShowLoginDialog,
     setShowFilters,
+    setShowPostItemDialog,
     
     // Handlers
     handleLocationSet,

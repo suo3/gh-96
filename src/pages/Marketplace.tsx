@@ -1,5 +1,6 @@
 import { AppHeader } from "@/components/AppHeader";
 import { ContentControls } from "@/components/ContentControls";
+import { PostItemDialog } from "@/components/PostItemDialog";
 
 import { BrowseMode } from "@/components/BrowseMode";
 import { FilterPanel } from "@/components/FilterPanel";
@@ -23,9 +24,11 @@ const Marketplace = () => {
     userLocation,
     filteredListings,
     isMobile,
+    showPostItemDialog,
     setDisplayMode,
     setShowLoginDialog,
     setShowFilters,
+    setShowPostItemDialog,
     handleLocationSet,
     handleManualLocationEntry,
     handleLocationPromptDismiss,
@@ -131,6 +134,11 @@ const Marketplace = () => {
           <LoginDialog
             open={showLoginDialog}
             onOpenChange={setShowLoginDialog}
+          />
+
+          <PostItemDialog
+            open={showPostItemDialog}
+            onOpenChange={setShowPostItemDialog}
           />
           
           {/* Footer */}
@@ -241,6 +249,11 @@ const Marketplace = () => {
               <LoginDialog
                 open={showLoginDialog}
                 onOpenChange={setShowLoginDialog}
+              />
+
+              <PostItemDialog
+                open={showPostItemDialog}
+                onOpenChange={setShowPostItemDialog}
               />
               
               {/* Footer */}

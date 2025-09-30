@@ -8,7 +8,7 @@ export default function SellerOnboarding() {
   const navigate = useNavigate();
 
   const handleLogoClick = () => navigate("/");
-  const handlePostItem = () => navigate("/post");
+  const handlePostItem = () => {};
   const handleLocationDetect = () => {};
 
   return (

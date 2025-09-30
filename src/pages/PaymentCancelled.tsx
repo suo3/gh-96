@@ -13,7 +13,7 @@ export const PaymentCancelled = () => {
       <AppHeader 
         userLocation={null}
         onLocationDetect={() => {}}
-        onPostItem={() => navigate('/post')}
+        onPostItem={() => {}}
         onLogoClick={() => navigate('/')}
       />
       <div className="flex items-center justify-center p-4 pt-24">

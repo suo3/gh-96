@@ -14,7 +14,7 @@ import Index from "./pages/Index";
 import Marketplace from "./pages/Marketplace";
 import Messages from "./pages/Messages";
 import Profile from "./pages/Profile";
-import PostItem from "./pages/PostItem";
+
 import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
 import ItemDetail from "./pages/ItemDetail";
@@ -82,7 +82,7 @@ const App = () => {
               <Route path="/marketplace" element={<Marketplace />} />
               <Route path="/messages" element={<Messages />} />
               <Route path="/profile" element={<Profile />} />
-              <Route path="/post" element={<PostItem />} />
+              
               <Route path="/admin" element={<Admin />} />
               <Route path="/item/:id" element={<ItemDetail />} />
               <Route path="/favorites" element={<Favorites />} />
