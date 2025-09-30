@@ -166,29 +166,60 @@ export const AdminBulkImport = () => {
     }
 
     try {
-      const lines = csvData.trim().split('\n');
-      const headers = lines[0].split(',').map(h => h.replace(/"/g, '').trim());
-      
+      const rawLines = csvData.trim().split('\n').filter(l => l.trim().length > 0);
+
+      // Robust CSV line parser to handle quoted fields and commas
+      const parseCsvLine = (line: string): string[] => {
+        const result: string[] = [];
+        let current = '';
+        let inQuotes = false;
+        for (let i = 0; i < line.length; i++) {
+          const char = line[i];
+          if (char === '"') {
+            if (inQuotes && line[i + 1] === '"') {
+              // Escaped quote
+              current += '"';
+              i++;
+            } else {
+              inQuotes = !inQuotes;
+            }
+          } else if (char === ',' && !inQuotes) {
+            result.push(current);
+            current = '';
+          } else {
+            current += char;
+          }
+        }
+        result.push(current);
+        return result.map(v => v.trim().replace(/^"|"$/g, ''));
+      };
+
+      if (rawLines.length === 0) {
+        throw new Error('No CSV lines');
+      }
+
+      const headers = parseCsvLine(rawLines[0]).map(h => h.replace(/"/g, '').trim());
       const parsedProducts: BulkProduct[] = [];
-      
-      for (let i = 1; i < lines.length; i++) {
-        const values = lines[i].split('","').map(v => v.replace(/"/g, '').trim());
-        
+
+      for (let i = 1; i < rawLines.length; i++) {
+        const values = parseCsvLine(rawLines[i]);
         if (values.length >= 6) {
+          const imageField = values[6] || '';
+          const wantedField = values[7] || '';
           const product: BulkProduct = {
-            title: values[0],
-            description: values[1],
+            title: values[0] || '',
+            description: values[1] || '',
             price: parseFloat(values[2]) || 0,
-            category: values[3],
-            condition: values[4],
-            location: values[5],
-            images: values[6] ? [values[6]] : ["https://images.unsplash.com/photo-1649972904349-6e44c42644a7?w=400"],
-            wanted_items: values[7] ? values[7].split(',').map(item => item.trim()) : []
+            category: values[3] || '',
+            condition: values[4] || '',
+            location: values[5] || '',
+            images: imageField ? [imageField] : ["https://images.unsplash.com/photo-1649972904349-6e44c42644a7?w=400"],
+            wanted_items: wantedField ? wantedField.split(',').map(item => item.trim()).filter(Boolean) : []
           };
           parsedProducts.push(product);
         }
       }
-      
+
       setProducts(parsedProducts);
       toast({
         title: "CSV Parsed Successfully",
