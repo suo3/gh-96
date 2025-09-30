@@ -37,9 +37,11 @@ serve(async (req) => {
 
     const token = authHeader.replace("Bearer ", "");
     const url = Deno.env.get("SUPABASE_URL") ?? "";
+    const anon = Deno.env.get("SUPABASE_ANON_KEY") ?? "";
+    const service = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
 
     // Client with user's JWT (for is_admin() check)
-    const supabaseAuth = createClient(url, Deno.env.get("SUPABASE_ANON_KEY") ?? "", {
+    const supabaseAuth = createClient(url, anon, {
       global: { headers: { Authorization: `Bearer ${token}` } },
     });
 
@@ -69,11 +71,12 @@ serve(async (req) => {
     }
 
     // Service role client to bypass RLS after admin check
-    const supabaseService = createClient(url, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "", {
-      auth: { persistSession: false },
-    });
+    const supabaseService = createClient(url, service, { auth: { persistSession: false } });
 
-    // Ensure KentaKart profile exists
+    // Ensure KentaKart auth user + profile exists
+    let kentaId: string | undefined;
+
+    // Try to find existing profile
     const { data: existingProfile, error: profileFetchError } = await supabaseService
       .from("profiles")
       .select("id")
@@ -88,10 +91,32 @@ serve(async (req) => {
       });
     }
 
-    let kentaId = existingProfile?.id as string | undefined;
+    if (existingProfile?.id) {
+      kentaId = existingProfile.id as string;
+    } else {
+      // Create an auth user using admin API
+      const email = `kenta+${Date.now()}@example.com`;
+      const { data: adminUser, error: createUserError } = await supabaseService.auth.admin.createUser({
+        email,
+        email_confirm: true,
+        user_metadata: {
+          first_name: "KentaKart",
+          last_name: "Marketplace",
+          username: "KentaKart",
+        },
+      });
 
-    if (!kentaId) {
-      kentaId = crypto.randomUUID();
+      if (createUserError || !adminUser?.user?.id) {
+        console.error("Create auth user error:", createUserError);
+        return new Response(JSON.stringify({ error: "Failed to create KentaKart user" }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 500,
+        });
+      }
+
+      kentaId = adminUser.user.id;
+
+      // Create profile row for the new user
       const { error: createProfileError } = await supabaseService.from("profiles").insert({
         id: kentaId,
         username: "KentaKart",
@@ -123,7 +148,7 @@ serve(async (req) => {
         "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400",
       ],
       wanted_items: Array.isArray(p.wanted_items) ? p.wanted_items : ["Cash"],
-      user_id: kentaId,
+      user_id: kentaId!,
       status: "active",
     }));
 
