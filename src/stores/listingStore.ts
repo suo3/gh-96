@@ -13,6 +13,7 @@ export interface Listing {
   location: string;
   images: string[];
   wanted_items: string[];
+  whatsapp_number?: string;
   user_id?: string;
   created_at?: string;
   updated_at?: string;
@@ -250,6 +251,9 @@ export const useListingStore = create<ListingStore>((set, get) => ({
       }
       if (updatedListing.wanted_items !== undefined) {
         updatePayload.wanted_items = updatedListing.wanted_items;
+      }
+      if (updatedListing.whatsapp_number !== undefined) {
+        updatePayload.whatsapp_number = updatedListing.whatsapp_number;
       }
       
       console.log('UpdateListing payload:', updatePayload);

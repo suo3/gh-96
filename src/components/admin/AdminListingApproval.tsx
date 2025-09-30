@@ -20,6 +20,7 @@ interface PendingListing {
   created_at: string;
   description: string;
   images: string[];
+  whatsapp_number?: string;
 }
 
 export const AdminListingApproval = () => {
@@ -77,7 +78,8 @@ export const AdminListingApproval = () => {
           status: listing.status,
           created_at: listing.created_at,
           description: listing.description || '',
-          images: listing.images || []
+          images: listing.images || [],
+          whatsapp_number: listing.whatsapp_number
         };
       });
 
@@ -178,6 +180,7 @@ export const AdminListingApproval = () => {
                   <TableHead>User</TableHead>
                   <TableHead>Category</TableHead>
                   <TableHead>Condition</TableHead>
+                  <TableHead>WhatsApp</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Date</TableHead>
                   <TableHead>Actions</TableHead>
@@ -199,6 +202,9 @@ export const AdminListingApproval = () => {
                     <TableCell>@{listing.user_username}</TableCell>
                     <TableCell>{listing.category}</TableCell>
                     <TableCell>{listing.condition}</TableCell>
+                    <TableCell>
+                      {listing.whatsapp_number || '-'}
+                    </TableCell>
                     <TableCell>
                       <Badge 
                         variant={

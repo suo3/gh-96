@@ -74,7 +74,8 @@ export const ItemDetailModal = ({
   };
 
   const openWhatsApp = () => {
-    const phoneNumber = item.profiles?.phone_number;
+    // Prioritize item's WhatsApp number, then fall back to profile phone number
+    const phoneNumber = item.whatsapp_number || item.profiles?.phone_number;
     if (!phoneNumber) return;
     
     const formattedPhone = formatPhoneForWhatsApp(phoneNumber);
@@ -249,8 +250,8 @@ export const ItemDetailModal = ({
               {/* Action Buttons */}
               <div className="space-y-3">
                 <div className="flex flex-col sm:flex-row gap-3">
-                  {/* WhatsApp contact button - only show if seller has phone number */}
-                  {item.profiles?.phone_number && (
+                  {/* WhatsApp contact button - show if item has WhatsApp number or seller has phone number */}
+                  {(item.whatsapp_number || item.profiles?.phone_number) && (
                     <Button
                       onClick={openWhatsApp}
                       className="flex-1 bg-green-500 hover:bg-green-600 text-white"

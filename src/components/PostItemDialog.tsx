@@ -57,6 +57,10 @@ const formSchema = z.object({
     message: "Location must be at least 2 characters.",
   }),
   wantedItems: z.string().optional(),
+  whatsappNumber: z.string().optional().refine(
+    (val) => !val || /^\+233\d{9}$/.test(val.replace(/\s/g, '')), 
+    { message: 'WhatsApp number must be in format +233XXXXXXXXX' }
+  ),
   images: z.array(z.string()).max(4, {
     message: "You can upload up to 4 images.",
   }).optional(),
@@ -169,7 +173,8 @@ export const PostItemDialog = ({ open, onOpenChange }: PostItemDialogProps) => {
         price: values.price ? parseFloat(values.price) : undefined,
         location: values.location,
         wanted_items: values.wantedItems ? [values.wantedItems] : [],
-        images: values.images || []
+        images: values.images || [],
+        whatsapp_number: values.whatsappNumber
       });
 
       toast({
@@ -403,6 +408,23 @@ export const PostItemDialog = ({ open, onOpenChange }: PostItemDialogProps) => {
                   <FormControl>
                     <Input placeholder="List items you would like to swap for" {...field} />
                   </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <FormField
+              control={form.control}
+              name="whatsappNumber"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>WhatsApp Number (Optional)</FormLabel>
+                  <FormControl>
+                    <Input placeholder="+233XXXXXXXXX" {...field} />
+                  </FormControl>
+                  <FormDescription>
+                    Provide your WhatsApp number for direct contact from buyers
+                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
