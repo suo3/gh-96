@@ -31,6 +31,13 @@ serve(async (req) => {
       Deno.env.get("SUPABASE_ANON_KEY") ?? ""
     );
 
+    // Authenticated client with user's JWT for policies/rpc (auth.uid())
+    const supabaseAuth = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_ANON_KEY") ?? "",
+      { global: { headers: { Authorization: `Bearer ${token}` } } }
+    );
+
     // Validate user session
     const { data: userData, error: userError } = await supabaseClient.auth.getUser(token);
     if (userError || !userData.user) {
@@ -41,8 +48,16 @@ serve(async (req) => {
     }
 
     // Ensure requester is admin
-    const { data: isAdmin, error: adminError } = await supabaseClient.rpc("is_admin");
-    if (adminError || !isAdmin) {
+    const { data: isAdmin, error: adminError } = await supabaseAuth.rpc("is_admin");
+    console.log("admin-delete-listing is_admin:", isAdmin, adminError);
+    if (adminError) {
+      console.error("is_admin RPC error:", adminError);
+      return new Response(JSON.stringify({ error: "Admin check failed" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 500,
+      });
+    }
+    if (!isAdmin) {
       return new Response(JSON.stringify({ error: "Forbidden" }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 403,
