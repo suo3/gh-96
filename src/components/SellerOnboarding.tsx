@@ -101,7 +101,7 @@ export const SellerOnboarding = () => {
       title: 'Post Your First Item',
       description: 'Create your first listing to start selling on the marketplace',
       completed: listings.length > 0,
-      action: () => navigate('/post-item'),
+      action: () => navigate('/post'),
       icon: Package
     }
   ];

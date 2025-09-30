@@ -40,10 +40,6 @@ export const listingSchema = z.object({
   price: z.number().min(0, 'Price must be positive').max(100000, 'Price must be less than $100,000').optional(),
   estimatedValue: z.number().min(0, 'Value must be positive').max(10000, 'Value must be less than $10,000'),
   location: z.string().min(1, 'Location is required').max(100, 'Location must be less than 100 characters'),
-  whatsappNumber: z.string().optional().refine(
-    (val) => !val || /^\+233\d{9}$/.test(val.replace(/\s/g, '')), 
-    { message: 'WhatsApp number must be in format +233XXXXXXXXX' }
-  ),
 });
 
 // Message validation schema

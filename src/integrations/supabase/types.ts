@@ -511,7 +511,6 @@ export type Database = {
           user_id: string | null
           views: number | null
           wanted_items: string[] | null
-          whatsapp_number: string | null
         }
         Insert: {
           category: string
@@ -529,7 +528,6 @@ export type Database = {
           user_id?: string | null
           views?: number | null
           wanted_items?: string[] | null
-          whatsapp_number?: string | null
         }
         Update: {
           category?: string
@@ -547,7 +545,6 @@ export type Database = {
           user_id?: string | null
           views?: number | null
           wanted_items?: string[] | null
-          whatsapp_number?: string | null
         }
         Relationships: [
           {

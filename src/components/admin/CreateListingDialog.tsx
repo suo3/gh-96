@@ -25,8 +25,7 @@ export const CreateListingDialog = ({ userId, onListingCreated }: CreateListingD
     condition: '',
     price: 0,
     location: '',
-    wantedItems: '',
-    whatsappNumber: ''
+    wantedItems: ''
   });
 
   const categories = [
@@ -63,7 +62,6 @@ export const CreateListingDialog = ({ userId, onListingCreated }: CreateListingD
           price: formData.price || null,
           location: formData.location,
           wanted_items: wantedItemsArray,
-          whatsapp_number: formData.whatsappNumber || null,
           status: 'active'
         });
 
@@ -78,8 +76,7 @@ export const CreateListingDialog = ({ userId, onListingCreated }: CreateListingD
         condition: '',
         price: 0,
         location: '',
-        wantedItems: '',
-        whatsappNumber: ''
+        wantedItems: ''
       });
       onListingCreated();
     } catch (error: any) {
@@ -198,16 +195,6 @@ export const CreateListingDialog = ({ userId, onListingCreated }: CreateListingD
               value={formData.wantedItems}
               onChange={(e) => setFormData(prev => ({ ...prev, wantedItems: e.target.value }))}
               rows={2}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="whatsappNumber">WhatsApp Number</Label>
-            <Input
-              id="whatsappNumber"
-              placeholder="+233XXXXXXXXX"
-              value={formData.whatsappNumber}
-              onChange={(e) => setFormData(prev => ({ ...prev, whatsappNumber: e.target.value }))}
             />
           </div>
 

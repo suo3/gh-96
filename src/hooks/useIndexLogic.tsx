@@ -214,7 +214,7 @@ export const useIndexLogic = () => {
       return;
     }
 
-    navigate("/post-item");
+    navigate("/post");
   };
 
   const handleLogoClick = () => {
