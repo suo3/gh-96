@@ -116,23 +116,39 @@ serve(async (req) => {
 
       kentaId = adminUser.user.id;
 
-      // Create profile row for the new user
-      const { error: createProfileError } = await supabaseService.from("profiles").insert({
-        id: kentaId,
-        username: "KentaKart",
-        first_name: "KentaKart",
-        last_name: "Marketplace",
-        region: "Greater Accra",
-        city: "Accra",
-        is_verified: true,
-        coins: 50,
-      });
-      if (createProfileError) {
-        console.error("Create profile error:", createProfileError);
-        return new Response(JSON.stringify({ error: "Failed to create KentaKart profile" }), {
+      // After creating auth user, ensure profile exists (avoid duplicate if trigger already inserted)
+      const { data: profileById, error: profileByIdError } = await supabaseService
+        .from("profiles")
+        .select("id")
+        .eq("id", kentaId)
+        .maybeSingle();
+
+      if (profileByIdError) {
+        console.error("Profile check by id error:", profileByIdError);
+        return new Response(JSON.stringify({ error: "Failed to verify KentaKart profile" }), {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
           status: 500,
         });
+      }
+
+      if (!profileById?.id) {
+        const { error: createProfileError } = await supabaseService.from("profiles").insert({
+          id: kentaId,
+          username: "KentaKart",
+          first_name: "KentaKart",
+          last_name: "Marketplace",
+          region: "Greater Accra",
+          city: "Accra",
+          is_verified: true,
+          coins: 50,
+        });
+        if (createProfileError && (createProfileError as any).code !== "23505") {
+          console.error("Create profile error:", createProfileError);
+          return new Response(JSON.stringify({ error: "Failed to create KentaKart profile" }), {
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+            status: 500,
+          });
+        }
       }
     }
 
