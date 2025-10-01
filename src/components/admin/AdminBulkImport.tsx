@@ -65,8 +65,65 @@ export const AdminBulkImport = () => {
       const conditions = ["New", "Used - Like New", "Used - Good"];
       const locations = ["Accra", "Kumasi", "Tema", "Takoradi", "Cape Coast"];
       
-      // Build a unique, category-relevant image using Unsplash Source with a stable seed
-      const imageFor = (cat: string, seed: number) => `https://source.unsplash.com/featured/800x600?${encodeURIComponent(cat)},product,marketplace&sig=${seed}`;
+      // Unique product images by category (real Unsplash photo IDs)
+      const productImages: Record<string, string[]> = {
+        'Electronics': [
+          'https://images.unsplash.com/photo-1592750475338-74b7b21085ab?w=600',
+          'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=600',
+          'https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?w=600',
+          'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600',
+          'https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=600'
+        ],
+        'Appliances': [
+          'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600',
+          'https://images.unsplash.com/photo-1571175443880-49e1d25b2bc5?w=600',
+          'https://images.unsplash.com/photo-1574269909862-7e1d70bb8078?w=600',
+          'https://images.unsplash.com/photo-1585659722983-3a675dabf23d?w=600',
+          'https://images.unsplash.com/photo-1570222094114-d054a817e56b?w=600'
+        ],
+        'Automotive': [
+          'https://images.unsplash.com/photo-1549924231-f129b911e442?w=600',
+          'https://images.unsplash.com/photo-1606664515524-ed2f786a0bd6?w=600',
+          'https://images.unsplash.com/photo-1552519507-da3b142c6e3d?w=600',
+          'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?w=600',
+          'https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=600'
+        ],
+        'Fashion & Beauty': [
+          'https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=600',
+          'https://images.unsplash.com/photo-1551028719-00167b16eac5?w=600',
+          'https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=600',
+          'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600',
+          'https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=600'
+        ],
+        'Baby & Kids': [
+          'https://images.unsplash.com/photo-1544717302-de2939b7ef71?w=600',
+          'https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?w=600',
+          'https://images.unsplash.com/photo-1560343787-b90cb337028e?w=600',
+          'https://images.unsplash.com/photo-1558877385-bc7c71e40c23?w=600',
+          'https://images.unsplash.com/photo-1473093226795-af9932fe5856?w=600'
+        ],
+        'Art & Crafts': [
+          'https://images.unsplash.com/photo-1541961017774-22349e4a1262?w=600',
+          'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=600',
+          'https://images.unsplash.com/photo-1524850011238-e3d235c7d4c9?w=600',
+          'https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?w=600',
+          'https://images.unsplash.com/photo-1610701596007-11502861dcfa?w=600'
+        ],
+        'Home & Garden': [
+          'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=600',
+          'https://images.unsplash.com/photo-1556228578-0d85b1a4d571?w=600',
+          'https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?w=600',
+          'https://images.unsplash.com/photo-1493663284031-b7e3aefcae8e?w=600',
+          'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=600'
+        ],
+        'Sports & Fitness': [
+          'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=600',
+          'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=600',
+          'https://images.unsplash.com/photo-1584735175315-9d5df23860e6?w=600',
+          'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=600',
+          'https://images.unsplash.com/photo-1461897104016-0b3b00cc81ee?w=600'
+        ]
+      };
       
       // Realistic product names by category
       const productNames: Record<string, string[]> = {
@@ -134,15 +191,21 @@ export const AdminBulkImport = () => {
       (categories || []).forEach((c: { name: string }, idx: number) => {
         const category = c.name;
         const names = productNames[category] || ['Quality Item', 'Premium Product', 'Excellent Condition', 'Great Value', 'Top Quality'];
+        const images = productImages[category] || [
+          'https://images.unsplash.com/photo-1560343090-f0409e92791a?w=600',
+          'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600',
+          'https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=600',
+          'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600',
+          'https://images.unsplash.com/photo-1572635196237-14b3f281503f?w=600'
+        ];
         
         for (let i = 0; i < 5; i++) {
-          const seed = i + idx * 100;
           const title = names[i % names.length];
           const desc = `High quality ${category.toLowerCase()} in excellent condition. Well maintained and ready for immediate use.`;
           const price = Math.round(100 + i * 25 + idx * 10);
           const condition = conditions[i % conditions.length];
           const location = locations[(i + idx) % locations.length];
-          const image = imageFor(category, seed);
+          const image = images[i % images.length];
           const wanted = 'Cash';
           lines.push(`"${title}","${desc}",${price},"${category}","${condition}","${location}","${image}","${wanted}"`);
         }
