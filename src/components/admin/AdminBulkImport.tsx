@@ -65,82 +65,23 @@ export const AdminBulkImport = () => {
       const conditions = ["New", "Used - Like New", "Used - Good"];
       const locations = ["Accra", "Kumasi", "Tema", "Takoradi", "Cape Coast"];
       
-      // Category-specific diverse images
-      const categoryImages: Record<string, string[]> = {
-        'Electronics': [
-          'https://images.unsplash.com/photo-1592750475338-74b7b21085ab?w=400',
-          'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=400',
-          'https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?w=400',
-          'https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=400',
-          'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400',
-          'https://images.unsplash.com/photo-1572569511254-d8f925fe2cbb?w=400'
-        ],
-        'Appliances': [
-          'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400',
-          'https://images.unsplash.com/photo-1571175443880-49e1d25b2bc5?w=400',
-          'https://images.unsplash.com/photo-1574269909862-7e1d70bb8078?w=400',
-          'https://images.unsplash.com/photo-1506423555807-df39b04aceb8?w=400',
-          'https://images.unsplash.com/photo-1570197788417-0e82375c9371?w=400',
-          'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=400'
-        ],
-        'Automotive': [
-          'https://images.unsplash.com/photo-1549924231-f129b911e442?w=400',
-          'https://images.unsplash.com/photo-1606664515524-ed2f786a0bd6?w=400',
-          'https://images.unsplash.com/photo-1552519507-da3b142c6e3d?w=400',
-          'https://images.unsplash.com/photo-1562141961-d1f1d5a8a76c?w=400',
-          'https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=400',
-          'https://images.unsplash.com/photo-1503736334956-4c8f8e92946d?w=400'
-        ],
-        'Fashion & Beauty': [
-          'https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=400',
-          'https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=400',
-          'https://images.unsplash.com/photo-1434389677669-e08b4cac3105?w=400',
-          'https://images.unsplash.com/photo-1485145782098-4f5fd605a66b?w=400',
-          'https://images.unsplash.com/photo-1583292650898-7d22cd27ca6f?w=400',
-          'https://images.unsplash.com/photo-1556905055-8f358a7a47b2?w=400'
-        ],
-        'Baby & Kids': [
-          'https://images.unsplash.com/photo-1544717302-de2939b7ef71?w=400',
-          'https://images.unsplash.com/photo-1544966503-7cc5ac882d5f?w=400',
-          'https://images.unsplash.com/photo-1555898019-aca9292ba016?w=400',
-          'https://images.unsplash.com/photo-1558877385-bc7c71e40c23?w=400',
-          'https://images.unsplash.com/photo-1586024408152-5b96006f2518?w=400',
-          'https://images.unsplash.com/photo-1566004100631-35d015d6a491?w=400'
-        ],
-        'Art & Crafts': [
-          'https://images.unsplash.com/photo-1541961017774-22349e4a1262?w=400',
-          'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400',
-          'https://images.unsplash.com/photo-1577720643271-6760b6dc2054?w=400',
-          'https://images.unsplash.com/photo-1594736797933-d0401ba2fe65?w=400',
-          'https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?w=400',
-          'https://images.unsplash.com/photo-1582213782179-e0d53f98f2ca?w=400'
-        ]
-      };
+      // Build a unique, category-relevant image using Unsplash Source with a stable seed
+      const imageFor = (cat: string, seed: number) => `https://source.unsplash.com/featured/800x600?${encodeURIComponent(cat)},product,marketplace&sig=${seed}`;
       
-      // Fallback images for unknown categories
-      const fallbackImages = [
-        'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400',
-        'https://images.unsplash.com/photo-1560472355-a9a6be512406?w=400',
-        'https://images.unsplash.com/photo-1570197788417-0e82375c9371?w=400',
-        'https://images.unsplash.com/photo-1549924231-f129b911e442?w=400',
-        'https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=400',
-        'https://images.unsplash.com/photo-1541961017774-22349e4a1262?w=400'
-      ];
 
       const header = 'title,description,price,category,condition,location,images,wanted_items';
       const lines: string[] = [header];
 
       (categories || []).forEach((c: { name: string }, idx: number) => {
         const category = c.name;
-        const images = categoryImages[category] || fallbackImages;
-        
-        for (let i = 1; i <= 6; i++) {
-          const title = `Sample ${category} Item ${i}`;
-          const desc = `High-quality ${category.toLowerCase()} sample item ${i} for Ghana marketplace.`;
-          const price = 100 + i * 10 + idx;
+        for (let i = 1; i <= 5; i++) {
+          const seed = i + idx * 100;
+          const title = `${category} Deal ${i}`;
+          const desc = `Gently used ${category.toLowerCase()} item in great condition. Ready to go!`;
+          const price = Math.round(80 + i * 15 + idx * 5);
           const condition = conditions[i % conditions.length];
           const location = locations[(i + idx) % locations.length];
-          const image = images[(i - 1) % images.length]; // Use different image for each item
+          const image = imageFor(category, seed);
           const wanted = 'Cash';
           lines.push(`"${title}","${desc}",${price},"${category}","${condition}","${location}","${image}","${wanted}"`);
         }
@@ -148,7 +89,7 @@ export const AdminBulkImport = () => {
 
       const csv = lines.join('\n');
       setCsvData(csv);
-      toast({ title: 'Sample Data Loaded', description: 'Generated 6+ items per category with diverse images.' });
+      toast({ title: 'Sample Data Loaded', description: 'Generated 5 items per category with unique, category-relevant images.' });
     } catch (e) {
       console.error('Error generating sample CSV:', e);
       toast({ title: 'Failed to load sample data', description: 'Could not generate sample dataset.', variant: 'destructive' });
@@ -213,7 +154,7 @@ export const AdminBulkImport = () => {
             category: values[3] || '',
             condition: values[4] || '',
             location: values[5] || '',
-            images: imageField ? [imageField] : ["https://images.unsplash.com/photo-1649972904349-6e44c42644a7?w=400"],
+            images: imageField ? imageField.split(/[|;\s]+/).map(u => u.trim()).filter(Boolean) : ["https://images.unsplash.com/photo-1649972904349-6e44c42644a7?w=400"],
             wanted_items: wantedField ? wantedField.split(',').map(item => item.trim()).filter(Boolean) : []
           };
           parsedProducts.push(product);
@@ -234,7 +175,7 @@ export const AdminBulkImport = () => {
     }
   };
 
-  const ensureMinPerCategory = (items: BulkProduct[], min = 6): BulkProduct[] => {
+  const ensureMinPerCategory = (items: BulkProduct[], min = 5): BulkProduct[] => {
     const map = new Map<string, BulkProduct[]>();
     items.forEach((p) => {
       const arr = map.get(p.category) || [];
@@ -270,7 +211,7 @@ export const AdminBulkImport = () => {
     setLoading(true);
 
     try {
-      const expanded = ensureMinPerCategory(products, 6);
+      const expanded = ensureMinPerCategory(products, 5);
       const { data, error } = await supabase.functions.invoke('admin-bulk-import-listings', {
         body: { products: expanded },
       });
@@ -298,7 +239,7 @@ export const AdminBulkImport = () => {
 
   const downloadTemplate = () => {
     const csvTemplate = `title,description,price,category,condition,location,images,wanted_items
-"Product Title","Product description here",100,"Electronics","New","Accra","https://example.com/image.jpg","Item 1, Item 2"`;
+"Product Title","Product description here",100,"Electronics","New","Accra","https://example.com/image1.jpg|https://example.com/image2.jpg","Item 1, Item 2"`;
     
     const blob = new Blob([csvTemplate], { type: 'text/csv' });
     const url = window.URL.createObjectURL(blob);
