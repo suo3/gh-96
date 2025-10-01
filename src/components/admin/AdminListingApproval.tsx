@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Clock, Eye, Check, X, Trash } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface PendingListing {
   id: string;
@@ -27,6 +28,7 @@ export const AdminListingApproval = () => {
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState("pending");
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedListings, setSelectedListings] = useState<string[]>([]);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -152,6 +154,71 @@ export const AdminListingApproval = () => {
     }
   };
 
+  const bulkDeleteListings = async () => {
+    if (selectedListings.length === 0) {
+      toast({
+        title: "No Selection",
+        description: "Please select listings to delete",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const confirmDelete = window.confirm(`Are you sure you want to permanently delete ${selectedListings.length} listing(s)?`);
+    if (!confirmDelete) return;
+
+    try {
+      let successCount = 0;
+      let failCount = 0;
+
+      for (const listingId of selectedListings) {
+        try {
+          const { error } = await supabase.functions.invoke('admin-delete-listing', {
+            body: { listingId },
+          });
+
+          if (error) throw error;
+          successCount++;
+        } catch (err) {
+          console.error('Error deleting listing:', listingId, err);
+          failCount++;
+        }
+      }
+
+      toast({
+        title: successCount > 0 ? "Bulk Delete Complete" : "Error",
+        description: `Successfully deleted ${successCount} listing(s)${failCount > 0 ? `, failed to delete ${failCount}` : ''}`,
+        variant: failCount > 0 ? "destructive" : "default",
+      });
+
+      setSelectedListings([]);
+      fetchPendingListings();
+    } catch (error: any) {
+      console.error('Error in bulk delete:', error);
+      toast({
+        title: "Error",
+        description: `Failed to complete bulk delete: ${error.message || error}`,
+        variant: "destructive",
+      });
+    }
+  };
+
+  const toggleSelectListing = (listingId: string) => {
+    setSelectedListings(prev =>
+      prev.includes(listingId)
+        ? prev.filter(id => id !== listingId)
+        : [...prev, listingId]
+    );
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedListings.length === filteredListings.length) {
+      setSelectedListings([]);
+    } else {
+      setSelectedListings(filteredListings.map(l => l.id));
+    }
+  };
+
   const filteredListings = listings.filter(listing => {
     const matchesStatus = statusFilter === "all" || listing.status === statusFilter;
     const matchesSearch = listing.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -203,10 +270,32 @@ export const AdminListingApproval = () => {
             </Select>
           </div>
 
+          {selectedListings.length > 0 && (
+            <div className="mb-4 flex items-center justify-between bg-muted p-4 rounded-lg">
+              <span className="text-sm font-medium">
+                {selectedListings.length} listing(s) selected
+              </span>
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={bulkDeleteListings}
+              >
+                <Trash className="w-4 h-4 mr-2" />
+                Delete Selected
+              </Button>
+            </div>
+          )}
+
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead className="w-12">
+                    <Checkbox
+                      checked={selectedListings.length === filteredListings.length && filteredListings.length > 0}
+                      onCheckedChange={toggleSelectAll}
+                    />
+                  </TableHead>
                   <TableHead>Title</TableHead>
                   <TableHead>User</TableHead>
                   <TableHead>Category</TableHead>
@@ -219,6 +308,12 @@ export const AdminListingApproval = () => {
               <TableBody>
                 {filteredListings.map((listing) => (
                   <TableRow key={listing.id}>
+                    <TableCell>
+                      <Checkbox
+                        checked={selectedListings.includes(listing.id)}
+                        onCheckedChange={() => toggleSelectListing(listing.id)}
+                      />
+                    </TableCell>
                     <TableCell>
                       <div>
                         <div className="font-medium">{listing.title}</div>
