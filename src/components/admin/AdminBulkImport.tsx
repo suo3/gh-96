@@ -68,17 +68,78 @@ export const AdminBulkImport = () => {
       // Build a unique, category-relevant image using Unsplash Source with a stable seed
       const imageFor = (cat: string, seed: number) => `https://source.unsplash.com/featured/800x600?${encodeURIComponent(cat)},product,marketplace&sig=${seed}`;
       
+      // Realistic product names by category
+      const productNames: Record<string, string[]> = {
+        'Electronics': [
+          'iPhone Pro Max',
+          'MacBook Air Laptop',
+          'Samsung Smart TV',
+          'Sony Wireless Headphones',
+          'Dell Gaming Laptop'
+        ],
+        'Appliances': [
+          'LG Washing Machine',
+          'Samsung Refrigerator',
+          'Microwave Oven',
+          'Air Conditioner Unit',
+          'Electric Blender'
+        ],
+        'Automotive': [
+          'Toyota Corolla',
+          'Honda Civic',
+          'Nissan Sentra',
+          'Ford Pickup Truck',
+          'Yamaha Motorcycle'
+        ],
+        'Fashion & Beauty': [
+          'Designer Handbag',
+          'Leather Jacket',
+          'Wedding Dress',
+          'Running Sneakers',
+          'Gold Necklace'
+        ],
+        'Baby & Kids': [
+          'Baby Stroller',
+          'Wooden Crib',
+          'Kids Bicycle',
+          'Educational Toys Set',
+          'High Chair'
+        ],
+        'Art & Crafts': [
+          'Canvas Painting',
+          'Handmade Pottery',
+          'Beaded Jewelry',
+          'Wooden Sculpture',
+          'Kente Cloth'
+        ],
+        'Home & Garden': [
+          'Leather Sofa Set',
+          'Dining Table',
+          'Garden Tools',
+          'Outdoor Furniture',
+          'Wall Decorations'
+        ],
+        'Sports & Fitness': [
+          'Treadmill Machine',
+          'Weight Bench',
+          'Yoga Mat Set',
+          'Mountain Bike',
+          'Tennis Racket'
+        ]
+      };
 
       const header = 'title,description,price,category,condition,location,images,wanted_items';
       const lines: string[] = [header];
 
       (categories || []).forEach((c: { name: string }, idx: number) => {
         const category = c.name;
-        for (let i = 1; i <= 5; i++) {
+        const names = productNames[category] || ['Quality Item', 'Premium Product', 'Excellent Condition', 'Great Value', 'Top Quality'];
+        
+        for (let i = 0; i < 5; i++) {
           const seed = i + idx * 100;
-          const title = `${category} Deal ${i}`;
-          const desc = `Gently used ${category.toLowerCase()} item in great condition. Ready to go!`;
-          const price = Math.round(80 + i * 15 + idx * 5);
+          const title = names[i % names.length];
+          const desc = `High quality ${category.toLowerCase()} in excellent condition. Well maintained and ready for immediate use.`;
+          const price = Math.round(100 + i * 25 + idx * 10);
           const condition = conditions[i % conditions.length];
           const location = locations[(i + idx) % locations.length];
           const image = imageFor(category, seed);
