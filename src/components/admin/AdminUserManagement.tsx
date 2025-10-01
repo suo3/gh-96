@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { UserPlus, Search, Shield, Users } from "lucide-react";
+import { UserPlus, Search, Shield, Users, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { CreateUserDialog } from "./CreateUserDialog";
 import { EditUserDialog } from "./EditUserDialog";
@@ -124,6 +124,28 @@ export const AdminUserManagement = ({ adminRole }: AdminUserManagementProps) => 
     }
   };
 
+  const handleDeleteUser = async (userId: string, userName: string) => {
+    const confirmDelete = window.confirm(
+      `Are you sure you want to permanently delete user "${userName}"? This action cannot be undone and will delete all their data including listings, messages, and transactions.`
+    );
+
+    if (!confirmDelete) return;
+
+    try {
+      const { error } = await supabase.functions.invoke('admin-delete-user', {
+        body: { userId },
+      });
+
+      if (error) throw error;
+
+      toast.success(`User "${userName}" has been permanently deleted.`);
+      fetchUsers();
+    } catch (error: any) {
+      console.error('Error deleting user:', error);
+      toast.error(`Failed to delete user: ${error.message || error}`);
+    }
+  };
+
   const filteredUsers = users.filter(user => {
     const matchesSearch = user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          user.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -192,7 +214,7 @@ export const AdminUserManagement = ({ adminRole }: AdminUserManagementProps) => 
                   <TableHead>Rating</TableHead>
                   <TableHead>Sales</TableHead>
                   <TableHead>Role</TableHead>
-                  <TableHead>Actions</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -223,7 +245,7 @@ export const AdminUserManagement = ({ adminRole }: AdminUserManagementProps) => 
                       )}
                     </TableCell>
                     <TableCell>
-                      <div className="flex gap-2 flex-wrap">
+                      <div className="flex gap-2 flex-wrap justify-end">
                         <EditUserDialog user={user} onUserUpdated={fetchUsers} />
                         <UserListingsManager 
                           userId={user.id} 
@@ -264,6 +286,16 @@ export const AdminUserManagement = ({ adminRole }: AdminUserManagementProps) => 
                             onClick={() => removeAdminAccess(user.id)}
                           >
                             Remove Admin
+                          </Button>
+                        )}
+                        {adminRole === 'super_admin' && (
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => handleDeleteUser(user.id, `${user.firstName} ${user.lastName}`.trim() || user.username || 'User')}
+                          >
+                            <Trash2 className="w-4 h-4 mr-1" />
+                            Delete
                           </Button>
                         )}
                       </div>
