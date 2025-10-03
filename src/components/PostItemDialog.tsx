@@ -209,14 +209,14 @@ export const PostItemDialog = ({ open, onOpenChange }: PostItemDialogProps) => {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogTrigger asChild>
+      {/* <DialogTrigger asChild>
         <Button variant="outline">Post Item</Button>
-      </DialogTrigger>
+      </DialogTrigger> */}
       <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Post a New Item</DialogTitle>
           <DialogDescription>
-            List your item for swapping.
+            List your item for sale/swapping.
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>

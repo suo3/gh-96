@@ -134,9 +134,9 @@ export const LoginDialog = ({ open, onOpenChange }: LoginDialogProps) => {
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Welcome to SwapConnect</DialogTitle>
+          <DialogTitle>Welcome to KenteKart</DialogTitle>
           <DialogDescription>
-            Sign in to your account or create a new one to start swapping items with your community.
+            Sign in to your account or create a new one to start selling or swapping items with your community.
           </DialogDescription>
         </DialogHeader>
         

@@ -68,7 +68,7 @@ export const UserRating = ({
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="text-center">
             <p className="text-sm text-gray-600 mb-4">
-              How was your swap experience with {ratedUserName} for "{itemTitle}"?
+              How was your experience with {ratedUserName} for "{itemTitle}"?
             </p>
             
             <div className="flex justify-center space-x-1 mb-4">

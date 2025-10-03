@@ -160,7 +160,7 @@ export const ProfileEditor = () => {
             <Label htmlFor="bio">Bio</Label>
             <Textarea
               id="bio"
-              placeholder="Tell others about yourself and what you're looking to swap..."
+              placeholder="Tell others about yourself and what you're looking to swap or sell..."
               value={formData.bio}
               onChange={(e) => setFormData(prev => ({ ...prev, bio: e.target.value }))}
               rows={3}
