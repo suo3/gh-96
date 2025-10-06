@@ -6,11 +6,12 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-// Business Mobile Money Accounts - where payments should be sent
+// Business Mobile Money Accounts - Configure these via Supabase Secrets
+// Add MOMO_MTN_BUSINESS_ACCOUNT, MOMO_VODAFONE_BUSINESS_ACCOUNT, MOMO_AIRTELTIGO_BUSINESS_ACCOUNT
 const BUSINESS_ACCOUNTS = {
-  mtn: "0244000000", // Replace with actual business MTN account
-  vodafone: "0200000000", // Replace with actual business Vodafone account
-  airteltigo: "0270000000", // Replace with actual business AirtelTigo account
+  mtn: Deno.env.get("MOMO_MTN_BUSINESS_ACCOUNT") || "",
+  vodafone: Deno.env.get("MOMO_VODAFONE_BUSINESS_ACCOUNT") || "",
+  airteltigo: Deno.env.get("MOMO_AIRTELTIGO_BUSINESS_ACCOUNT") || "",
 };
 
 // Mobile Money provider configurations for Ghana
