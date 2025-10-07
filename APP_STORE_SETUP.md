@@ -4,8 +4,8 @@
 - **App Name:** KenteKart Ghana
 - **Bundle ID (iOS):** app.lovable.3b4b6ddc110049e98f644efb2ab228ea
 - **Package Name (Android):** app.lovable.3b4b6ddc110049e98f644efb2ab228ea
-- **Privacy Policy URL:** https://yourdomain.com/privacy
-- **Support URL:** https://yourdomain.com/contact
+- **Privacy Policy URL:** https://kentekart.com/privacy
+- **Support URL:** https://kentekart.com/contact
 
 ## 🎨 Required Assets
 
@@ -313,4 +313,4 @@ npx cap run android
 
 ---
 
-**Note:** Update the URLs (privacy policy, support) with your actual deployed domain before submission!
+**Note:** All URLs have been configured to use kentekart.com - your custom domain is ready for app store submission!
