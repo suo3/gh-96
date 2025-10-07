@@ -94,7 +94,7 @@ export const AppHeader = ({ userLocation, onLocationDetect, onPostItem, onLogoCl
               onClick={onLogoClick}
               className="text-2xl font-bold text-emerald-600 hover:text-emerald-700 transition-colors cursor-pointer"
             >
-              <span className="font-leckerli">K</span>enteKart
+              <span className="font-leckerli">K</span>ente<span className="font-leckerli">K</span>art
             </button>
             
           {/* Navigation Links - Desktop */}
