@@ -66,7 +66,7 @@
 
 ### Domain & Hosting
 - [ ] Update SEO_CONFIG.siteUrl with actual domain
-- [ ] Configure custom domain in Lovable
+- [ ] Configure custom domain (kentekart.com)
 - [ ] Set up SSL certificate
 - [ ] Update robots.txt sitemap URL
 

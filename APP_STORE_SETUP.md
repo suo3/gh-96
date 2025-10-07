@@ -2,8 +2,8 @@
 
 ## 📱 App Information
 - **App Name:** KenteKart Ghana
-- **Bundle ID (iOS):** app.lovable.3b4b6ddc110049e98f644efb2ab228ea
-- **Package Name (Android):** app.lovable.3b4b6ddc110049e98f644efb2ab228ea
+- **Bundle ID (iOS):** com.kentekart.app
+- **Package Name (Android):** com.kentekart.app
 - **Privacy Policy URL:** https://kentekart.com/privacy
 - **Support URL:** https://kentekart.com/contact
 

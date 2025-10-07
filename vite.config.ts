@@ -4,7 +4,7 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
 
-// Make lovable-tagger optional and only load it in development if installed
+// Development tagger plugin - optional
 export default defineConfig(async ({ mode }) => {
   let taggerPlugin: any = null;
   if (mode === 'development') {

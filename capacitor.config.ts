@@ -1,7 +1,7 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'app.lovable.3b4b6ddc110049e98f644efb2ab228ea',
+  appId: 'com.kentekart.app',
   appName: 'KenteKart Ghana',
   webDir: 'dist',
   server: {
