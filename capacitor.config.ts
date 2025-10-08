@@ -5,7 +5,7 @@ const config: CapacitorConfig = {
   appName: 'KenteKart Ghana',
   webDir: 'dist',
   server: {
-    url: 'https://kentekart.com',
+    url: 'https://3b4b6ddc-1100-49e9-8f64-4efb2ab228ea.lovableproject.com?forceHideBadge=true',
     cleartext: true
   }
 };
