@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">KenteKart</string>
+    <string name="title_activity_main">KenteKart</string>
+    <string name="package_name">com.kentekart.app</string>
+    <string name="custom_url_scheme">com.kentekart.app</string>
+</resources>

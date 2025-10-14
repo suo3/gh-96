@@ -72,11 +72,11 @@ export const HeroSection = ({ onPostItem, onBrowseItems }: HeroSectionProps) => 
                 </span>
                 <span className="flex items-center gap-2 hover:text-primary transition-colors duration-300">
                   <Smartphone className="h-4 w-4 text-white" />
-                  Mobile Money Ready
+                 Built for mobile 
                 </span>
-                <span className="flex items-center gap-2 hover:text-primary transition-colors duration-300">
+                <span  className="flex items-center gap-2 hover:text-primary transition-colors duration-300">
                   <Users className="h-4 w-4 text-white" />
-                  50K+ Active Users
+                  Trusted Sellers
                 </span>
               </div>
             </div>

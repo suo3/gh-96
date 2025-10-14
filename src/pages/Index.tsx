@@ -101,7 +101,7 @@ const Index = () => {
        
         {/* Featured Items Carousel */}
         <FeaturedItemsCarousel />
-         <hr className="border-b border-border border-emerald-600" />
+         <br />
         {/* Category Tabs with Items */}
         <CategoryTabsCarousel />
         
