@@ -85,8 +85,8 @@ export const AppHeader = ({ userLocation, onLocationDetect, onPostItem, onLogoCl
   };
 
   return (
-    <header className="bg-white backdrop-blur-sm border-b border-b-4 border-emerald-600 sticky top-0 z-40">
-      <div className="container mx-auto px-4 py-3">
+    <header className="bg-white backdrop-blur-sm border-b border-b-4 border-emerald-600 sticky top-0 z-40 safe-top">
+      <div className="container mx-auto px-4 py-3 safe-x">
         <div className="flex items-center justify-between">
           {/* Logo */}
           <div className="flex items-center space-x-8">
