@@ -60,7 +60,8 @@ const queryClient = new QueryClient({
 
 const App = () => {
   useAuthInit();
-  usePushNotifications();
+  // Temporarily disabled to diagnose crash after notification permission acceptance
+  // usePushNotifications();
 
   useEffect(() => {
     const setupStatusBar = async () => {
