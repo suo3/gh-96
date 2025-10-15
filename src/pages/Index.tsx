@@ -4,6 +4,8 @@ import { HeroSection } from "@/components/HeroSection";
 import { CategoryLinks } from "@/components/CategoryLinks";
 import { ContentControls } from "@/components/ContentControls";
 import { PostItemDialog } from "@/components/PostItemDialog";
+import { PullToRefresh } from "@/components/PullToRefresh";
+import { useQueryClient } from "@tanstack/react-query";
 
 import { BrowseMode } from "@/components/BrowseMode";
 import { FilterPanel } from "@/components/FilterPanel";
@@ -49,6 +51,11 @@ const Index = () => {
   } = useIndexLogic();
 
   const { settings, loading: settingsLoading } = usePlatformSettings();
+  const queryClient = useQueryClient();
+
+  const handleRefresh = async () => {
+    await queryClient.invalidateQueries();
+  };
 
   // Show maintenance mode if enabled
   if (!settingsLoading && settings.maintenanceMode) {
@@ -56,13 +63,14 @@ const Index = () => {
   }
 
   return (
-    <div className="min-h-screen bg-white">
-      <AppHeader
-        userLocation={userLocation}
-        onLocationDetect={handleLocationDetect}
-        onPostItem={handlePostItem}
-        onLogoClick={handleLogoClick}
-      />
+    <PullToRefresh onRefresh={handleRefresh}>
+      <div className="min-h-screen bg-white">
+        <AppHeader
+          userLocation={userLocation}
+          onLocationDetect={handleLocationDetect}
+          onPostItem={handlePostItem}
+          onLogoClick={handleLogoClick}
+        />
 
    
       {/* Platform Announcement */}
@@ -138,9 +146,10 @@ const Index = () => {
         onOpenChange={setShowPostItemDialog}
       />
       
-      {/* Footer */}
-      <Footer />
-    </div>
+        {/* Footer */}
+        <Footer />
+      </div>
+    </PullToRefresh>
   );
 };
 

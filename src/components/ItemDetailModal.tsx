@@ -3,13 +3,17 @@ import { useState, useEffect } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Heart, MapPin, MessageCircle, X, ChevronLeft, ChevronRight, MessageSquare, Star } from "lucide-react";
+import { Heart, MapPin, MessageCircle, X, ChevronLeft, ChevronRight, MessageSquare, Star, Share2 } from "lucide-react";
 import { Listing } from "@/stores/listingStore";
 import { UserRatingDisplay } from "./UserRatingDisplay";
 import { ReportListingDialog } from "./ReportListingDialog";
 import { UserRating } from "./UserRating";
 import { useAuthStore } from "@/stores/authStore";
 import { useNavigate } from "react-router-dom";
+import { Share } from '@capacitor/share';
+import { Capacitor } from '@capacitor/core';
+import { useHaptics } from "@/hooks/useHaptics";
+import { useToast } from "@/hooks/use-toast";
 
 interface ItemDetailModalProps {
   item: Listing | null;
@@ -30,6 +34,9 @@ export const ItemDetailModal = ({
   const [showRating, setShowRating] = useState(false);
   const { user } = useAuthStore();
   const navigate = useNavigate();
+  const haptics = useHaptics();
+  const { toast } = useToast();
+  const isNative = Capacitor.isNativePlatform();
 
   useEffect(() => {
     setCurrentImageIndex(0);
@@ -99,21 +106,58 @@ export const ItemDetailModal = ({
   };
 
   const prevImage = () => {
+    haptics.light();
     setCurrentImageIndex((prev) => (prev - 1 + displayImages.length) % displayImages.length);
+  };
+
+  const handleShare = async () => {
+    haptics.light();
+    
+    const shareData = {
+      title: item.title,
+      text: `Check out "${item.title}" on KenteKart${item.price ? ` for ₵${item.price}` : ''}`,
+      url: window.location.href,
+    };
+
+    try {
+      if (isNative) {
+        await Share.share(shareData);
+      } else if (navigator.share) {
+        await navigator.share(shareData);
+      } else {
+        await navigator.clipboard.writeText(window.location.href);
+        toast({
+          title: "Link copied",
+          description: "Item link copied to clipboard",
+        });
+      }
+    } catch (error) {
+      console.error('Share error:', error);
+    }
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto p-0">
         <div className="relative">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="absolute right-4 top-4 z-10 bg-white/80 hover:bg-white"
-            onClick={onClose}
-          >
-            <X className="w-4 h-4" />
-          </Button>
+          <div className="absolute right-4 top-4 z-10 flex gap-2">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="bg-white/80 hover:bg-white"
+              onClick={handleShare}
+            >
+              <Share2 className="w-4 h-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="bg-white/80 hover:bg-white"
+              onClick={onClose}
+            >
+              <X className="w-4 h-4" />
+            </Button>
+          </div>
 
           {/* Image Gallery */}
           <div className="relative">

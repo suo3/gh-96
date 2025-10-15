@@ -2,10 +2,13 @@
 import { useState, useCallback } from "react";
 import { useDropzone } from "react-dropzone";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuthStore } from "@/stores/authStore";
-import { Upload, X, Loader2, Image as ImageIcon } from "lucide-react";
+import { Upload, X, Loader2, Image as ImageIcon, Camera } from "lucide-react";
+import { Camera as CapCamera, CameraResultType, CameraSource } from '@capacitor/camera';
+import { Capacitor } from '@capacitor/core';
+import { useHaptics } from "@/hooks/useHaptics";
 
 interface ImageUploadProps {
   onImagesUploaded: (imageUrls: string[]) => void;
@@ -22,6 +25,8 @@ export const ImageUpload = ({
   const [images, setImages] = useState<string[]>(currentImages);
   const { toast } = useToast();
   const { user } = useAuthStore();
+  const haptics = useHaptics();
+  const isNative = Capacitor.isNativePlatform();
 
   const uploadImage = async (file: File): Promise<string> => {
     if (!user) {
@@ -86,7 +91,34 @@ export const ImageUpload = ({
     }
   }, [images, maxImages, onImagesUploaded, toast, user]);
 
+  const takePhoto = async () => {
+    if (!isNative) return;
+    
+    haptics.light();
+    
+    try {
+      const photo = await CapCamera.getPhoto({
+        resultType: CameraResultType.DataUrl,
+        source: CameraSource.Camera,
+        quality: 90,
+      });
+
+      if (!photo.dataUrl) return;
+
+      // Convert data URL to blob
+      const response = await fetch(photo.dataUrl);
+      const blob = await response.blob();
+      const file = new File([blob], `photo-${Date.now()}.jpg`, { type: 'image/jpeg' });
+
+      await onDrop([file]);
+    } catch (error) {
+      console.error('Camera error:', error);
+      haptics.error();
+    }
+  };
+
   const removeImage = async (index: number) => {
+    haptics.light();
     const imageUrl = images[index];
     
     // Extract the file path from the URL to delete from storage
@@ -142,6 +174,18 @@ export const ImageUpload = ({
         </div>
       )}
 
+      {/* Native Camera Button */}
+      {isNative && images.length < maxImages && (
+        <Button
+          type="button"
+          onClick={takePhoto}
+          className="w-full bg-primary hover:bg-primary/90"
+        >
+          <Camera className="w-4 h-4 mr-2" />
+          Take Photo
+        </Button>
+      )}
+
       {/* Upload Area */}
       {images.length < maxImages && (
         <div
@@ -168,6 +212,8 @@ export const ImageUpload = ({
                   <p className="text-sm text-gray-600">
                     {isDragActive
                       ? "Drop the images here..."
+                      : isNative
+                      ? "Tap to select from gallery"
                       : "Drag & drop images here, or click to select"}
                   </p>
                   <p className="text-xs text-gray-500 mt-1">

@@ -12,6 +12,7 @@ import { SEO_CONFIG } from "@/constants/seo";
 import { useEffect } from "react";
 import { StatusBar, Style } from "@capacitor/status-bar";
 import { Capacitor } from "@capacitor/core";
+import { usePushNotifications } from "@/hooks/usePushNotifications";
 import Index from "./pages/Index";
 import Marketplace from "./pages/Marketplace";
 import Messages from "./pages/Messages";
@@ -59,6 +60,7 @@ const queryClient = new QueryClient({
 
 const App = () => {
   useAuthInit();
+  usePushNotifications();
 
   useEffect(() => {
     const setupStatusBar = async () => {
