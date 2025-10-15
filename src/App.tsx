@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -10,6 +9,9 @@ import { HealthCheck } from "@/components/HealthCheck";
 import { UITestingPanel } from "@/components/UITestingPanel";
 import { Helmet } from "react-helmet";
 import { SEO_CONFIG } from "@/constants/seo";
+import { useEffect } from "react";
+import { StatusBar, Style } from "@capacitor/status-bar";
+import { Capacitor } from "@capacitor/core";
 import Index from "./pages/Index";
 import Marketplace from "./pages/Marketplace";
 import Messages from "./pages/Messages";
@@ -57,6 +59,22 @@ const queryClient = new QueryClient({
 
 const App = () => {
   useAuthInit();
+
+  useEffect(() => {
+    const setupStatusBar = async () => {
+      if (Capacitor.isNativePlatform()) {
+        try {
+          await StatusBar.setStyle({ style: Style.Light });
+          await StatusBar.setBackgroundColor({ color: '#ffffff' });
+          await StatusBar.setOverlaysWebView({ overlay: true });
+        } catch (error) {
+          console.error('StatusBar setup error:', error);
+        }
+      }
+    };
+    
+    setupStatusBar();
+  }, []);
 
   return (
     <ErrorBoundary>
