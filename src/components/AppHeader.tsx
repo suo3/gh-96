@@ -158,7 +158,7 @@ export const AppHeader = ({ userLocation, onLocationDetect, onPostItem, onLogoCl
                   variant="ghost"
                   size="sm"
                   onClick={handleMessages}
-                  className="relative text-gray-600 hover:text-emerald-600"
+                  className="relative text-gray-600 hover:text-white"
                 >
                   <Bell className="w-4 h-4" />
                   {totalUnreadCount > 0 && (
