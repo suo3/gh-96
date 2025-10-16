@@ -166,7 +166,7 @@ export const MessagesPanel = ({ onBack, onLogin }: MessagesPanelProps) => {
           /* Mobile Layout */
           selectedChat ? (
             /* Chat View */
-            <div className="flex flex-col h-[calc(100vh-180px)]">
+            <div className="flex flex-col h-[calc(100vh-180px)] pb-20 md:pb-0">
               <Card className="flex-1 flex flex-col mobile-card">
                 <CardHeader className="border-b p-3">
                   <div className="flex items-center justify-between gap-2">
@@ -293,7 +293,7 @@ export const MessagesPanel = ({ onBack, onLogin }: MessagesPanelProps) => {
             </div>
           ) : (
             /* Conversations List View */
-            <Card className="mobile-card">
+            <Card className="mobile-card mb-20 md:mb-0">
               <CardHeader className="pb-3 p-3 md:p-6">
                 <CardTitle className="text-base md:text-lg mb-3">Conversations</CardTitle>
                 <MessageSearch 
