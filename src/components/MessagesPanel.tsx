@@ -130,50 +130,55 @@ export const MessagesPanel = ({ onBack, onLogin }: MessagesPanelProps) => {
   const selectedConversation = conversations.find(c => c.id === selectedChat);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50">
-      {/* Header */}
-      <header className="bg-white/90 backdrop-blur-sm border-b border-emerald-100 sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <Button variant="ghost" size="icon" onClick={onBack}>
+    <div className="bg-gradient-to-br from-emerald-50 via-white to-teal-50">
+      {/* Header - Mobile optimized */}
+      <header className="bg-white/90 backdrop-blur-sm border-b border-emerald-100 sticky top-16 z-40">
+        <div className="container mx-auto px-3 md:px-4 py-3 md:py-4">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center space-x-2 md:space-x-3 min-w-0 flex-1">
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                onClick={onBack}
+                className="touch-target shrink-0"
+              >
                 <ArrowLeft className="w-5 h-5" />
               </Button>
-              <div>
-                <h1 className="text-xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">
+              <div className="min-w-0">
+                <h1 className="text-lg md:text-xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent truncate">
                   Messages
                 </h1>
-                <div className="text-sm text-gray-600">
+                <div className="text-xs md:text-sm text-gray-600 truncate">
                   {filteredConversations.length} conversation{filteredConversations.length !== 1 ? 's' : ''}
                   {searchQuery && ` matching "${searchQuery}"`}
                 </div>
               </div>
             </div>
-            <Badge variant="secondary">
+            <Badge variant="secondary" className="shrink-0 text-xs md:text-sm">
               {conversations.filter(c => c.unread > 0).length} unread
             </Badge>
           </div>
         </div>
       </header>
 
-      <div className="container mx-auto px-4 py-6">
+      <div className="container mx-auto px-3 md:px-4 py-3 md:py-6">
         {isMobile ? (
           /* Mobile Layout */
           selectedChat ? (
             /* Chat View */
-            <div className="flex flex-col h-[calc(100vh-120px)]">
-              <Card className="flex-1 flex flex-col">
-                <CardHeader className="border-b">
-                  <div className="flex items-center justify-between">
+            <div className="flex flex-col h-[calc(100vh-180px)]">
+              <Card className="flex-1 flex flex-col mobile-card">
+                <CardHeader className="border-b p-3">
+                  <div className="flex items-center justify-between gap-2">
                     <Button 
                       variant="ghost" 
                       size="sm" 
                       onClick={() => setSelectedChat(null)}
-                      className="mr-2"
+                      className="mr-1 touch-target"
                     >
                       <ArrowLeft className="w-4 h-4" />
                     </Button>
-                    <CardTitle className="text-lg flex items-center flex-1">
+                    <CardTitle className="text-base md:text-lg flex items-center flex-1 min-w-0">
                       <div className="w-8 h-8 bg-gradient-to-br from-emerald-400 to-teal-400 rounded-full flex items-center justify-center text-white text-sm font-bold mr-3">
                         {selectedConversation?.avatar || 'U'}
                       </div>
@@ -208,8 +213,8 @@ export const MessagesPanel = ({ onBack, onLogin }: MessagesPanelProps) => {
                 </CardHeader>
                 <CardContent className="p-0 flex flex-col flex-1">
                   {/* Messages Area */}
-                  <ScrollArea className="flex-1 p-4">
-                    <div className="space-y-4">
+                  <ScrollArea className="flex-1 p-3 md:p-4">
+                    <div className="space-y-3 md:space-y-4">
                       {currentMessages.map((message) => (
                         <MessageBubble key={message.id} message={message} />
                       ))}
@@ -228,7 +233,7 @@ export const MessagesPanel = ({ onBack, onLogin }: MessagesPanelProps) => {
                   </ScrollArea>
 
                   {/* Message Input - Fixed at bottom */}
-                  <div className="border-t p-4 bg-white">
+                  <div className="border-t p-3 md:p-4 bg-white">
                     <div className="flex space-x-2">
                       <Input
                         value={newMessage}
@@ -241,7 +246,7 @@ export const MessagesPanel = ({ onBack, onLogin }: MessagesPanelProps) => {
                             ? "Type your message..."
                             : "Login to send messages"
                         }
-                        className="flex-1"
+                        className="flex-1 text-sm md:text-base"
                         disabled={!isAuthenticated || isTyping || selectedConversation?.status === 'completed'}
                       />
                       <Button
@@ -251,7 +256,7 @@ export const MessagesPanel = ({ onBack, onLogin }: MessagesPanelProps) => {
                             : onLogin
                         }
                         disabled={!isAuthenticated || !newMessage.trim() || isTyping || selectedConversation?.status === 'completed'}
-                        className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600"
+                        className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 touch-target"
                         type="button"
                         title={
                           selectedConversation?.status === 'completed' 
@@ -288,9 +293,9 @@ export const MessagesPanel = ({ onBack, onLogin }: MessagesPanelProps) => {
             </div>
           ) : (
             /* Conversations List View */
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-lg mb-3">Conversations</CardTitle>
+            <Card className="mobile-card">
+              <CardHeader className="pb-3 p-3 md:p-6">
+                <CardTitle className="text-base md:text-lg mb-3">Conversations</CardTitle>
                 <MessageSearch 
                   searchQuery={searchQuery}
                   onSearchChange={setSearchQuery}
@@ -325,11 +330,11 @@ export const MessagesPanel = ({ onBack, onLogin }: MessagesPanelProps) => {
           )
         ) : (
           /* Desktop Layout */
-          <div className="grid lg:grid-cols-3 gap-6 h-[700px]">
+          <div className="grid lg:grid-cols-3 gap-4 md:gap-6 h-[700px]">
             {/* Conversations List */}
             <Card className="lg:col-span-1">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-lg mb-3">Conversations</CardTitle>
+              <CardHeader className="pb-3 p-4 md:p-6">
+                <CardTitle className="text-base md:text-lg mb-3">Conversations</CardTitle>
                 <MessageSearch 
                   searchQuery={searchQuery}
                   onSearchChange={setSearchQuery}
