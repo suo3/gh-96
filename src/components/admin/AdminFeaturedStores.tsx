@@ -542,10 +542,10 @@ export const AdminFeaturedStores = ({ adminRole }: AdminFeaturedStoresProps) => 
         </CardContent>
       </Card>
 
-      {/* Current Featured Stores */}
+      {/* Current Featured Stores - Mobile Responsive */}
       <Card>
         <CardHeader>
-          <CardTitle>Current Featured Stores ({featuredStores?.length || 0})</CardTitle>
+          <CardTitle>Current Featured Stores ({featuredStores?.length || 0}) - Mobile Optimized</CardTitle>
         </CardHeader>
         <CardContent>
           {featuredLoading ? (
@@ -573,10 +573,10 @@ export const AdminFeaturedStores = ({ adminRole }: AdminFeaturedStoresProps) => 
                   return (
                     <div
                       key={store.id}
-                      className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50"
+                      className="flex flex-col md:flex-row md:items-center justify-between p-3 md:p-4 border rounded-lg hover:bg-muted/50 gap-3"
                     >
-                      <div className="flex items-center gap-4">
-                        <div className="flex items-center gap-2">
+                      <div className="flex items-start md:items-center gap-3 md:gap-4 flex-1 min-w-0">
+                        <div className="flex items-center gap-2 shrink-0">
                           <Badge variant="outline" className="text-xs font-mono">
                             #{store.position}
                           </Badge>
@@ -586,30 +586,30 @@ export const AdminFeaturedStores = ({ adminRole }: AdminFeaturedStoresProps) => 
                           <img
                             src={profile.avatar}
                             alt={displayName}
-                            className="w-12 h-12 rounded-full object-cover ring-2 ring-primary/20"
+                            className="w-10 h-10 md:w-12 md:h-12 rounded-full object-cover ring-2 ring-primary/20 shrink-0"
                           />
                         ) : (
-                          <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white font-semibold ring-2 ring-primary/20">
+                          <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white font-semibold ring-2 ring-primary/20 shrink-0">
                             {avatarInitial}
                           </div>
                         )}
                         
                         <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 mb-1">
-                            <h4 className="font-medium truncate">{displayName}</h4>
+                          <div className="flex items-center gap-2 mb-1 flex-wrap">
+                            <h4 className="font-medium text-sm md:text-base truncate">{displayName}</h4>
                             {profile.is_verified && (
                               <Badge variant="secondary" className="text-xs">
                                 <Award className="h-3 w-3 mr-1" />
-                                Verified
+                                <span className="hidden sm:inline">Verified</span>
                               </Badge>
                             )}
                             <Badge className="text-xs bg-gradient-to-r from-orange-100 to-amber-100 text-orange-700">
                               <Crown className="h-3 w-3 mr-1" />
-                              Featured
+                              <span className="hidden sm:inline">Featured</span>
                             </Badge>
                           </div>
                           
-                          <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                          <div className="flex items-center gap-2 md:gap-4 text-xs md:text-sm text-muted-foreground flex-wrap">
                             {profile.rating && profile.rating > 0 && (
                               <div className="flex items-center gap-1">
                                 <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
@@ -619,23 +619,24 @@ export const AdminFeaturedStores = ({ adminRole }: AdminFeaturedStoresProps) => 
                             {profile.total_sales && profile.total_sales > 0 && (
                               <div className="flex items-center gap-1">
                                 <ShoppingBag className="h-3 w-3" />
-                                <span>{profile.total_sales} sales</span>
+                                <span className="hidden sm:inline">{profile.total_sales} sales</span>
+                                <span className="sm:hidden">{profile.total_sales}</span>
                               </div>
                             )}
                             {location && (
                               <div className="flex items-center gap-1">
                                 <MapPin className="h-3 w-3" />
-                                <span className="truncate">{location}</span>
+                                <span className="truncate max-w-[150px] md:max-w-none">{location}</span>
                               </div>
                             )}
                           </div>
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-2 md:gap-3 justify-end md:justify-start">
                         <div className="flex items-center gap-2">
                           <Label htmlFor={`position-${store.id}`} className="text-xs text-muted-foreground">
-                            Position
+                            Pos
                           </Label>
                           <Input
                             id={`position-${store.id}`}
@@ -648,7 +649,7 @@ export const AdminFeaturedStores = ({ adminRole }: AdminFeaturedStoresProps) => 
                                 updatePosition.mutate({ storeId: store.id, newPosition });
                               }
                             }}
-                            className="w-16 h-8 text-xs"
+                            className="w-14 md:w-16 h-8 text-xs"
                             disabled={updatePosition.isPending}
                           />
                         </div>
@@ -659,8 +660,9 @@ export const AdminFeaturedStores = ({ adminRole }: AdminFeaturedStoresProps) => 
                               variant="destructive"
                               size="sm"
                               disabled={removeFeaturedStore.isPending}
+                              className="touch-target"
                             >
-                              <Trash2 className="h-4 w-4" />
+                              <Trash2 className="h-3 w-3 md:h-4 md:w-4" />
                             </Button>
                           </AlertDialogTrigger>
                           <AlertDialogContent>
@@ -682,63 +684,62 @@ export const AdminFeaturedStores = ({ adminRole }: AdminFeaturedStoresProps) => 
                           </AlertDialogContent>
                         </AlertDialog>
                       </div>
-                    </div>
                   );
                 }
 
                 // For distributor stores
                 if (distributorProfile) {
-                  const location = distributorProfile.city && distributorProfile.region 
+                  const location = distributorProfile.city && distributorProfile.region
                     ? `${distributorProfile.city}, ${distributorProfile.region}` 
                     : distributorProfile.region || distributorProfile.city;
 
                   return (
                     <div
                       key={store.id}
-                      className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50"
+                      className="flex flex-col md:flex-row md:items-center justify-between p-3 md:p-4 border rounded-lg hover:bg-muted/50 gap-3"
                     >
-                      <div className="flex items-center gap-4">
-                        <div className="flex items-center gap-2">
+                      <div className="flex items-start md:items-center gap-3 md:gap-4 flex-1 min-w-0">
+                        <div className="flex items-center gap-2 shrink-0">
                           <Badge variant="outline" className="text-xs font-mono">
                             #{store.position}
                           </Badge>
                         </div>
 
-                        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center text-white font-semibold ring-2 ring-emerald-200">
+                        <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center text-white font-semibold ring-2 ring-emerald-200 shrink-0">
                           {distributorProfile.name.charAt(0).toUpperCase()}
                         </div>
                         
                         <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 mb-1">
-                            <h4 className="font-medium truncate">{distributorProfile.name}</h4>
+                          <div className="flex items-center gap-2 mb-1 flex-wrap">
+                            <h4 className="font-medium text-sm md:text-base truncate">{distributorProfile.name}</h4>
                             <Badge variant="secondary" className="text-xs">
                               <ShoppingBag className="h-3 w-3 mr-1" />
-                              Distributor
+                              <span className="hidden sm:inline">Distributor</span>
                             </Badge>
                             <Badge className="text-xs bg-gradient-to-r from-orange-100 to-amber-100 text-orange-700">
                               <Crown className="h-3 w-3 mr-1" />
-                              Featured
+                              <span className="hidden sm:inline">Featured</span>
                             </Badge>
                           </div>
                           
-                          <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                          <div className="flex items-center gap-2 md:gap-4 text-xs md:text-sm text-muted-foreground flex-wrap">
                             <div className="flex items-center gap-1">
                               <span className="font-medium">{distributorProfile.category}</span>
                             </div>
                             {location && (
                               <div className="flex items-center gap-1">
                                 <MapPin className="h-3 w-3" />
-                                <span className="truncate">{location}</span>
+                                <span className="truncate max-w-[150px] md:max-w-none">{location}</span>
                               </div>
                             )}
                           </div>
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-2 md:gap-3 justify-end md:justify-start">
                         <div className="flex items-center gap-2">
                           <Label htmlFor={`position-${store.id}`} className="text-xs text-muted-foreground">
-                            Position
+                            Pos
                           </Label>
                           <Input
                             id={`position-${store.id}`}
@@ -751,7 +752,7 @@ export const AdminFeaturedStores = ({ adminRole }: AdminFeaturedStoresProps) => 
                                 updatePosition.mutate({ storeId: store.id, newPosition });
                               }
                             }}
-                            className="w-16 h-8 text-xs"
+                            className="w-14 md:w-16 h-8 text-xs"
                             disabled={updatePosition.isPending}
                           />
                         </div>
@@ -762,8 +763,9 @@ export const AdminFeaturedStores = ({ adminRole }: AdminFeaturedStoresProps) => 
                               variant="destructive"
                               size="sm"
                               disabled={removeFeaturedStore.isPending}
+                              className="touch-target"
                             >
-                              <Trash2 className="h-4 w-4" />
+                              <Trash2 className="h-3 w-3 md:h-4 md:w-4" />
                             </Button>
                           </AlertDialogTrigger>
                           <AlertDialogContent>
