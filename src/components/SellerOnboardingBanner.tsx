@@ -84,7 +84,7 @@ export const SellerOnboardingBanner = () => {
   }
 
   return (
-    <Card className="mx-4 mb-6 bg-gradient-to-r from-primary/10 to-secondary/10 border-primary/20">
+    <Card className="mx-4 mt-3 mb-6 bg-gradient-to-r from-primary/10 to-secondary/10 border-primary/20">
       <CardContent className="p-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
