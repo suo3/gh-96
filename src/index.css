@@ -135,6 +135,11 @@
   header.safe-top {
     padding-top: max(0.75rem, env(safe-area-inset-top)) !important;
   }
+  
+  /* Ensure footer respects safe area on native devices */
+  .pb-safe {
+    padding-bottom: max(2rem, env(safe-area-inset-bottom)) !important;
+  }
 }
 
 /* Custom utility classes for Ghana theme */
