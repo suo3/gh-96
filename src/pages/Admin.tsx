@@ -6,7 +6,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { Shield, Users, Flag, BarChart3, Settings, CheckCircle, ArrowLeft, Crown, Star, MessageSquare } from "lucide-react";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { AdminUserManagement } from "@/components/admin/AdminUserManagement";
 import { AdminListingModeration } from "@/components/admin/AdminListingModeration";
 import { AdminListingApproval } from "@/components/admin/AdminListingApproval";
@@ -26,6 +28,7 @@ import { AppHeader } from "@/components/AppHeader";
 const Admin = () => {
   const { user, isAuthenticated } = useAuthStore();
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
   const [isAdmin, setIsAdmin] = useState(false);
   const [adminRole, setAdminRole] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -83,76 +86,79 @@ const Admin = () => {
 
   return (
     <>
-      <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50">
+      <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50 pb-28 md:pb-0">
         <AppHeader 
           userLocation={null}
           onLocationDetect={() => {}}
           onPostItem={() => {}}
           onLogoClick={() => navigate('/')}
         />
-        <div className="container mx-auto px-4 py-8">
-          <div className="mb-8">
+        <div className="container mx-auto px-3 md:px-4 py-4 md:py-8">
+          <div className="mb-6 md:mb-8">
             <Button 
               variant="outline" 
               onClick={() => navigate("/")}
-              className="mb-6"
+              className="mb-4 md:mb-6 touch-target"
+              size={isMobile ? "sm" : "default"}
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Homepage
+              Back
             </Button>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Admin Dashboard</h1>
-            <p className="text-gray-600">
+            <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">Admin Dashboard</h1>
+            <p className="text-sm md:text-base text-gray-600">
               Welcome back, {user?.firstName}! You have {adminRole} access.
             </p>
           </div>
 
-          <Tabs defaultValue="analytics" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-11 lg:w-auto lg:grid-cols-11">
-              <TabsTrigger value="analytics" className="flex items-center gap-2">
-                <BarChart3 className="w-4 h-4" />
-                Analytics
-              </TabsTrigger>
-              <TabsTrigger value="users" className="flex items-center gap-2">
-                <Users className="w-4 h-4" />
-                Users
-              </TabsTrigger>
-              <TabsTrigger value="approval" className="flex items-center gap-2">
-                <CheckCircle className="w-4 h-4" />
-                Listings
-              </TabsTrigger>
-              <TabsTrigger value="distributors" className="flex items-center gap-2">
-                <Shield className="w-4 h-4" />
-                Distributors
-              </TabsTrigger>
-              <TabsTrigger value="bulk-import" className="flex items-center gap-2">
-                <Shield className="w-4 h-4" />
-                Bulk Import
-              </TabsTrigger>
-              <TabsTrigger value="promotions" className="flex items-center gap-2">
-                <Star className="w-4 h-4" />
-                Promotions
-              </TabsTrigger>
-              <TabsTrigger value="featured-stores" className="flex items-center gap-2">
-                <Crown className="w-4 h-4" />
-                Featured
-              </TabsTrigger>
-              <TabsTrigger value="inquiries" className="flex items-center gap-2">
-                <MessageSquare className="w-4 h-4" />
-                Inquiries
-              </TabsTrigger>
-              <TabsTrigger value="messages" className="flex items-center gap-2">
-                <MessageSquare className="w-4 h-4" />
-                Messages
-              </TabsTrigger>
-              <TabsTrigger value="moderation" className="flex items-center gap-2">
-                <Flag className="w-4 h-4" />
-                Reports
-              </TabsTrigger>
-              <TabsTrigger value="settings" className="flex items-center gap-2">
-                <Settings className="w-4 h-4" />
-                Settings
-              </TabsTrigger>
-            </TabsList>
+          <Tabs defaultValue="analytics" className="space-y-4 md:space-y-6">
+            <ScrollArea className="w-full pb-2">
+              <TabsList className="inline-flex w-max min-w-full md:w-auto md:grid md:grid-cols-11">
+                <TabsTrigger value="analytics" className="flex items-center gap-1 md:gap-2 text-xs md:text-sm px-2 md:px-3">
+                  <BarChart3 className="w-3 h-3 md:w-4 md:h-4" />
+                  <span className="hidden sm:inline">Analytics</span>
+                </TabsTrigger>
+                <TabsTrigger value="users" className="flex items-center gap-1 md:gap-2 text-xs md:text-sm px-2 md:px-3">
+                  <Users className="w-3 h-3 md:w-4 md:h-4" />
+                  <span className="hidden sm:inline">Users</span>
+                </TabsTrigger>
+                <TabsTrigger value="approval" className="flex items-center gap-1 md:gap-2 text-xs md:text-sm px-2 md:px-3">
+                  <CheckCircle className="w-3 h-3 md:w-4 md:h-4" />
+                  <span className="hidden sm:inline">Listings</span>
+                </TabsTrigger>
+                <TabsTrigger value="distributors" className="flex items-center gap-1 md:gap-2 text-xs md:text-sm px-2 md:px-3">
+                  <Shield className="w-3 h-3 md:w-4 md:h-4" />
+                  <span className="hidden sm:inline">Distributors</span>
+                </TabsTrigger>
+                <TabsTrigger value="bulk-import" className="flex items-center gap-1 md:gap-2 text-xs md:text-sm px-2 md:px-3">
+                  <Shield className="w-3 h-3 md:w-4 md:h-4" />
+                  <span className="hidden sm:inline">Bulk Import</span>
+                </TabsTrigger>
+                <TabsTrigger value="promotions" className="flex items-center gap-1 md:gap-2 text-xs md:text-sm px-2 md:px-3">
+                  <Star className="w-3 h-3 md:w-4 md:h-4" />
+                  <span className="hidden sm:inline">Promotions</span>
+                </TabsTrigger>
+                <TabsTrigger value="featured-stores" className="flex items-center gap-1 md:gap-2 text-xs md:text-sm px-2 md:px-3">
+                  <Crown className="w-3 h-3 md:w-4 md:h-4" />
+                  <span className="hidden sm:inline">Featured</span>
+                </TabsTrigger>
+                <TabsTrigger value="inquiries" className="flex items-center gap-1 md:gap-2 text-xs md:text-sm px-2 md:px-3">
+                  <MessageSquare className="w-3 h-3 md:w-4 md:h-4" />
+                  <span className="hidden sm:inline">Inquiries</span>
+                </TabsTrigger>
+                <TabsTrigger value="messages" className="flex items-center gap-1 md:gap-2 text-xs md:text-sm px-2 md:px-3">
+                  <MessageSquare className="w-3 h-3 md:w-4 md:h-4" />
+                  <span className="hidden sm:inline">Messages</span>
+                </TabsTrigger>
+                <TabsTrigger value="moderation" className="flex items-center gap-1 md:gap-2 text-xs md:text-sm px-2 md:px-3">
+                  <Flag className="w-3 h-3 md:w-4 md:h-4" />
+                  <span className="hidden sm:inline">Reports</span>
+                </TabsTrigger>
+                <TabsTrigger value="settings" className="flex items-center gap-1 md:gap-2 text-xs md:text-sm px-2 md:px-3">
+                  <Settings className="w-3 h-3 md:w-4 md:h-4" />
+                  <span className="hidden sm:inline">Settings</span>
+                </TabsTrigger>
+              </TabsList>
+            </ScrollArea>
 
             <TabsContent value="analytics">
               <AdminAnalytics />

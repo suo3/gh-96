@@ -204,106 +204,119 @@ export const AdminUserManagement = ({ adminRole }: AdminUserManagementProps) => 
             <CreateUserDialog onUserCreated={fetchUsers} />
           </div>
 
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>User</TableHead>
-                  <TableHead>Location</TableHead>
-                  <TableHead>Coins</TableHead>
-                  <TableHead>Rating</TableHead>
-                  <TableHead>Sales</TableHead>
-                  <TableHead>Role</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredUsers.map((user) => (
-                  <TableRow key={user.id}>
-                    <TableCell>
-                      <div>
-                        <div className="font-medium">
-                          {user.firstName} {user.lastName}
-                        </div>
-                        <div className="text-sm text-gray-500">
-                          @{user.username}
-                        </div>
-                      </div>
-                    </TableCell>
-                    <TableCell>{user.location || 'Not set'}</TableCell>
-                    <TableCell>{user.coins}</TableCell>
-                    <TableCell>{user.rating.toFixed(1)}</TableCell>
-                    <TableCell>{user.totalSales}</TableCell>
-                    <TableCell>
-                      {user.isAdmin ? (
-                        <Badge variant="secondary">
-                          <Shield className="w-3 h-3 mr-1" />
-                          {user.adminRole}
-                        </Badge>
-                      ) : (
-                        <Badge variant="outline">User</Badge>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex gap-2 flex-wrap justify-end">
-                        <EditUserDialog user={user} onUserUpdated={fetchUsers} />
-                        <UserListingsManager 
-                          userId={user.id} 
-                          userName={`${user.firstName} ${user.lastName}`.trim() || user.username || 'Unknown User'} 
-                        />
-                        {adminRole === 'super_admin' && !user.isAdmin && (
-                          <div className="flex gap-2">
-                            <Button 
-                              variant="outline" 
-                              size="sm"
-                              onClick={() => promoteToAdmin(user.id, 'support')}
-                            >
-                              <UserPlus className="w-4 h-4 mr-1" />
-                              Support
-                            </Button>
-                            <Button 
-                              variant="outline" 
-                              size="sm"
-                              onClick={() => promoteToAdmin(user.id, 'moderator')}
-                            >
-                              <UserPlus className="w-4 h-4 mr-1" />
-                              Moderator
-                            </Button>
-                            <Button 
-                              variant="outline" 
-                              size="sm"
-                              onClick={() => promoteToAdmin(user.id, 'super_admin')}
-                            >
-                              <UserPlus className="w-4 h-4 mr-1" />
-                              Super Admin
-                            </Button>
+          <div className="overflow-x-auto -mx-3 md:mx-0">
+            <div className="inline-block min-w-full align-middle">
+              <div className="overflow-hidden">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="min-w-[150px]">User</TableHead>
+                      <TableHead className="hidden lg:table-cell">Location</TableHead>
+                      <TableHead className="hidden md:table-cell">Coins</TableHead>
+                      <TableHead className="hidden sm:table-cell">Rating</TableHead>
+                      <TableHead className="hidden md:table-cell">Sales</TableHead>
+                      <TableHead>Role</TableHead>
+                      <TableHead className="text-right min-w-[150px]">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredUsers.map((user) => (
+                      <TableRow key={user.id}>
+                        <TableCell>
+                          <div>
+                            <div className="font-medium text-sm md:text-base">
+                              {user.firstName} {user.lastName}
+                            </div>
+                            <div className="text-xs md:text-sm text-gray-500">
+                              @{user.username}
+                            </div>
+                            <div className="md:hidden text-xs text-muted-foreground mt-1">
+                              {user.coins} coins • ★{user.rating.toFixed(1)}
+                            </div>
                           </div>
-                        )}
-                        {adminRole === 'super_admin' && user.isAdmin && (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => removeAdminAccess(user.id)}
-                          >
-                            Remove Admin
-                          </Button>
-                        )}
-                        {adminRole === 'super_admin' && (
-                          <Button
-                            variant="destructive"
-                            size="sm"
-                            onClick={() => handleDeleteUser(user.id, `${user.firstName} ${user.lastName}`.trim() || user.username || 'User')}
-                          >
-                            <Trash2 className="w-4 h-4 mr-1" />
-                            Delete
-                          </Button>
-                        )}
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                        </TableCell>
+                        <TableCell className="hidden lg:table-cell text-sm">{user.location || 'Not set'}</TableCell>
+                        <TableCell className="hidden md:table-cell text-sm">{user.coins}</TableCell>
+                        <TableCell className="hidden sm:table-cell text-sm">{user.rating.toFixed(1)}</TableCell>
+                        <TableCell className="hidden md:table-cell text-sm">{user.totalSales}</TableCell>
+                        <TableCell>
+                          {user.isAdmin ? (
+                            <Badge variant="secondary" className="text-xs">
+                              <Shield className="w-3 h-3 mr-1" />
+                              <span className="hidden sm:inline">{user.adminRole}</span>
+                            </Badge>
+                          ) : (
+                            <Badge variant="outline" className="text-xs">User</Badge>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex gap-1 md:gap-2 flex-wrap justify-end">
+                            <EditUserDialog user={user} onUserUpdated={fetchUsers} />
+                            <UserListingsManager 
+                              userId={user.id} 
+                              userName={`${user.firstName} ${user.lastName}`.trim() || user.username || 'Unknown User'} 
+                            />
+                            {adminRole === 'super_admin' && !user.isAdmin && (
+                              <div className="flex gap-1 md:gap-2 flex-wrap">
+                                <Button 
+                                  variant="outline" 
+                                  size="sm"
+                                  onClick={() => promoteToAdmin(user.id, 'support')}
+                                  className="text-xs touch-target"
+                                >
+                                  <UserPlus className="w-3 h-3 md:w-4 md:h-4 md:mr-1" />
+                                  <span className="hidden lg:inline">Support</span>
+                                </Button>
+                                <Button 
+                                  variant="outline" 
+                                  size="sm"
+                                  onClick={() => promoteToAdmin(user.id, 'moderator')}
+                                  className="text-xs touch-target"
+                                >
+                                  <UserPlus className="w-3 h-3 md:w-4 md:h-4 md:mr-1" />
+                                  <span className="hidden lg:inline">Moderator</span>
+                                </Button>
+                                <Button 
+                                  variant="outline" 
+                                  size="sm"
+                                  onClick={() => promoteToAdmin(user.id, 'super_admin')}
+                                  className="text-xs touch-target"
+                                >
+                                  <UserPlus className="w-3 h-3 md:w-4 md:h-4 md:mr-1" />
+                                  <span className="hidden lg:inline">Admin</span>
+                                </Button>
+                              </div>
+                            )}
+                            {adminRole === 'super_admin' && user.isAdmin && (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => removeAdminAccess(user.id)}
+                                className="text-xs touch-target"
+                              >
+                                <span className="hidden md:inline">Remove Admin</span>
+                                <span className="md:hidden">Remove</span>
+                              </Button>
+                            )}
+                            {adminRole === 'super_admin' && (
+                              <Button
+                                variant="destructive"
+                                size="sm"
+                                onClick={() => handleDeleteUser(user.id, `${user.firstName} ${user.lastName}`.trim() || user.username || 'User')}
+                                className="text-xs touch-target"
+                              >
+                                <Trash2 className="w-3 h-3 md:w-4 md:h-4 md:mr-1" />
+                                <span className="hidden md:inline">Delete</span>
+                              </Button>
+                            )}
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </div>
           </div>
         </CardContent>
       </Card>

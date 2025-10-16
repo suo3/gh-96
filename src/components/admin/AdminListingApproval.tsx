@@ -286,117 +286,130 @@ export const AdminListingApproval = () => {
             </div>
           )}
 
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-12">
-                    <Checkbox
-                      checked={selectedListings.length === filteredListings.length && filteredListings.length > 0}
-                      onCheckedChange={toggleSelectAll}
-                    />
-                  </TableHead>
-                  <TableHead>Title</TableHead>
-                  <TableHead>User</TableHead>
-                  <TableHead>Category</TableHead>
-                  <TableHead>Condition</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Date</TableHead>
-                  <TableHead>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredListings.map((listing) => (
-                  <TableRow key={listing.id}>
-                    <TableCell>
-                      <Checkbox
-                        checked={selectedListings.includes(listing.id)}
-                        onCheckedChange={() => toggleSelectListing(listing.id)}
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <div>
-                        <div className="font-medium">{listing.title}</div>
-                        {listing.description && (
-                          <div className="text-sm text-muted-foreground mt-1 max-w-xs truncate">
-                            {listing.description}
+          <div className="overflow-x-auto -mx-3 md:mx-0">
+            <div className="inline-block min-w-full align-middle">
+              <div className="overflow-hidden">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-12">
+                        <Checkbox
+                          checked={selectedListings.length === filteredListings.length && filteredListings.length > 0}
+                          onCheckedChange={toggleSelectAll}
+                        />
+                      </TableHead>
+                      <TableHead className="min-w-[150px]">Title</TableHead>
+                      <TableHead className="hidden md:table-cell">User</TableHead>
+                      <TableHead className="hidden sm:table-cell">Category</TableHead>
+                      <TableHead className="hidden lg:table-cell">Condition</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead className="hidden md:table-cell">Date</TableHead>
+                      <TableHead className="text-right min-w-[200px]">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredListings.map((listing) => (
+                      <TableRow key={listing.id}>
+                        <TableCell>
+                          <Checkbox
+                            checked={selectedListings.includes(listing.id)}
+                            onCheckedChange={() => toggleSelectListing(listing.id)}
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <div>
+                            <div className="font-medium text-sm md:text-base">{listing.title}</div>
+                            {listing.description && (
+                              <div className="text-xs md:text-sm text-muted-foreground mt-1 max-w-xs truncate">
+                                {listing.description}
+                              </div>
+                            )}
+                            <div className="md:hidden text-xs text-muted-foreground mt-1">
+                              @{listing.user_username} • {listing.category}
+                            </div>
                           </div>
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell>@{listing.user_username}</TableCell>
-                    <TableCell>{listing.category}</TableCell>
-                    <TableCell>{listing.condition}</TableCell>
-                    <TableCell>
-                      <Badge 
-                        variant={
-                          listing.status === 'pending' ? 'secondary' :
-                          listing.status === 'active' ? 'default' : 'destructive'
-                        }
-                      >
-                        {listing.status === 'pending' && <Clock className="w-3 h-3 mr-1" />}
-                        {listing.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      {new Date(listing.created_at).toLocaleDateString()}
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex gap-2">
-                        {listing.status === 'pending' && (
-                          <>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => updateListingStatus(listing.id, 'active')}
-                            >
-                              <Check className="w-4 h-4 mr-1" />
-                              Approve
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => updateListingStatus(listing.id, 'rejected')}
-                            >
-                              <X className="w-4 h-4 mr-1" />
-                              Reject
-                            </Button>
-                          </>
-                        )}
-                        {listing.status === 'active' && (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => updateListingStatus(listing.id, 'rejected')}
+                        </TableCell>
+                        <TableCell className="hidden md:table-cell text-sm">@{listing.user_username}</TableCell>
+                        <TableCell className="hidden sm:table-cell text-sm">{listing.category}</TableCell>
+                        <TableCell className="hidden lg:table-cell text-sm">{listing.condition}</TableCell>
+                        <TableCell>
+                          <Badge 
+                            variant={
+                              listing.status === 'pending' ? 'secondary' :
+                              listing.status === 'active' ? 'default' : 'destructive'
+                            }
+                            className="text-xs"
                           >
-                            <X className="w-4 h-4 mr-1" />
-                            Reject
-                          </Button>
-                        )}
-                        {listing.status === 'rejected' && (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => updateListingStatus(listing.id, 'active')}
-                          >
-                            <Check className="w-4 h-4 mr-1" />
-                            Reactivate
-                          </Button>
-                        )}
-                        <Button
-                          variant="destructive"
-                          size="sm"
-                          onClick={() => deleteListing(listing.id)}
-                        >
-                          <Trash className="w-4 h-4 mr-1" />
-                          Delete
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                            {listing.status === 'pending' && <Clock className="w-3 h-3 mr-1" />}
+                            {listing.status}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="hidden md:table-cell text-sm">
+                          {new Date(listing.created_at).toLocaleDateString()}
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex gap-1 md:gap-2 flex-wrap justify-end">
+                            {listing.status === 'pending' && (
+                              <>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => updateListingStatus(listing.id, 'active')}
+                                  className="text-xs touch-target"
+                                >
+                                  <Check className="w-3 h-3 md:w-4 md:h-4 md:mr-1" />
+                                  <span className="hidden md:inline">Approve</span>
+                                </Button>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => updateListingStatus(listing.id, 'rejected')}
+                                  className="text-xs touch-target"
+                                >
+                                  <X className="w-3 h-3 md:w-4 md:h-4 md:mr-1" />
+                                  <span className="hidden md:inline">Reject</span>
+                                </Button>
+                              </>
+                            )}
+                            {listing.status === 'active' && (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => updateListingStatus(listing.id, 'rejected')}
+                                className="text-xs touch-target"
+                              >
+                                <X className="w-3 h-3 md:w-4 md:h-4 md:mr-1" />
+                                <span className="hidden md:inline">Reject</span>
+                              </Button>
+                            )}
+                            {listing.status === 'rejected' && (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => updateListingStatus(listing.id, 'active')}
+                                className="text-xs touch-target"
+                              >
+                                <Check className="w-3 h-3 md:w-4 md:h-4 md:mr-1" />
+                                <span className="hidden md:inline">Reactivate</span>
+                              </Button>
+                            )}
+                            <Button
+                              variant="destructive"
+                              size="sm"
+                              onClick={() => deleteListing(listing.id)}
+                              className="text-xs touch-target"
+                            >
+                              <Trash className="w-3 h-3 md:w-4 md:h-4 md:mr-1" />
+                              <span className="hidden md:inline">Delete</span>
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </div>
           </div>
 
           {filteredListings.length === 0 && (
