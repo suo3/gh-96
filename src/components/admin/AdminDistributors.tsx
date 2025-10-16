@@ -321,9 +321,9 @@ export const AdminDistributors: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h2 className="text-3xl font-bold tracking-tight">Distributors Management</h2>
-        <div className="flex space-x-2">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-0">
+        <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">Distributors Management</h2>
+        <div className="flex gap-2">
           <AdminDistributorsBulkImport />
           <Dialog open={showAddDialog || !!editingDistributor} onOpenChange={(open) => {
             if (!open) {
@@ -333,9 +333,10 @@ export const AdminDistributors: React.FC = () => {
             }
           }}>
             <DialogTrigger asChild>
-              <Button onClick={() => setShowAddDialog(true)}>
-                <Plus className="h-4 w-4 mr-2" />
-                Add Distributor
+              <Button onClick={() => setShowAddDialog(true)} className="touch-target">
+                <Plus className="h-4 w-4 sm:mr-2" />
+                <span className="hidden sm:inline">Add Distributor</span>
+                <span className="sm:hidden">Add</span>
               </Button>
             </DialogTrigger>
           <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
