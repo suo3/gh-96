@@ -13,7 +13,7 @@ export const Footer = () => {
           </div>
           
           {/* Mobile Apps Coming Soon */}
-          <div className="flex items-center gap-4">
+          <div hidden className="flex items-center gap-4">
             <div className="flex items-center gap-2 px-3 py-2 bg-muted/50 rounded-lg">
               <Smartphone className="h-4 w-4 text-muted-foreground" />
               <span className="text-xs text-muted-foreground font-medium">iOS App</span>
