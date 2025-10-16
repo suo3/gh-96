@@ -493,7 +493,7 @@ const ItemDetail = () => {
                     <Button
                       onClick={() => onStartConversation(item)}
                       variant="outline"
-                      className="flex-1 border-primary/20 text-primary hover:bg-primary/5"
+                      className="flex-1 border-primary/20 text-primary hover:text-primary hover:bg-primary/5"
                     >
                       <MessageCircle className="w-4 h-4 mr-2" />
                       Start Chat
