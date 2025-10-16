@@ -161,12 +161,12 @@ export const MessagesPanel = ({ onBack, onLogin }: MessagesPanelProps) => {
         </div>
       </header>
 
-      <div className="container mx-auto px-3 md:px-4 py-3 md:py-6">
+      <div className="container mx-auto px-3 md:px-4 py-3 md:py-6 pb-28 md:pb-6">
         {isMobile ? (
           /* Mobile Layout */
           selectedChat ? (
             /* Chat View */
-            <div className="flex flex-col h-[calc(100vh-180px)] pb-20 md:pb-0">
+            <div className="flex flex-col h-[calc(100vh-180px)] pb-28 md:pb-0">
               <Card className="flex-1 flex flex-col mobile-card">
                 <CardHeader className="border-b p-3">
                   <div className="flex items-center justify-between gap-2">
@@ -214,7 +214,7 @@ export const MessagesPanel = ({ onBack, onLogin }: MessagesPanelProps) => {
                 <CardContent className="p-0 flex flex-col flex-1">
                   {/* Messages Area */}
                   <ScrollArea className="flex-1 p-3 md:p-4">
-                    <div className="space-y-3 md:space-y-4">
+                    <div className="space-y-3 md:space-y-4 pb-24">
                       {currentMessages.map((message) => (
                         <MessageBubble key={message.id} message={message} />
                       ))}
@@ -293,7 +293,7 @@ export const MessagesPanel = ({ onBack, onLogin }: MessagesPanelProps) => {
             </div>
           ) : (
             /* Conversations List View */
-            <Card className="mobile-card mb-20 md:mb-0">
+            <Card className="mobile-card mb-28 md:mb-0">
               <CardHeader className="pb-3 p-3 md:p-6">
                 <CardTitle className="text-base md:text-lg mb-3">Conversations</CardTitle>
                 <MessageSearch 
