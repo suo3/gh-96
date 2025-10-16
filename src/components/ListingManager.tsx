@@ -192,7 +192,7 @@ export const ListingManager = () => {
                   <div className="flex items-center space-x-2 pt-4">
                     {listing.status !== 'completed' && (
                       <>
-                        <Button
+                       {/*  <Button
                         hidden
                           variant="outline"
                           size="sm"
@@ -209,8 +209,8 @@ export const ListingManager = () => {
                               Resume
                             </>
                           )}
-                        </Button>
-                        <Button
+                        </Button> */}
+                       {/*  <Button
                         hidden
                           variant="outline"
                           size="sm"
@@ -218,7 +218,7 @@ export const ListingManager = () => {
                         >
                           <CheckCircle className="w-4 h-4 mr-2" />
                           Mark Complete
-                        </Button>
+                        </Button> */}
                       </>
                     )}
                     <Button
