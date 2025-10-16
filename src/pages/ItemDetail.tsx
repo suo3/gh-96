@@ -16,6 +16,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Helmet } from "react-helmet";
 import { generatePageTitle, generateMetaDescription } from "@/constants/seo";
 import { FeaturedStoresCarousel } from "@/components/FeaturedStoresCarousel";
+import { AppHeader } from "@/components/AppHeader";
 
 const ItemDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -313,6 +314,14 @@ const ItemDetail = () => {
       </Helmet>
 
       <div className="min-h-screen bg-background">
+        {/* Navigation Header */}
+        <AppHeader 
+          userLocation={null}
+          onLocationDetect={() => {}}
+          onPostItem={() => navigate('/marketplace')}
+          onLogoClick={() => navigate('/')}
+        />
+        
         {/* Featured Stores Carousel */}
         <FeaturedStoresCarousel />
         
