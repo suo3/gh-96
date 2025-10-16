@@ -559,7 +559,7 @@ export const AdminFeaturedStores = ({ adminRole }: AdminFeaturedStoresProps) => 
               <p className="text-muted-foreground">No featured stores configured yet.</p>
             </div>
           ) : (
-            <div className="space-y-4">
+            <div className="flex flex-col gap-4">
               {featuredStores.map((store) => {
                 const profile = store.profiles;
                 const distributorProfile = store.distributor_profiles;
@@ -684,6 +684,7 @@ export const AdminFeaturedStores = ({ adminRole }: AdminFeaturedStoresProps) => 
                           </AlertDialogContent>
                         </AlertDialog>
                       </div>
+                    </div>
                   );
                 }
 
