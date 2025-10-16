@@ -111,8 +111,8 @@ export const FeaturedStoresSpotlight = () => {
 
   if (isLoading) {
     return (
-      <div className="relative w-full h-[400px] lg:h-[500px] xl:h-[600px] animate-pulse">
-        <div className="bg-muted rounded-2xl w-full h-full"></div>
+      <div className="relative w-full h-[200px] sm:h-[250px] md:h-[300px] flex items-center justify-center">
+        <div className="bg-transparent w-full h-full"></div>
       </div>
     );
   }

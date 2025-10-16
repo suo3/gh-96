@@ -65,14 +65,14 @@ export const UserProfile = ({ onBack }: UserProfileProps) => {
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-6 max-w-5xl">
+      <main className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 max-w-5xl">
         {/* Profile Header - Improved Layout */}
         <Card className="mb-6">
-          <CardContent className="p-6">
-            <div className="flex flex-col lg:flex-row gap-6">
+          <CardContent className="p-4 sm:p-6">
+            <div className="flex flex-col lg:flex-row gap-4 sm:gap-6">
               {/* Profile Image */}
               <div className="flex-shrink-0 mx-auto lg:mx-0">
-                <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-white shadow-lg">
+                <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-full overflow-hidden border-4 border-white shadow-lg">
                   {user.profileImageUrl ? (
                     <img
                       src={user.profileImageUrl}
@@ -80,7 +80,7 @@ export const UserProfile = ({ onBack }: UserProfileProps) => {
                       className="w-full h-full object-cover"
                     />
                   ) : (
-                    <div className="w-full h-full bg-gradient-to-br from-emerald-400 to-teal-400 flex items-center justify-center text-white text-4xl font-bold">
+                    <div className="w-full h-full bg-gradient-to-br from-emerald-400 to-teal-400 flex items-center justify-center text-white text-2xl sm:text-4xl font-bold">
                       {user.avatar}
                     </div>
                   )}
@@ -89,14 +89,14 @@ export const UserProfile = ({ onBack }: UserProfileProps) => {
 
               {/* Profile Info */}
               <div className="flex-1 text-center lg:text-left">
-                <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between mb-4">
+                <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between mb-3 sm:mb-4">
                   <div>
-                    <h2 className="text-3xl font-bold text-gray-900 mb-2">{userStats.name}</h2>
+                    <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 mb-2">{userStats.name}</h2>
                     {user.bio && (
-                      <p className="text-gray-600 mb-3 max-w-2xl">{user.bio}</p>
+                      <p className="text-sm sm:text-base text-gray-600 mb-2 sm:mb-3 max-w-2xl">{user.bio}</p>
                     )}
                     
-                    <div className="flex flex-wrap items-center justify-center lg:justify-start gap-4 text-sm text-gray-600 mb-4">
+                    <div className="flex flex-wrap items-center justify-center lg:justify-start gap-2 sm:gap-4 text-xs sm:text-sm text-gray-600 mb-3 sm:mb-4">
                       <div className="flex items-center">
                         <MapPin className="w-4 h-4 mr-1" />
                         {userStats.location}

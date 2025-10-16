@@ -95,18 +95,18 @@ export const ProfileEditor = () => {
   return (
     <div className="space-y-6">
       <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center justify-between">
-            Profile Information
+        <CardHeader className="p-4 sm:p-6">
+          <CardTitle className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <span className="text-lg sm:text-xl">Profile Information</span>
             <div className="flex items-center space-x-2">
-              <Coins className="w-5 h-5 text-yellow-500" />
-              <Badge variant="outline" className="text-yellow-700 border-yellow-300">
+              <Coins className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-500" />
+              <Badge variant="outline" className="text-xs sm:text-sm text-yellow-700 border-yellow-300">
                 {user.coins} coins
               </Badge>
             </div>
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-6">
+        <CardContent className="space-y-4 sm:space-y-6 p-4 sm:p-6">
           {/* Profile Image Upload */}
           <div className="flex justify-center">
             <ProfileImageUpload
@@ -115,7 +115,7 @@ export const ProfileEditor = () => {
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
             <div className="space-y-2">
               <Label htmlFor="firstName">First Name</Label>
               <Input
@@ -168,8 +168,8 @@ export const ProfileEditor = () => {
           </div>
 
           {/* Ghana-specific location selection */}
-          <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-3 sm:space-y-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
               <div className="space-y-2">
                 <Label htmlFor="region">Region</Label>
                 <Select
@@ -321,7 +321,7 @@ export const ProfileEditor = () => {
             </Select>
           </div>
 
-          <Button onClick={handleSave} className="w-full">
+          <Button onClick={handleSave} className="w-full touch-target">
             <Save className="w-4 h-4 mr-2" />
             Save Changes
           </Button>
