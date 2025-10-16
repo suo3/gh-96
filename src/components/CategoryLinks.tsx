@@ -97,7 +97,7 @@ export const CategoryLinks = () => {
           <Button 
             variant="outline"
             onClick={handleViewAllCategories}
-            className="border-2 border-primary/30 text-primary hover:bg-primary/10 hover:border-primary bg-background/80 backdrop-blur-sm px-8 py-3 font-semibold transition-all duration-300 hover:scale-105"
+            className="border-2 border-primary/30 text-primary hover:text-primary hover:bg-primary/10 hover:border-primary bg-background/80 backdrop-blur-sm px-8 py-3 font-semibold transition-all duration-300 hover:scale-105"
           >
             View All Categories
             <ArrowRight className="ml-2 h-4 w-4" />

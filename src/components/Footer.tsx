@@ -13,7 +13,7 @@ export const Footer = () => {
           </div>
           
           {/* Mobile Apps Coming Soon */}
-          <div hidden className="flex items-center gap-4">
+         {/*  <div hidden className="flex items-center gap-4">
             <div className="flex items-center gap-2 px-3 py-2 bg-muted/50 rounded-lg">
               <Smartphone className="h-4 w-4 text-muted-foreground" />
               <span className="text-xs text-muted-foreground font-medium">iOS App</span>
@@ -24,7 +24,7 @@ export const Footer = () => {
               <span className="text-xs text-muted-foreground font-medium">Android App</span>
               <span className="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full">Coming Soon</span>
             </div>
-          </div>
+          </div> */}
           
           <div className="flex flex-wrap justify-center gap-6">
             <Link 

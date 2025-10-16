@@ -314,7 +314,7 @@ export const ItemDetailModal = ({
                   <Button
                     onClick={() => onStartConversation(item)}
                     variant="outline"
-                    className="flex-1 border-emerald-200 text-emerald-700 hover:bg-emerald-50"
+                    className="flex-1 border-emerald-200 text-emerald-700 hover:bg-emerald-50 hover:text-primary"
                   >
                     <MessageCircle className="w-4 h-4 mr-2" />
                     Start Chat

@@ -193,6 +193,7 @@ export const ListingManager = () => {
                     {listing.status !== 'completed' && (
                       <>
                         <Button
+                        hidden
                           variant="outline"
                           size="sm"
                           onClick={() => handleToggleStatus(listing.id, listing.status, listing.title)}
@@ -210,6 +211,7 @@ export const ListingManager = () => {
                           )}
                         </Button>
                         <Button
+                        hidden
                           variant="outline"
                           size="sm"
                           onClick={() => handleMarkComplete(listing.id, listing.title)}
