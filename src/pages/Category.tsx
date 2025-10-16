@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -12,6 +12,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { Footer } from "@/components/Footer";
 import { getCategoryIcon } from "@/utils/categoryIcons";
 import { FeaturedStoresCarousel } from "@/components/FeaturedStoresCarousel";
+import { AppHeader } from "@/components/AppHeader";
 
 type FilterOptions = {
   category: string;
@@ -23,6 +24,7 @@ type FilterOptions = {
 
 export default function Category() {
   const { categorySlug } = useParams<{ categorySlug: string }>();
+  const navigate = useNavigate();
   const [categoryName, setCategoryName] = useState<string>("");
   const [filteredListings, setFilteredListings] = useState<Listing[]>([]);
   const [showFilters, setShowFilters] = useState(false);
@@ -112,6 +114,13 @@ export default function Category() {
       </Helmet>
 
       <div className="min-h-screen bg-background">
+        <AppHeader 
+          userLocation={null}
+          onLocationDetect={() => {}}
+          onPostItem={() => navigate('/marketplace')}
+          onLogoClick={() => navigate('/')}
+        />
+        
         {/* Featured Stores Carousel */}
         <FeaturedStoresCarousel />
         
