@@ -38,7 +38,7 @@ export const ConversationList = ({ conversations, selectedChat, onSelectChat }: 
   };
 
   return (
-    <ScrollArea className="h-[600px]">
+    <ScrollArea className="h-[60vh] md:h-[600px]">
       <div className="space-y-2 p-4">
          {conversations.map((conv) => (
           <div

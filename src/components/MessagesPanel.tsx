@@ -166,8 +166,8 @@ export const MessagesPanel = ({ onBack, onLogin }: MessagesPanelProps) => {
           /* Mobile Layout */
           selectedChat ? (
             /* Chat View */
-            <div className="flex flex-col h-[calc(100vh-180px)] pb-28 md:pb-0">
-              <Card className="flex-1 flex flex-col mobile-card">
+            <div className="flex flex-col min-h-0 h-[calc(100dvh-180px)] pb-28 md:pb-0">
+              <Card className="flex-1 flex flex-col min-h-0 mobile-card">
                 <CardHeader className="border-b p-3">
                   <div className="flex items-center justify-between gap-2">
                     <Button 
@@ -211,9 +211,9 @@ export const MessagesPanel = ({ onBack, onLogin }: MessagesPanelProps) => {
                     </p>
                   )}
                 </CardHeader>
-                <CardContent className="p-0 flex flex-col flex-1">
+                <CardContent className="p-0 flex flex-col flex-1 min-h-0">
                   {/* Messages Area */}
-                  <ScrollArea className="flex-1 p-3 md:p-4">
+                  <ScrollArea className="flex-1 h-0 min-h-0 p-3 md:p-4 overscroll-contain">
                     <div className="space-y-3 md:space-y-4 pb-24">
                       {currentMessages.map((message) => (
                         <MessageBubble key={message.id} message={message} />
