@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Helmet } from "react-helmet";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Footer } from "@/components/Footer";
 import { getCategoryIcon } from "@/utils/categoryIcons";
+import { AppHeader } from "@/components/AppHeader";
 
 interface Category {
   id: string;
@@ -22,6 +23,7 @@ export default function Categories() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchCategories();
@@ -97,6 +99,13 @@ export default function Categories() {
       </Helmet>
 
       <div className="min-h-screen bg-background">
+        <AppHeader 
+          userLocation={null}
+          onLocationDetect={() => {}}
+          onPostItem={() => navigate('/marketplace')}
+          onLogoClick={() => navigate('/')}
+        />
+        
         <div className="container mx-auto px-4 py-8">
           {/* Header */}
           <div className="mb-8">
