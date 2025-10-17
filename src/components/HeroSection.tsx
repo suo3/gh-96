@@ -43,7 +43,7 @@ export const HeroSection = ({ onPostItem, onBrowseItems }: HeroSectionProps) => 
               </h1>
               
               <p className="text-sm sm:text-base md:text-lg lg:text-xl text-white mb-4 sm:mb-6 md:mb-8 max-w-lg animate-fade-in animate-delay-500 opacity-0 [animation-fill-mode:forwards] leading-relaxed">
-                Join Ghana's fastest-growing marketplace. Buy and sell locally with trusted sellers. Mobile money payments supported.
+                Join Ghana's fastest-growing marketplace. Buy and sell locally with trusted sellers.
               </p>
               
               <div className="flex flex-col gap-3 sm:flex-row sm:gap-3 md:gap-4 animate-fade-in animate-delay-700 opacity-0 [animation-fill-mode:forwards]">
