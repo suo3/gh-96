@@ -183,4 +183,9 @@
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
+  footer{
+    @media screen and (max-width: 768px) {
+      height: 250px;
+    }
+  }
 }
