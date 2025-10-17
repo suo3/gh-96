@@ -47,7 +47,7 @@ export const MobileBottomNav = () => {
                     active ? "text-primary stroke-[2.5]" : "text-muted-foreground stroke-[2]"
                   )} 
                 />
-                {item.badge && item.badge > 0 && (
+                {item.badge !== undefined && item.badge > 0 && (
                   <span className="absolute -top-1.5 -right-1.5 bg-destructive text-destructive-foreground text-[10px] rounded-full h-4 min-w-4 px-1 flex items-center justify-center font-semibold leading-none">
                     {item.badge > 9 ? "9+" : item.badge}
                   </span>
