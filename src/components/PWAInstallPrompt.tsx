@@ -52,7 +52,7 @@ export const PWAInstallPrompt = () => {
   };
 
   // Don't show if already installed or not on mobile
-  if (isInstalled || !isMobile) return null;
+  if (isInstalled) return null;
 
   // Show iOS-specific install instructions
   if (isIOS) {
