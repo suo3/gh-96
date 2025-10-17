@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ArrowRight, Smartphone, Users, Shield } from "lucide-react";
 import { FeaturedStoresSpotlight } from "./FeaturedStoresSpotlight";
+import { PWAInstallPrompt } from "./PWAInstallPrompt";
 import heroBackground from "@/assets/hero-background.jpg";
 
 interface HeroSectionProps {
@@ -63,6 +64,11 @@ export const HeroSection = ({ onPostItem, onBrowseItems }: HeroSectionProps) => 
                 >
                   Sell Something
                 </Button>
+              </div>
+
+              {/* PWA Install Prompt */}
+              <div className="flex justify-start animate-fade-in animate-delay-900 opacity-0 [animation-fill-mode:forwards]">
+                <PWAInstallPrompt />
               </div>
               
               <div className="flex flex-wrap gap-3 sm:gap-4 md:gap-6 pt-2 sm:pt-3 md:pt-4 text-xs sm:text-xs md:text-sm text-white animate-fade-in animate-delay-900 opacity-0 [animation-fill-mode:forwards]">
