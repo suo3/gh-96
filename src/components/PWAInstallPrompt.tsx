@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Download, Smartphone } from "lucide-react";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -11,6 +12,7 @@ export const PWAInstallPrompt = () => {
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [isIOS, setIsIOS] = useState(false);
   const [isInstalled, setIsInstalled] = useState(false);
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     // Check if running as installed PWA
@@ -49,8 +51,8 @@ export const PWAInstallPrompt = () => {
     }
   };
 
-  // Don't show if already installed
-  if (isInstalled) return null;
+  // Don't show if already installed or not on mobile
+  if (isInstalled || !isMobile) return null;
 
   // Show iOS-specific install instructions
   if (isIOS) {
