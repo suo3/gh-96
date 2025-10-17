@@ -3,8 +3,8 @@ import { Smartphone, Play } from "lucide-react";
 
 export const Footer = () => {
   return (
-    <footer className="w-full bg-primary/10 dark:bg-primary/5 border-t border-border border-t-emerald-600 py-8 mt-16 pb-safe">
-      <div className="container mx-auto px-4 pb-safe">
+    <footer className="w-full bg-primary/10 dark:bg-primary/5 border-t border-border border-t-emerald-600 py-8 mt-16 pb-20 md:pb-8">
+      <div className="container mx-auto px-4">
         <div className="flex flex-col md:flex-row justify-between items-center gap-6">
           <div className="text-center md:text-left">
             <p className="text-sm text-muted-foreground">
