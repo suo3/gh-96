@@ -179,10 +179,10 @@ export default function Trademark() {
             <div className="space-y-4">
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <a 
-                  href="mailto:legal@kentekart.gh" 
+                  href="mailto:legal@kentekart.com" 
                   className="text-primary hover:underline font-medium"
                 >
-                  legal@kentekart.gh
+                  legal@kentekart.com
                 </a>
                 <span className="text-muted-foreground hidden sm:block">|</span>
                 <span className="text-muted-foreground">

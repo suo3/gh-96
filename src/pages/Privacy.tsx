@@ -167,10 +167,10 @@ export default function Privacy() {
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <a 
-                href="mailto:privacy@kentekart.gh" 
+                href="mailto:privacy@kentekart.com" 
                 className="text-primary hover:underline font-medium"
               >
-                privacy@kentekart.gh
+                privacy@kentekart.com
               </a>
               <span className="text-muted-foreground hidden sm:block">|</span>
               <span className="text-muted-foreground">

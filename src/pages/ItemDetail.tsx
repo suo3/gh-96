@@ -309,7 +309,7 @@ const ItemDetail = () => {
         <meta property="og:title" content={item.title} />
         <meta property="og:description" content={item.description || "Item available for swap on KenteKart Ghana"} />
         <meta property="og:image" content={displayImages[0]} />
-        <meta property="og:url" content={`https://kentekart.gh/item/${item.id}`} />
+        <meta property="og:url" content={`https://kentekart.com/item/${item.id}`} />
         <meta name="twitter:card" content="summary_large_image" />
       </Helmet>
 

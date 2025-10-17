@@ -2,13 +2,13 @@
 export const SEO_CONFIG = {
   siteName: "KenteKart Ghana",
   siteDescription: "Ghana's premier marketplace for swapping and trading items. Connect with locals to exchange goods safely and sustainably.",
-  siteUrl: "https://kentekart.gh", // Update with actual domain
+  siteUrl: "https://kentekart.com", // Update with actual domain
   
   // Social media metadata
   social: {
-    twitter: "@kentekartgh",
-    facebook: "kentekartghana",
-    instagram: "@kentekart.ghana"
+    twitter: "@kentekart",
+    facebook: "kentekart",
+    instagram: "@kentekart"
   },
   
   // Local business metadata
@@ -17,7 +17,7 @@ export const SEO_CONFIG = {
     description: "Sustainable marketplace for Ghana",
     address: "Accra, Ghana",
     phone: "+233 XXX XXX XXX", // Update with actual number
-    email: "contact@kentekart.gh"
+    email: "contact@kentekart.com"
   },
   
   // SEO keywords for Ghana market
