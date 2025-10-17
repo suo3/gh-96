@@ -16,7 +16,7 @@ export const MobileBottomNav = () => {
     { icon: ShoppingBag, label: "Browse", path: "/marketplace" },
     { icon: MessageCircle, label: "Messages", path: "/messages", badge: unreadCount },
     { icon: Heart, label: "Favorites", path: "/favorites" },
-    { icon: User, label: "Profile", path: "/profile" },
+    { icon: User, label: "You", path: "/profile" },
   ];
 
   const isActive = (path: string) => {
@@ -25,8 +25,8 @@ export const MobileBottomNav = () => {
   };
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-background border-t border-border pb-safe">
-      <div className="flex justify-around items-center h-16 px-2">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-background border-t border-border/40 shadow-[0_-1px_3px_rgba(0,0,0,0.1)] pb-safe">
+      <div className="flex items-stretch h-14">
         {navItems.map((item) => {
           const Icon = item.icon;
           const active = isActive(item.path);
@@ -36,21 +36,27 @@ export const MobileBottomNav = () => {
               key={item.path}
               onClick={() => navigate(item.path)}
               className={cn(
-                "flex flex-col items-center justify-center gap-1 px-3 py-2 rounded-lg transition-colors relative flex-1 min-w-0",
-                active 
-                  ? "text-primary" 
-                  : "text-muted-foreground hover:text-foreground"
+                "flex flex-col items-center justify-center gap-0.5 flex-1 transition-all duration-200",
+                "active:scale-95 active:bg-muted/30"
               )}
             >
               <div className="relative">
-                <Icon className={cn("h-5 w-5", active && "fill-primary")} />
+                <Icon 
+                  className={cn(
+                    "h-[22px] w-[22px] transition-colors",
+                    active ? "text-primary stroke-[2.5]" : "text-muted-foreground stroke-[2]"
+                  )} 
+                />
                 {item.badge && item.badge > 0 && (
-                  <span className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground text-xs rounded-full h-4 min-w-4 px-1 flex items-center justify-center font-medium">
+                  <span className="absolute -top-1.5 -right-1.5 bg-destructive text-destructive-foreground text-[10px] rounded-full h-4 min-w-4 px-1 flex items-center justify-center font-semibold leading-none">
                     {item.badge > 9 ? "9+" : item.badge}
                   </span>
                 )}
               </div>
-              <span className="text-xs font-medium truncate w-full text-center">
+              <span className={cn(
+                "text-[11px] font-medium transition-colors leading-none",
+                active ? "text-primary" : "text-muted-foreground"
+              )}>
                 {item.label}
               </span>
             </button>
