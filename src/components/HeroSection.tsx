@@ -67,7 +67,7 @@ export const HeroSection = ({ onPostItem, onBrowseItems }: HeroSectionProps) => 
               </div>
 
               {/* PWA Install Prompt */}
-              <div className="flex justify-start animate-fade-in animate-delay-900 opacity-0 [animation-fill-mode:forwards]">
+              <div className="flex justify-start full-w animate-fade-in animate-delay-900 opacity-0 [animation-fill-mode:forwards]">
                 <PWAInstallPrompt />
               </div>
               

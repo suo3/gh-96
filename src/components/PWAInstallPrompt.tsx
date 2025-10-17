@@ -57,8 +57,8 @@ export const PWAInstallPrompt = () => {
     return (
       <Button
         variant="ghost"
-        size="sm"
-        className="text-white border border-white/30 hover:bg-white/10 backdrop-blur-sm gap-2"
+        size="lg"
+        className="text-white border bg-emerald-600 w-full border-white/95 hover:bg-emerald-500 backdrop-blur-sm gap-2"
         onClick={() => {
           alert('To install this app on iOS:\n\n1. Tap the Share button (square with arrow)\n2. Scroll down and tap "Add to Home Screen"\n3. Tap "Add" in the top right');
         }}
@@ -74,8 +74,8 @@ export const PWAInstallPrompt = () => {
     return (
       <Button
         variant="ghost"
-        size="sm"
-        className="text-white border border-white/30 hover:bg-white/10 backdrop-blur-sm gap-2"
+        size="lg"
+        className="text-white border bg-emerald-600 w-full border-white/95 hover:bg-emerald-500 backdrop-blur-sm gap-2"
         onClick={handleInstallClick}
       >
         <Download className="h-4 w-4" />
