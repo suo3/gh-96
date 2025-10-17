@@ -8,8 +8,8 @@ export const MobileBottomNav = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const currentUser = useAuthStore((state) => state.user);
-  const conversations = useMessageStore((state) => state.conversations);
-  const unreadCount = conversations.filter(c => c.unread > 0).length;
+  const conversations = useMessageStore((state) => state.conversations) || [];
+  const unreadCount = conversations.filter(c => c?.unread > 0).length;
 
   const navItems = [
     { icon: Home, label: "Home", path: "/" },
