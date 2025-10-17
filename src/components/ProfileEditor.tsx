@@ -100,9 +100,9 @@ export const ProfileEditor = () => {
             <span className="text-lg sm:text-xl">Profile Information</span>
             <div className="flex items-center space-x-2">
               <Coins className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-500" />
-              <Badge variant="outline" className="text-xs sm:text-sm text-yellow-700 border-yellow-300">
+              {/* <Badge variant="outline" className="text-xs sm:text-sm text-yellow-700 border-yellow-300">
                 {user.coins} coins
-              </Badge>
+              </Badge> */}
             </div>
           </CardTitle>
         </CardHeader>
