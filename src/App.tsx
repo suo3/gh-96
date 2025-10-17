@@ -7,6 +7,7 @@ import { useAuthInit } from "@/hooks/useAuthInit";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { HealthCheck } from "@/components/HealthCheck";
 import { UITestingPanel } from "@/components/UITestingPanel";
+import { MobileBottomNav } from "@/components/MobileBottomNav";
 import { Helmet } from "react-helmet";
 import { SEO_CONFIG } from "@/constants/seo";
 import { useEffect } from "react";
@@ -123,6 +124,7 @@ const App = () => {
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>
+          <MobileBottomNav />
           <HealthCheck />
         {/*   <UITestingPanel /> */}
         </TooltipProvider>
