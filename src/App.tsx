@@ -123,8 +123,8 @@ const App = () => {
               <Route path="/trademark" element={<Trademark />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
+            <MobileBottomNav />
           </BrowserRouter>
-          <MobileBottomNav />
           <HealthCheck />
         {/*   <UITestingPanel /> */}
         </TooltipProvider>
