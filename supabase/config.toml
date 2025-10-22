@@ -14,3 +14,6 @@ verify_jwt = false
 
 [functions.admin-bulk-import-listings]
 verify_jwt = true
+
+[functions.send-auth-email]
+verify_jwt = false
